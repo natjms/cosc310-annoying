@@ -1,7 +1,11 @@
+from pydantic import BaseModel
 from fastapi import APIRouter
 
-router = APIRouter()
+class HealthResponse(BaseModel):
+	pass
 
-@router.get('/api/health', summary='Check the health of the server')
-def get_health():
-	return {}
+health_router = APIRouter()
+
+@health_router.get('/health', summary='Check if the API is online and responding')
+def get_health() -> HealthResponse:
+	return HealthResponse()
