@@ -10,9 +10,7 @@ Team members:
 - Lua
 - Nat
 - Sarthak
-- TBD
-
-Unfortunately, we could not find a fourth team member by the deadline. Ideally, we would like to be assigned a fourth team member if there are any stragglers. However, we believe we can still complete the project with only 3 members.
+- Christopher
 
 ### Part 2 — Team Agreement
 
@@ -56,3 +54,4 @@ If we are at an impasse or other disagreement on the direction of our team or pr
 - Nat: "I make the commitment to the above"
 - Sarthak: "It's the same commitment to other members. Acknowledge that"
 - Lua: "I wrote this! I agree! I will do all of these things!"
+- Christopher: "Signed by Christopher"
