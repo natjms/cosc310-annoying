@@ -1,0 +1,72 @@
+[
+    {
+        "id": "1",
+        "name": "The Copper Spoon",
+        "description": "A cosy neighbourhood restaurant serving modern Canadian dishes with locally sourced ingredients.",
+        "address": "123 Bernard Avenue, Kelowna, BC",
+        "phone": "250-555-0101"
+    },
+    {
+        "id": "2",
+        "name": "Cedar & Stone",
+        "description": "A relaxed restaurant specialising in wood-fired pizzas, seasonal salads and craft beverages.",
+        "address": "456 Pandosy Street, Kelowna, BC",
+        "phone": "250-555-0102"
+    },
+    {
+        "id": "3",
+        "name": "The Hungry Bear",
+        "description": "A casual family restaurant offering burgers, sandwiches, steaks and homemade desserts.",
+        "address": "789 Lakeshore Road, Kelowna, BC",
+        "phone": "250-555-0103"
+    },
+    {
+        "id": "4",
+        "name": "Bluebird Kitchen",
+        "description": "A bright and modern café serving breakfast, brunch, coffee and freshly baked pastries.",
+        "address": "102 Ellis Street, Kelowna, BC",
+        "phone": "250-555-0104"
+    },
+    {
+        "id": "5",
+        "name": "Mountain Table",
+        "description": "A rustic restaurant inspired by the Okanagan landscape, featuring hearty seasonal dishes and local produce.",
+        "address": "215 Richter Street, Kelowna, BC",
+        "phone": "250-555-0105"
+    },
+    {
+        "id": "6",
+        "name": "Saffron House",
+        "description": "A contemporary Indian restaurant serving traditional curries, grilled dishes and freshly baked naan.",
+        "address": "340 Springfield Road, Kelowna, BC",
+        "phone": "250-555-0106"
+    },
+    {
+        "id": "7",
+        "name": "Harbour Fish Co.",
+        "description": "A casual seafood restaurant offering fish and chips, grilled seafood and fresh seasonal specials.",
+        "address": "88 Water Street, Kelowna, BC",
+        "phone": "250-555-0107"
+    },
+    {
+        "id": "8",
+        "name": "Little Tokyo",
+        "description": "A Japanese restaurant serving sushi, ramen, donburi and other traditional comfort foods.",
+        "address": "517 Glenmore Drive, Kelowna, BC",
+        "phone": "250-555-0108"
+    },
+    {
+        "id": "9",
+        "name": "The Green Fig",
+        "description": "A Mediterranean-inspired restaurant with vegetarian-friendly dishes, grilled meats and fresh salads.",
+        "address": "621 Harvey Avenue, Kelowna, BC",
+        "phone": "250-555-0109"
+    },
+    {
+        "id": "10",
+        "name": "North Star Bistro",
+        "description": "An intimate bistro offering contemporary dishes, locally sourced ingredients and a rotating seasonal menu.",
+        "address": "740 Enterprise Way, Kelowna, BC",
+        "phone": "250-555-0110"
+    }
+]
