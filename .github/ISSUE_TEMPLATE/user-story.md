@@ -7,7 +7,7 @@ As a (user), I want (action) so that (result).
 1. The UI is updated.  
 2. Record is created in database.
 
-## What Makes a Good User Story?
+## What Makes a Good User Story (Do Not Change)?
 
 - Independent of other user stories.
 - Negotiable (the dev team can discuss it so that it's understood).
