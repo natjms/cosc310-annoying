@@ -1,11 +1,11 @@
 If merged, this PR will:
 - Do several things
 
-## Related issues
+### Related issues
 - Issue number 1
 - Issue number 2
 
-## Dependencies
+### Dependencies
 
 *Notice of anything that needs to be done before the PR can be tested, e.g.
 installing new dependencies*
