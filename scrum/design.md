@@ -2,18 +2,18 @@
 
 ## URL Design
 
-- api/                Return a health status.  
-    - restaurants/    Return all restaurants.  
-    - restaurant/     INACCESSIBLE.  
+- api/                  Return a health status.  
+    - restaurants/      Return all restaurants.  
+    - restaurant/       INACCESSIBLE.  
         - create/  
-        - ID/         Return a single restaurant.  
+        - ID/           Return a single restaurant.  
             - update/  
-            - menus/  Return a list of restaurant menus.  
-    - menu/           INACCESSIBLE.  
+            - menus/    Return a list of restaurant menus.  
+    - menu/             INACCESSIBLE.  
         - create/  
-        - ID/         Return a single menu.  
+        - ID/           Return a single menu.  
             - update/  
-    - dish/  
+    - dish/             INACCESSIBLE.
         - create/  
-        - ID/  
+        - ID/           Return a single dish.
             - update/  
