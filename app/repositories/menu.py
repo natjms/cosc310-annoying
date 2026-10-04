@@ -1,0 +1,52 @@
+from app.schemas.menu import Menu, MenuItem
+from typing import TypeAlias
+import os
+import json
+
+DATA_BASE_PATH = os.path.join(os.environ['DATA_DIR'], 'menu.json')
+
+MenuCollection: TypeAlias = dict[str, list[Menu]]
+
+"""
+Load the menu collection and return it
+
+Returns:
+	MenuCollection
+"""
+def _load_raw_menu_json() -> MenuCollection:
+	with open(DATA_BASE_PATH, 'r') as f:
+		return json.load(f)
+
+"""
+Return all menus associated with a restaurant. Raises a KeyError if no
+restaurant exists with the given ID
+
+Args:
+	str	- restaurant_id
+
+Returns:
+	list[Menu]
+"""
+def get_all_menus(restaurant_id: str) -> list[Menu]:
+	return _load_raw_menu_json()[restaurant_id]
+	
+"""
+Return a particular menu associated with a restaurant and all its items. Raises
+a KeyError if no such menu exists, or if the restaurant doesn't exist
+
+Args:
+	str - ID of the restaurant
+	menu_name - The name of the menu
+
+Returns:
+	Menu
+"""
+def get_menu(restaurant_id: str, menu_name: str) -> Menu:
+	menu = _load_raw_menu_json()
+
+	for menu in menu[restaurant_id]:
+		if menu['name'] == menu_name:
+			return menu
+	
+	raise KeyError(f'{menu_name} is not a menu of restaurant {restaurant_id}')
+
