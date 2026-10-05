@@ -13,7 +13,7 @@ def test_get_all_menus():
 	assert menus[0]['name'] == 'Test Menu'
 
 def test_get_all_menus_incorrect_restaurant():
-	with pytest.raises(KeyError) as e:
+	with pytest.raises(KeyError):
 		repo.get_all_menus('This is not an extant ID')
 
 def test_get_specific_menu():
@@ -21,9 +21,9 @@ def test_get_specific_menu():
 	assert menu['name'] == 'Test Menu'
 
 def test_get_specific_menu_incorrect_restaurant():
-	with pytest.raises(KeyError) as e:
+	with pytest.raises(KeyError):
 		repo.get_menu('Invalid restaurant ID', '1')
 
 def test_get_specific_nonexistant_menu():
-	with pytest.raises(KeyError) as e:
+	with pytest.raises(KeyError):
 		repo.get_menu('1', 'Nonexistant Menu')
