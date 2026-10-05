@@ -1,3 +1,4 @@
+from app.exceptions import MissingValueException
 from app.schemas.menu import Menu
 from typing import TypeAlias
 import os
@@ -18,8 +19,8 @@ def _load_raw_menu_json() -> MenuCollection:
 		return json.load(f)
 
 """
-Return all menus associated with a restaurant. Raises a KeyError if no
-restaurant exists with the given ID
+Return all menus associated with a restaurant. Raises a MissingValueException
+if no restaurant exists with the given ID
 
 Args:
 	str	- restaurant_id
@@ -28,11 +29,14 @@ Returns:
 	list[Menu]
 """
 def get_all_menus(restaurant_id: str) -> list[Menu]:
-	return list(_load_raw_menu_json()[restaurant_id].values())
+	try:
+		return list(_load_raw_menu_json()[restaurant_id].values())
+	except KeyError:
+		raise MissingValueException(f'No restaurant with id {restaurant_id} exists')
 	
 """
 Return a particular menu associated with a restaurant and all its items. Raises
-a KeyError if no such menu exists, or if the restaurant doesn't exist
+a MissingValueException if no such menu exists, or if the restaurant doesn't exist
 
 Args:
 	str - ID of the restaurant
@@ -47,12 +51,12 @@ def get_menu(restaurant_id: str, menu_id: str) -> Menu:
 	try:
 		restaurant_menus = menus[restaurant_id]
 	except KeyError:
-		raise KeyError(f'Restaurant {restaurant_id} does not exist')
+		raise MissingValueException(f'Restaurant {restaurant_id} does not exist')
 
 	try:
 		menu = restaurant_menus[menu_id]
 	except KeyError:
-		raise KeyError(f'Menu {menu_id} is not a menu of restaurant {restaurant_id}')	
+		raise MissingValueException(f'Menu {menu_id} is not a menu of restaurant {restaurant_id}')
 
 	return menu
 
