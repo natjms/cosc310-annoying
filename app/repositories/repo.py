@@ -1,77 +1,40 @@
-from copy import deepcopy
 from itertools import islice
-from typing import Any, Hashable, Iterable, overload
-from pydantic import BaseModel
+from typing import Any, Hashable, Iterable, Literal, overload
+from pydantic import BaseModel, TypeAdapter
 from ulid import ULID
 
 class UniqueError(Exception):
     pass
 
-type Id = str
-type Field = str
-type Value = Any
+Id = ULID
+
+type Name = str
+
+type Value = object
+
 type ValueKey = Hashable
-type Dump = dict[Field, Value]
 
-def generate_id() -> Id:
-    return str(ULID())
+type Dump = dict[Name, Value]
 
-def recursive_hash(obj: Any) -> int:
-    try: return obj.__hash__()
-    except TypeError: pass
-
-    try:
-        hash = 0
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                hash ^= recursive_hash(key) ^ recursive_hash(value)
-        else:
-            for element in obj:
-                hash ^= recursive_hash(element)
-        return hash
-    except TypeError: pass
-
-    return id(obj)
-
-class HashableRef:
-    __slots__ = ('obj', 'hash')
-
-    def __init__(self, obj: object):
-        self.obj = obj
-        self.hash = recursive_hash(obj)
-
-    def __hash__(self) -> int:
-        return self.hash
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, HashableRef) \
-            and self.hash == other.hash \
-            and self.obj == other.obj
-
-def askey(obj: object, copy: bool = False) -> ValueKey:
-    try:
-        _ = obj.__hash__() << 0
-        return obj
-    except TypeError:
-        if copy: obj = deepcopy(obj)
-        return HashableRef(obj)
+def freeze(value: Value) -> ValueKey:
+    if isinstance(value, list):
+        return tuple(freeze(v) for v in value)
+    if isinstance(value, dict):
+        return frozenset((k, freeze(v)) for k, v in value.items())
+    return value
 
 class Index(dict[ValueKey, dict[Id, Dump]]):
-    def all(self) -> Iterable[Dump]:
-        for slice in self.values():
-            yield from slice.values()
-
-    def has(self, vkey: ValueKey, id: Id | None = None) -> bool:
-        return vkey in self and (id is None or id in self[vkey])
-
-    def find(self, vkey: ValueKey, id: Id) -> Dump | None:
-        return self[vkey][id] if self.has(vkey, id) else None
-
-    def put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
+    def _put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
         if not vkey in self: self[vkey] = {}
         self[vkey][id] = item
 
-    def remove(self, vkey: ValueKey, id: Id) -> bool:
+    def put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
+        if isinstance(vkey, tuple):
+            for sub_vkey in vkey: self._put(sub_vkey, id, item)
+        else:
+            self._put(vkey, id, item)
+
+    def _remove(self, vkey: ValueKey, id: Id) -> bool:
         if not vkey in self: return False
         leaf = self[vkey]
         if not id in leaf: return False
@@ -79,184 +42,223 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
         if not leaf: del self[vkey]
         return True
 
+    def remove(self, vkey: ValueKey, id: Id) -> bool:
+        if isinstance(vkey, tuple):
+            return all(self._remove(sub_vkey, id) for sub_vkey in vkey)
+        else:
+            return self._remove(vkey, id)
+
+    def _slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
+        return self.get(vkey, None)
+
+    def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
+        if isinstance(vkey, tuple):
+            d = {
+                id: item
+                for sub_vkey in vkey
+                for id, item in (self._slice(sub_vkey) or {}).items()
+            }
+            return d or None
+        else:
+            return self._slice(vkey)
+
 class Repo[T: BaseModel]:
     name: str
     model: type[T]
 
-    _id: Index
-    _indicies: dict[Field, Index]
+    _id: dict[Id, Dump]
+    _indices: dict[Name, Index]
 
-    def __init__(self, name: str, model: type[T], indexed_fields: Iterable[Field]):
-        if not isinstance(name, str) or not name.isalnum() or not name:
-            raise ValueError(f"name must be a non-empty alphanumeric string, got {name}")
+    _adapters: dict[Name, TypeAdapter]
 
+    def __init__(self, name: str, model: type[T], indexed_fields: Iterable[Name]):
+        if not isinstance(name, str) or not name.isalnum():
+            raise ValueError("name must be an alphanumeric string")
         if not isinstance(model, type) or not issubclass(model, BaseModel):
-            raise TypeError(f"model must be a subclass of BaseModel, got {model}")
+            raise TypeError("model must be a subclass of BaseModel")
 
         id_field = model.model_fields.get('id', None)
-        if id_field is None or not (
-            id_field.annotation is None or
-            issubclass(id_field.annotation, str)
-        ):
-            raise TypeError(f"model {model.__name__} must have an 'id' field of type str")
+        if id_field is None or id_field.annotation != ULID:
+            raise TypeError(f"model {model.__name__!r} must have an 'id' field of type ULID")
 
         indexed_fields = list(indexed_fields)
 
         for field in indexed_fields:
             if field not in model.model_fields:
-                raise ValueError(f"indexed field {field} is not a valid field of {model.__name__}")
+                raise ValueError(f"indexed field {field!r} is not a field of model {model.__name__!r}")
 
         if len(set(indexed_fields)) != len(indexed_fields):
             raise ValueError("indexed_fields must be unique")
-
         if 'id' in indexed_fields:
             raise ValueError("indexed_fields must not contain 'id'")
 
         self.name = name
         self.model = model
 
-        self._id = Index()
-        self._indicies = {}
+        self._id = {}
+        self._indices = { field: Index() for field in indexed_fields }
 
-        for field in indexed_fields:
-            self._indicies[field] = Index()
+        self._adapters = {
+            field: TypeAdapter(info.rebuild_annotation())
+            for field, info in model.model_fields.items()
+        }
 
-        self._indicies['id'] = self._id
-
-    def _todump(self, instance: T) -> Dump:
+    def _to_dump(self, instance: T, mode: Literal['json', 'python'] = 'json') -> Dump:
         if isinstance(instance, self.model):
-            return instance.model_dump(mode='json')
+            return instance.model_dump(mode=mode)
         else:
-            raise TypeError(f"instance {instance} is not of type {self.model}")
+            raise TypeError(f"expected instance of model {self.model.__name__!r}, got type {type(instance)}")
 
-    def _fromdump(self, dump: Dump) -> T:
+    def _from_dump(self, dump: Dump) -> T:
         return self.model.model_validate(dump)
 
     def _get(self, id: Id) -> Dump | None:
-        return self._id.find(id, id)
+        return self._id.get(id, None)
 
-    def _upsert(self, new_dump: Dump, /, can_create: bool, can_update: bool) -> T:
-        assert can_create or can_update
-
-        id = new_dump.get('id', None)
-
+    def _upsert(self, patch: Dump, /, can_create: bool, can_update: bool) -> T:
+        id = patch.get('id', None)
         if not id:
-            if can_create:
-                id = new_dump['id'] = generate_id()
-            else:
+            if not can_create:
                 raise ValueError("id is required, but was not set or provided")
-        elif type(id) is not str:
-            raise ValueError(f"id must be a string, got {id}")
+            id = Id()
+        elif not isinstance(id, Id):
+            try:
+                id = Id.parse(id)
+            except (TypeError, ValueError) as e:
+                raise ValueError(f"id must be a ULID, got {id!r}") from e
 
-        old_dump = self._get(id)
-
-        if old_dump:
-            if not can_update:
-                raise ValueError(f"{self.name}.id={id} already exists, cannot create")
-            for k, v in old_dump.items():
-                if k not in new_dump or new_dump[k] is None:
-                    new_dump[k] = v
-        elif not can_create:
+        old = self._get(id)
+        if old is not None and not can_update:
+            raise ValueError(f"{self.name}.id={id} already exists, cannot create")
+        if old is None and not can_create:
             raise ValueError(f"{self.name}.id={id} does not exist, cannot update")
 
-        instance = self._fromdump(new_dump)
+        instance = self._from_dump((old or {}) | patch | { 'id': id })
 
-        if old_dump:
-            for field, index in self._indicies.items():
-                old_value = old_dump[field]
-                new_value = new_dump[field]
-                if old_value is not new_value:
-                    index.remove(askey(old_value), id)
-                index.put(askey(new_value, copy=True), id, new_dump)
-        else:
-            for field, index in self._indicies.items():
-                new_value = new_dump[field]
-                index.put(askey(new_value, copy=True), id, new_dump)
+        new = self._to_dump(instance)
+
+        self._id[id] = new
+
+        for field, index in self._indices.items():
+            new_vkey = freeze(new[field])
+            if old is not None:
+                old_vkey = freeze(old[field])
+                if old_vkey != new_vkey:
+                    index.remove(old_vkey, id)
+            index.put(new_vkey, id, new)
 
         return instance
 
     def _delete(self, id: Id) -> bool:
+        if not isinstance(id, Id):
+            try:
+                id = Id.parse(id)
+            except (TypeError, ValueError) as e:
+                raise ValueError(f"id must be a ULID, got {id!r}") from e
+
         dump = self._get(id)
         if not dump: return False
 
-        for field, index in self._indicies.items():
-            value = dump[field]
-            index.remove(askey(value), id)
+        del self._id[id]
+
+        for field, index in self._indices.items():
+            vkey = freeze(dump[field])
+            index.remove(vkey, id)
 
         return True
 
-    def _index_slice(self, field: Field, value: Value) -> dict[Id, Dump] | None:
-        return self._indicies[field].get(askey(value), None)
+    def _adapt(self, field: Name, value: Value) -> Value:
+        adapter = self._adapters[field]
+        value = adapter.validate_python(value)
+        value = adapter.dump_python(value, mode='json')
+        return value
 
-    def _query_rows(self, filters: dict[Field, Value]) -> Iterable[Dump]:
-        for field in filters:
-            if field not in self._indicies:
-                raise ValueError(f"field {self.name}.{field} is not indexed")
+    def _index_slice(self, field: Name, value: Value) -> dict[Id, Dump] | None:
+        vkey = freeze(self._adapt(field, value))
+        return self._indices[field].slice(vkey)
 
-        if not filters:
-            return self._id.all()
+    def _index_slices(self, slices: dict[Name, Value]) -> Iterable[Dump]:
+        required_id: Id | None = None
 
-        filters_iter = iter(filters.items())
+        if 'id' in slices:
+            id = slices.pop('id')
+            if not isinstance(id, Id):
+                raise TypeError(f"id must be a ULID, got {id!r}")
+            if id not in self._id:
+                return ()
+            if not slices:
+                return (self._id[id],)
+            required_id = id
+        else:
+            if not slices:
+                return self._id.values()
 
-        first_field, first_value = next(filters_iter)
+        for field in slices:
+            if field not in self._indices:
+                raise ValueError(f"field {self.name}[{field!r}] is not indexed")
+
+        slices_iter = iter(slices.items())
+
+        first_field, first_value = next(slices_iter)
         first_slice = self._index_slice(first_field, first_value)
 
-        if first_slice is None:
+        if not first_slice:
             return ()
 
-        if len(filters) == 1:
+        if required_id is not None:
+            if required_id not in first_slice:
+                return ()
+            else:
+                first_slice = { required_id: first_slice[required_id] }
+
+        if len(slices) == 1:
             return first_slice.values()
 
         matching_ids = set(first_slice)
 
-        for field, value in filters_iter:
+        for field, value in slices_iter:
             slice = self._index_slice(field, value)
-            if slice is None: return ()
+            if not slice: return ()
             matching_ids.intersection_update(slice)
+            if not matching_ids: return ()
 
-        return (
-            dump
-            for id, dump in first_slice.items()
-            if id in matching_ids
-        )
+        return (self._id[id] for id in matching_ids)
 
     def _query(self, query: dict[str, Any]) -> list[T]:
-        # don't mutate the caller's query
-        filters = query.copy()
+        slices = query.copy()
 
-        skip = filters.pop('_skip', 0)
-        limit = filters.pop('_limit', None)
-        order_by = filters.pop('_order_by', None)
-        order_desc = filters.pop('_order_desc', False)
+        skip = slices.pop('_skip', 0)
+        limit = slices.pop('_limit', 0)
+        order_by = slices.pop('_order_by', None)
+        order_desc = slices.pop('_order_desc', False)
 
-        if type(skip) is not int or skip < 0:
-            raise ValueError(f"_skip must be a non-negative integer, got {skip}")
+        if skip is None: skip = 0
+        elif type(skip) is not int or skip < 0:
+            raise ValueError(f"_skip must be a non-negative integer, got {skip!r}")
 
-        if limit is not None and (type(limit) is not int or limit < 0):
-            raise ValueError(f"_limit must be a non-negative integer or None, got {limit}")
+        if limit is None: limit = 0
+        elif type(limit) is not int or limit < 0:
+            raise ValueError(f"_limit must be a non-negative integer, got {limit!r}")
 
-        if type(order_desc) is not bool:
-            raise ValueError(f"_order_desc must be a boolean, got {order_desc}")
+        if order_desc is None: order_desc = False
+        elif type(order_desc) is not bool:
+            raise ValueError(f"_order_desc must be a boolean, got {order_desc!r}")
 
         if order_by is not None and (
-            not isinstance(order_by, str)
-            or order_by not in self.model.model_fields
+            not isinstance(order_by, str) or \
+            order_by not in self.model.model_fields
         ):
-            raise ValueError(f"_order_by must be a field on {self.model.__name__}, got {order_by}")
+            raise ValueError(f"_order_by must be a field of model {self.model.__name__!r}, got {order_by!r}")
 
-        rows = self._query_rows(filters)
+        rows = self._index_slices(slices)
 
         if order_by is not None:
-            rows = sorted(
-                rows,
-                key=lambda row: row[order_by],
-                reverse=order_desc,
-            )
+            rows = sorted(rows, key=lambda row: row[order_by], reverse=order_desc) # type: ignore
 
-        stop = None if limit is None else skip + limit
+        stop = None if limit == 0 else skip + limit
 
         return [
-            self._fromdump(row)
+            self._from_dump(row)
             for row in islice(rows, skip, stop)
         ]
 
@@ -265,7 +267,7 @@ class Repo[T: BaseModel]:
     @overload
     def create(self, /, **kwargs: Any) -> T: ...
     def create(self, instance: T | None = None, /, **kwargs: Any) -> T:
-        dump = self._todump(instance) if instance is not None else kwargs
+        dump = self._to_dump(instance, 'python') if instance is not None else kwargs
         return self._upsert(dump, True, False)
 
     @overload
@@ -273,11 +275,11 @@ class Repo[T: BaseModel]:
     @overload
     def update(self, /, **kwargs: Any) -> T: ...
     def update(self, instance: T | None = None, /, **kwargs: Any) -> T:
-        dump = self._todump(instance) if instance is not None else kwargs
+        dump = self._to_dump(instance, 'python') if instance is not None else kwargs
         return self._upsert(dump, False, True)
 
     def upsert(self, instance: T) -> T:
-        return self._upsert(self._todump(instance), True, True)
+        return self._upsert(self._to_dump(instance, 'python'), True, True)
 
     def delete(self, id: Id) -> bool:
         return self._delete(id)
@@ -288,28 +290,65 @@ class Repo[T: BaseModel]:
     def unique(self, /, **query: Any) -> T:
         results = self._query(query)
         if len(results) < 1:
-            raise UniqueError(f"no result found in {self.name} for query: {query}")
+            raise UniqueError(f"no row found in {self.name} for query: {query!r}")
         if len(results) > 1:
-            raise UniqueError(f"multiple results found in {self.name} for query: {query}")
+            raise UniqueError(f"multiple rows found in {self.name} for query: {query!r}")
         return results[0]
 
 class User(BaseModel):
-    id: str
+    id: Id
     name: str
     age: int
-    friends: list[str]
+    follows: list[Id] = []
 
-repo = Repo('users', User, ['name', 'age', 'friends'])
+class Post(BaseModel):
+    id: Id
+    author_id: Id
+    content: str
+    tags: list[str]
 
-lua = repo.create(name='Lua', age=21, friends=['Iris', 'Jo'])
-jo = repo.create(id='jo', name='Jo', age=23, friends=['Lua', 'Iris'])
-iris = User(id='iris', name='Iris', age=21, friends=['Jo', 'Lua'])
+users = Repo('users', User, indexed_fields=['name', 'age', 'follows'])
+posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'])
 
-repo.create(iris)
-repo.update(id=lua.id, age=22)
+# create myself:
+lua = users.create(name='luavixen', age=22)
+# note that the ID is generated automatically
 
-for user in repo.select():
-    print(user)
+# also create my girlfriend:
+iris = users.create(User(id=Id(), name='iris', age=21, follows=[lua.id]))
 
-print("this user is 22:", repo.select(age=22))
-print("this user is friends with jo and lua:", repo.select(friends=['Jo', 'Lua']))
+# well obviously i follow her:
+users.update(id=lua.id, follows=[iris.id])
+
+# and john is here too:
+john = users.create(name='john', age=20)
+
+# john follows everyone:
+users.update(id=john.id, follows=[iris.id, lua.id])
+
+# let's print everyone who follows me:
+print("these users follow lua:")
+for user in users.select(follows=[lua.id]):
+    print(f"  - {user.name}")
+
+# ok let's get posting
+posts.create(author_id=lua.id, content='wow... what a cool website', tags=['hello', 'website'])
+posts.create(author_id=iris.id, content='just joined lol hi', tags=['hello', 'launch'])
+posts.create(author_id=john.id, content='first day gang', tags=['launch', 'hello'])
+posts.create(author_id=lua.id, content='posting works lets gooo', tags=['website', 'launch'])
+posts.create(author_id=iris.id, content='ok this is kinda cute', tags=['website', 'vibes'])
+posts.create(author_id=john.id, content='who up eating lunch rn. at the website launch', tags=['lunch', 'launch', 'wow'])
+
+# what posts are tagged with 'website'?
+print("posts tagged with 'website':")
+for post in posts.select(tags=['website']):
+    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
+
+# delete posts tagged with 'hello' i HATE saying hello
+for post in posts.select(tags=['hello']):
+    posts.delete(id=post.id)
+
+# ok print all posts
+print("all posts, after deleting 'hello' posts:")
+for post in posts.select():
+    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
