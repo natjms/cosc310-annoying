@@ -48,19 +48,24 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
         else:
             return self._remove(vkey, id)
 
-    def _slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
+    def _slice_one(self, vkey: ValueKey) -> dict[Id, Dump] | None:
         return self.get(vkey, None)
+
+    def _slice_many(self, vkeys: Iterable[ValueKey]) -> dict[Id, Dump] | None:
+        slices = [self._slice_one(vkey) for vkey in vkeys]
+        if not slices or not all(slices): return None
+        smallest, *others = sorted(slices, key=len) # type: ignore
+        return {
+            id: dump
+            for id, dump in smallest.items()
+            if all(id in other for other in others)
+        } or None
 
     def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
         if isinstance(vkey, tuple):
-            d = {
-                id: item
-                for sub_vkey in vkey
-                for id, item in (self._slice(sub_vkey) or {}).items()
-            }
-            return d or None
+            return self._slice_many(vkey)
         else:
-            return self._slice(vkey)
+            return self._slice_one(vkey)
 
 class Repo[T: BaseModel]:
     name: str
@@ -352,3 +357,8 @@ for post in posts.select(tags=['hello']):
 print("all posts, after deleting 'hello' posts:")
 for post in posts.select():
     print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
+
+# find a unique post with the tags 'launch' and 'website'
+print("unique post with tags 'launch' and 'website':")
+post = posts.unique(tags=['launch', 'website'])
+print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
