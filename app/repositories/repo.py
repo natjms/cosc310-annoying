@@ -1,3 +1,4 @@
+import threading
 from itertools import islice
 from typing import Any, Hashable, Iterable, Literal, overload
 from pydantic import BaseModel, TypeAdapter
@@ -34,19 +35,18 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
         else:
             self._put(vkey, id, item)
 
-    def _remove(self, vkey: ValueKey, id: Id) -> bool:
-        if not vkey in self: return False
+    def _remove(self, vkey: ValueKey, id: Id) -> None:
+        if not vkey in self: return
         leaf = self[vkey]
-        if not id in leaf: return False
+        if not id in leaf: return
         del leaf[id]
         if not leaf: del self[vkey]
-        return True
 
-    def remove(self, vkey: ValueKey, id: Id) -> bool:
+    def remove(self, vkey: ValueKey, id: Id) -> None:
         if isinstance(vkey, tuple):
-            return all(self._remove(sub_vkey, id) for sub_vkey in vkey)
+            for sub_vkey in vkey: self._remove(sub_vkey, id)
         else:
-            return self._remove(vkey, id)
+            self._remove(vkey, id)
 
     def _slice_one(self, vkey: ValueKey) -> dict[Id, Dump] | None:
         return self.get(vkey, None)
@@ -71,6 +71,8 @@ class Repo[T: BaseModel]:
     name: str
     model: type[T]
 
+    _lock: threading.Lock
+
     _id: dict[Id, Dump]
     _indices: dict[Name, Index]
 
@@ -84,13 +86,13 @@ class Repo[T: BaseModel]:
 
         id_field = model.model_fields.get('id', None)
         if id_field is None or id_field.annotation != ULID:
-            raise TypeError(f"model {model.__name__!r} must have an 'id' field of type ULID")
+            raise TypeError(f"model {model.__name__} must have an 'id' field of type ULID")
 
         indexed_fields = list(indexed_fields)
 
         for field in indexed_fields:
             if field not in model.model_fields:
-                raise ValueError(f"indexed field {field!r} is not a field of model {model.__name__!r}")
+                raise ValueError(f"indexed field {field!r} is not a field of model {model.__name__}")
 
         if len(set(indexed_fields)) != len(indexed_fields):
             raise ValueError("indexed_fields must be unique")
@@ -99,6 +101,8 @@ class Repo[T: BaseModel]:
 
         self.name = name
         self.model = model
+
+        self._lock = threading.Lock()
 
         self._id = {}
         self._indices = { field: Index() for field in indexed_fields }
@@ -112,7 +116,7 @@ class Repo[T: BaseModel]:
         if isinstance(instance, self.model):
             return instance.model_dump(mode=mode)
         else:
-            raise TypeError(f"expected instance of model {self.model.__name__!r}, got type {type(instance)}")
+            raise TypeError(f"expected instance of model {self.model.__name__}, got type {type(instance)}")
 
     def _from_dump(self, dump: Dump) -> T:
         return self.model.model_validate(dump)
@@ -121,6 +125,10 @@ class Repo[T: BaseModel]:
         return self._id.get(id, None)
 
     def _upsert(self, patch: Dump, /, can_create: bool, can_update: bool) -> T:
+        for field in patch:
+            if field not in self.model.model_fields:
+                raise ValueError(f"field {self.name}[{field!r}] is not a field of model {self.model.__name__}")
+
         id = patch.get('id', None)
         if not id:
             if not can_create:
@@ -132,27 +140,29 @@ class Repo[T: BaseModel]:
             except (TypeError, ValueError) as e:
                 raise ValueError(f"id must be a ULID, got {id!r}") from e
 
-        old = self._get(id)
-        if old is not None and not can_update:
-            raise ValueError(f"{self.name}.id={id} already exists, cannot create")
-        if old is None and not can_create:
-            raise ValueError(f"{self.name}.id={id} does not exist, cannot update")
+        with self._lock:
 
-        instance = self._from_dump((old or {}) | patch | { 'id': id })
+            old = self._get(id)
+            if old is not None and not can_update:
+                raise ValueError(f"{self.name}.id={id} already exists, cannot create")
+            if old is None and not can_create:
+                raise ValueError(f"{self.name}.id={id} does not exist, cannot update")
 
-        new = self._to_dump(instance)
+            instance = self._from_dump((old or {}) | patch | { 'id': id })
 
-        self._id[id] = new
+            new = self._to_dump(instance)
 
-        for field, index in self._indices.items():
-            new_vkey = freeze(new[field])
-            if old is not None:
-                old_vkey = freeze(old[field])
-                if old_vkey != new_vkey:
-                    index.remove(old_vkey, id)
-            index.put(new_vkey, id, new)
+            self._id[id] = new
 
-        return instance
+            for field, index in self._indices.items():
+                new_vkey = freeze(new[field])
+                if old is not None:
+                    old_vkey = freeze(old[field])
+                    if old_vkey != new_vkey:
+                        index.remove(old_vkey, id)
+                index.put(new_vkey, id, new)
+
+            return instance
 
     def _delete(self, id: Id) -> bool:
         if not isinstance(id, Id):
@@ -161,16 +171,18 @@ class Repo[T: BaseModel]:
             except (TypeError, ValueError) as e:
                 raise ValueError(f"id must be a ULID, got {id!r}") from e
 
-        dump = self._get(id)
-        if not dump: return False
+        with self._lock:
 
-        del self._id[id]
+            dump = self._get(id)
+            if not dump: return False
 
-        for field, index in self._indices.items():
-            vkey = freeze(dump[field])
-            index.remove(vkey, id)
+            del self._id[id]
 
-        return True
+            for field, index in self._indices.items():
+                vkey = freeze(dump[field])
+                index.remove(vkey, id)
+
+            return True
 
     def _adapt(self, field: Name, value: Value) -> Value:
         adapter = self._adapters[field]
@@ -183,12 +195,19 @@ class Repo[T: BaseModel]:
         return self._indices[field].slice(vkey)
 
     def _index_slices(self, slices: dict[Name, Value]) -> Iterable[Dump]:
+        for field in slices:
+            if field not in self._indices and field != 'id':
+                raise ValueError(f"field {self.name}[{field!r}] is not indexed")
+
         required_id: Id | None = None
 
         if 'id' in slices:
             id = slices.pop('id')
             if not isinstance(id, Id):
-                raise TypeError(f"id must be a ULID, got {id!r}")
+                try:
+                    id = Id.parse(id)
+                except (TypeError, ValueError) as e:
+                    raise ValueError(f"id must be a ULID, got {id!r}") from e
             if id not in self._id:
                 return ()
             if not slices:
@@ -197,10 +216,6 @@ class Repo[T: BaseModel]:
         else:
             if not slices:
                 return self._id.values()
-
-        for field in slices:
-            if field not in self._indices:
-                raise ValueError(f"field {self.name}[{field!r}] is not indexed")
 
         slices_iter = iter(slices.items())
 
@@ -253,12 +268,16 @@ class Repo[T: BaseModel]:
             not isinstance(order_by, str) or \
             order_by not in self.model.model_fields
         ):
-            raise ValueError(f"_order_by must be a field of model {self.model.__name__!r}, got {order_by!r}")
+            raise ValueError(f"_order_by must be a field of model {self.model.__name__}, got {order_by!r}")
 
-        rows = self._index_slices(slices)
+        with self._lock:
+            rows = list(self._index_slices(slices))
 
         if order_by is not None:
-            rows = sorted(rows, key=lambda row: row[order_by], reverse=order_desc) # type: ignore
+            def key(row):
+                v = row[order_by]
+                return (v is None, v)
+            rows = sorted(rows, key=key, reverse=order_desc) # type: ignore
 
         stop = None if limit == 0 else skip + limit
 
