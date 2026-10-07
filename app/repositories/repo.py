@@ -170,18 +170,20 @@ class Repo[T: BaseModel]:
 
     _adapters: dict[Name, TypeAdapter]
 
+    _in_memory: bool
+
     _path_dir: str
     _path_data: str
     _path_temp: str
     _path_wal: str
-
-    _dir_fd: int | None
 
     _wal: FileIO | None
     _wal_failed: bool
     _wal_commit_stop: threading.Event
     _wal_commit_thread: threading.Thread | None
     _wal_commit_interval: int
+
+    _dir_fd: int | None
 
     _shutdown_hook: Any
 
@@ -190,6 +192,7 @@ class Repo[T: BaseModel]:
         name: str,
         model: type[T],
         indexed_fields: Iterable[Name],
+        in_memory: bool = False,
         wal_commit_interval: int = DEFAULT_WAL_COMMIT_INTERVAL
     ):
         if not isinstance(name, str) or not name.isalnum():
@@ -230,6 +233,8 @@ class Repo[T: BaseModel]:
             for field, info in model.model_fields.items()
         }
 
+        self._in_memory = in_memory
+
         data_dir = os.getenv('DATA_DIR', os.getcwd())
 
         self._path_dir = data_dir
@@ -237,34 +242,35 @@ class Repo[T: BaseModel]:
         self._path_temp = os.path.join(data_dir, f"{name}.json.tmp")
         self._path_wal = os.path.join(data_dir, f"{name}.wal.json")
 
-        try:
-            self._dir_fd = os.open(data_dir, os.O_RDONLY)
-        except (OSError, NotImplementedError):
-            self._dir_fd = None
-
         self._wal = None
         self._wal_failed = False
         self._wal_commit_stop = threading.Event()
         self._wal_commit_thread = None
         self._wal_commit_interval = wal_commit_interval
 
-        # register the shutdown handler to commit WAL on exit
-        self._shutdown_hook = atexit.register(self._shutdown)
+        if not self._in_memory:
+            try:
+                self._dir_fd = os.open(data_dir, os.O_RDONLY)
+            except (OSError, NotImplementedError):
+                self._dir_fd = None
 
-        # start the WAL commit loop, if the interval is positive
-        if self._wal_commit_interval > 0:
-            self._wal_commit_thread = threading.Thread(
-                target=self._wal_commit_loop,
-                name=f"repo-{name}-commit",
-                daemon=True,
-            )
-            self._wal_commit_thread.start()
+            # register the shutdown handler to commit WAL on exit
+            self._shutdown_hook = atexit.register(self._shutdown)
 
-        # replay the data and WAL files to recover state
-        with self._lock:
-            self._replay_file(self._path_data, allow_torn_tail=False)
-            if self._replay_file(self._path_wal, allow_torn_tail=True):
-                self._wal_commit()
+            # start the WAL commit loop, if the interval is positive
+            if self._wal_commit_interval > 0:
+                self._wal_commit_thread = threading.Thread(
+                    target=self._wal_commit_loop,
+                    name=f"repo-{name}-commit",
+                    daemon=True,
+                )
+                self._wal_commit_thread.start()
+
+            # replay the data and WAL files to recover state
+            with self._lock:
+                self._replay_file(self._path_data, allow_torn_tail=False)
+                if self._replay_file(self._path_wal, allow_torn_tail=True):
+                    self._wal_commit()
 
     def _dump2model(self, dump: Dump) -> T:
         return self.model.model_validate(dump, by_name=True)
@@ -335,6 +341,8 @@ class Repo[T: BaseModel]:
                 pass
 
     def _wal_write(self, dump: Dump) -> None: # must hold _lock
+        if self._in_memory:
+            return
         if self._wal_failed:
             raise RuntimeError(f"repo {self.name} refused write after a WAL write failed")
         bytes = self._dump2bytes(dump)
@@ -351,6 +359,8 @@ class Repo[T: BaseModel]:
             raise
 
     def _wal_commit(self) -> None: # must hold _lock
+        if self._in_memory:
+            return
         # write all rows to the temp file
         with open(self._path_temp, 'wb') as file:
             for dump in self._id.values():
@@ -402,8 +412,9 @@ class Repo[T: BaseModel]:
         # stop the timer to avoid racing with the loop
         self._wal_commit_stop.set()
         self._try_wal_commit("on exit")
-        atexit.unregister(self._shutdown_hook)
-        self._shutdown_hook = None
+        if self._shutdown_hook is not None:
+            atexit.unregister(self._shutdown_hook)
+            self._shutdown_hook = None
 
     def close(self) -> None:
         self._shutdown()
@@ -610,10 +621,9 @@ class Post(BaseModel):
     content: str
     tags: list[str]
 
-users = Repo('users', User, indexed_fields=['name', 'age', 'follows'])
-posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'])
+users = Repo('users', User, indexed_fields=['name', 'age', 'follows'], in_memory=True)
+posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'], in_memory=True)
 
-"""
 # create myself:
 lua = users.create(name='luavixen', age=22)
 # note that the ID is generated automatically
@@ -661,14 +671,3 @@ for post in posts.select():
 print("unique post with tags 'launch' and 'website':")
 post = posts.unique(tags=['launch', 'website'])
 print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
-"""
-
-for user in users.select():
-    print(user)
-
-for post in posts.select():
-    print(post)
-
-print(users.select(follows=[
-    users.unique(name='luavixen').id
-]))
