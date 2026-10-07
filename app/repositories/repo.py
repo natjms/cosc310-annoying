@@ -1,11 +1,18 @@
+import json
+import os
+import atexit
 import threading
+from collections.abc import Hashable, Iterable
 from itertools import islice
-from typing import Any, Hashable, Iterable, Literal, overload
+from typing import Any, Literal, TextIO, overload
+
 from pydantic import BaseModel, TypeAdapter
 from ulid import ULID
 
 class UniqueError(Exception):
     pass
+
+DEFAULT_WAL_COMMIT_INTERVAL = 60 * 60
 
 Id = ULID
 
@@ -78,7 +85,23 @@ class Repo[T: BaseModel]:
 
     _adapters: dict[Name, TypeAdapter]
 
-    def __init__(self, name: str, model: type[T], indexed_fields: Iterable[Name]):
+    _path_dir: str
+    _path_data: str
+    _path_temp: str
+    _path_wal: str
+
+    _wal: TextIO | None
+    _wal_commit_stop: threading.Event
+    _wal_commit_thread: threading.Thread | None
+    _wal_commit_interval: int
+
+    def __init__(
+        self,
+        name: str,
+        model: type[T],
+        indexed_fields: Iterable[Name],
+        wal_commit_interval: int = DEFAULT_WAL_COMMIT_INTERVAL
+    ):
         if not isinstance(name, str) or not name.isalnum():
             raise ValueError("name must be an alphanumeric string")
         if not isinstance(model, type) or not issubclass(model, BaseModel):
@@ -99,6 +122,9 @@ class Repo[T: BaseModel]:
         if 'id' in indexed_fields:
             raise ValueError("indexed_fields must not contain 'id'")
 
+        if type(wal_commit_interval) is not int or wal_commit_interval < 0:
+            raise ValueError("wal_commit_interval must be a non-negative integer of seconds, 0 to disable")
+
         self.name = name
         self.model = model
 
@@ -112,6 +138,31 @@ class Repo[T: BaseModel]:
             for field, info in model.model_fields.items()
         }
 
+        data_dir = os.getenv('DATA_DIR', os.getcwd())
+
+        self._path_dir = data_dir
+        self._path_data = os.path.join(data_dir, f"{name}.json")
+        self._path_temp = os.path.join(data_dir, f"{name}.json.tmp")
+        self._path_wal = os.path.join(data_dir, f"{name}.wal.json")
+
+        self._wal = None
+        self._wal_commit_stop = threading.Event()
+        self._wal_commit_thread = None
+        self._wal_commit_interval = wal_commit_interval
+
+        self._replay_file(self._path_data, required=True)
+        self._replay_file(self._path_wal, required=False)
+
+        atexit.register(self._shutdown)
+
+        if self._wal_commit_interval > 0:
+            self._wal_commit_thread = threading.Thread(
+                target=self._wal_commit_loop,
+                name=f"repo-{name}-commit",
+                daemon=True,
+            )
+            self._wal_commit_thread.start()
+
     def _to_dump(self, instance: T, mode: Literal['json', 'python'] = 'json') -> Dump:
         if isinstance(instance, self.model):
             return instance.model_dump(mode=mode)
@@ -123,6 +174,119 @@ class Repo[T: BaseModel]:
 
     def _get(self, id: Id) -> Dump | None:
         return self._id.get(id, None)
+
+    def _replay(self, line: str) -> None:
+        try:
+            new = json.loads(line)
+
+            id = ULID.parse(new['id'])
+
+            old = self._get(id)
+
+            if '__deleted__' in new:
+                if old is None:
+                    raise ValueError(f"cannot delete {id!r} because it does not exist")
+
+                del self._id[id]
+
+                for field, index in self._indices.items():
+                    index.remove(freeze(old[field]), id)
+
+            else:
+                self._id[id] = new
+
+                for field, index in self._indices.items():
+                    new_vkey = freeze(new[field])
+                    if old is not None:
+                        old_vkey = freeze(old[field])
+                        if old_vkey != new_vkey:
+                            index.remove(old_vkey, id)
+                    index.put(new_vkey, id, new)
+
+        except Exception as e:
+            print(f"repo {self.name} failed to replay line:\n\t{line}\nbecause: {e}")
+
+    def _replay_file(self, path: str, required: bool) -> None:
+        try:
+            with open(path, 'r', encoding='utf-8') as file:
+                for line in file:
+                    self._replay(line)
+        except FileNotFoundError:
+            if required:
+                print(f"repo {self.name} failed to replay file: {path!r} not found")
+
+    def _wal_write(self, dump: Dump) -> None:
+        # caller must hold self._lock
+
+        line = json.dumps(dump, ensure_ascii=True, separators=(',', ':'))
+
+        if self._wal is None:
+            self._wal = open(self._path_wal, 'a', encoding='utf-8')
+
+        self._wal.write(line + '\n')
+        self._wal.flush()
+        os.fsync(self._wal.fileno())
+
+    def _wal_commit(self) -> None:
+        # caller must hold self._lock
+
+        # write all rows to the temp file, and flush + sync it
+        with open(self._path_temp, 'w', encoding='utf-8') as file:
+            for dump in self._id.values():
+                file.write(json.dumps(dump, ensure_ascii=True, separators=(',', ':')) + '\n')
+            file.flush()
+            os.fsync(file.fileno())
+
+        # close the wal before swapping,
+        # nobody should be writing to it anyway 'cause of the lock
+        if self._wal is not None:
+            self._wal.close()
+            self._wal = None
+
+        # atomically swap the temp file over the data file
+        os.replace(self._path_temp, self._path_data)
+
+        # sync the directory so the rename itself is durable
+        # works on my machine!
+        try:
+            dir_fd = os.open(self._path_dir, os.O_RDONLY)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
+        except OSError:
+            pass
+
+        # the data file now contains everything, the wal is redundant
+        try:
+            os.remove(self._path_wal)
+        except FileNotFoundError:
+            pass
+
+    def _try_wal_commit(self, reason: str) -> None:
+        # the timeout avoids hanging forever if a thread died holding the lock
+        if not self._lock.acquire(timeout=5):
+            print(f"repo {self.name} failed to commit {reason}: could not acquire lock")
+            return
+        try:
+            # nothing to do if there is no wal, meaning no changes since the last commit
+            if self._wal is None and not os.path.exists(self._path_wal): return
+            self._wal_commit()
+        except Exception as e:
+            print(f"repo {self.name} failed to commit {reason}: {e}")
+        finally:
+            self._lock.release()
+
+    def _wal_commit_loop(self) -> None:
+        interval = self._wal_commit_interval
+        # wait returns true once the stop event is set, ending the loop
+        while not self._wal_commit_stop.wait(interval):
+            self._try_wal_commit("on timer")
+
+    def _shutdown(self) -> None:
+        # stop the timer to avoid racing with the loop
+        self._wal_commit_stop.set()
+        self._try_wal_commit("on exit")
 
     def _upsert(self, patch: Dump, /, can_create: bool, can_update: bool) -> T:
         for field in patch:
@@ -162,6 +326,8 @@ class Repo[T: BaseModel]:
                         index.remove(old_vkey, id)
                 index.put(new_vkey, id, new)
 
+            self._wal_write(new)
+
             return instance
 
     def _delete(self, id: Id) -> bool:
@@ -181,6 +347,8 @@ class Repo[T: BaseModel]:
             for field, index in self._indices.items():
                 vkey = freeze(dump[field])
                 index.remove(vkey, id)
+
+            self._wal_write({ 'id': str(id), '__deleted__': True })
 
             return True
 
@@ -334,6 +502,7 @@ class Post(BaseModel):
 users = Repo('users', User, indexed_fields=['name', 'age', 'follows'])
 posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'])
 
+"""
 # create myself:
 lua = users.create(name='luavixen', age=22)
 # note that the ID is generated automatically
@@ -381,3 +550,12 @@ for post in posts.select():
 print("unique post with tags 'launch' and 'website':")
 post = posts.unique(tags=['launch', 'website'])
 print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
+"""
+
+for user in users.select():
+    print(user)
+
+for post in posts.select():
+    print(post)
+
+posts.create(author_id=users.unique(name='luavixen').id, content='wawa', tags=['fox noises'])
