@@ -10,7 +10,7 @@ import atexit
 import threading
 from collections.abc import Hashable, Iterable
 from itertools import islice
-from typing import Any, Final, Literal, TextIO, overload
+from typing import Any, Final, Literal, overload
 
 from pydantic import BaseModel, TypeAdapter
 from ulid import ULID
