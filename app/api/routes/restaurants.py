@@ -1,10 +1,6 @@
-from json import load
 from fastapi import APIRouter
 from app.schemas.restaurant import Restaurant
-
-
-RESTAURANTS_FILEPATH = "data/restaurants.json"
-
+from app.repositories.restaurants import load_restaurants
 
 restaurant_router = APIRouter()
 
@@ -14,7 +10,4 @@ restaurant_router = APIRouter()
     response_model=list[Restaurant]
 )
 def get_restaurants() -> list[Restaurant]:
-    with open(RESTAURANTS_FILEPATH) as file:
-        data = load(file)
-
-    return [Restaurant(**restaurant) for restaurant in data]
+    return load_restaurants()
