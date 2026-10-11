@@ -37,7 +37,9 @@ cp example.env .env
 
 Note: eventually the application will provide ways to create data. For early
 stages of development, you may use the existing `test/data/` folder which should
-include enough example data to support basic usages
+include enough example data to support basic usages. To use this in a way that
+doesn't mess with the test suite, you should copy this directory to e.g.
+`data/` and set that as your `DATA_DIR` in the env file.
 
 ## How to start the application
 run: `python -m fastapi dev`
