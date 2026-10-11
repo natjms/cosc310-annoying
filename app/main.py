@@ -1,8 +1,12 @@
 from dotenv import load_dotenv
+import sys
 
 # reads configuration from .env file,
 # sets `os.environ` variables that can be used later
-load_dotenv()
+if sys.argv[0].find('fastapi/__main__.py') != -1:
+	# This will only run if the server has been invoked with python -m fastapi ...
+	# e.g. not when the app is imported in the test suite
+	load_dotenv()
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
