@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .health import health_router
-from .restaurants import restaurant_router
+from .restaurant import restaurant_router
 from .menu import menu_router
 
 api_router = APIRouter(prefix='/api')
