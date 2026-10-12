@@ -1,10 +1,11 @@
 from app.exceptions import MissingValueException
+from . import get_repo_data_path
 from app.schemas.menu import Menu
 from typing import TypeAlias
 import os
 import json
 
-DATA_BASE_PATH = os.path.join(os.environ['DATA_DIR'], 'menus.json')
+MENU_PATH = get_repo_data_path('menus', 'json')
 
 MenuCollection: TypeAlias = dict[str, dict[str, Menu]]
 
@@ -15,7 +16,7 @@ Returns:
 	MenuCollection
 """
 def _load_raw_menu_json() -> MenuCollection:
-	with open(DATA_BASE_PATH, 'r') as f:
+	with open(MENU_PATH, 'r') as f:
 		return json.load(f)
 
 """
