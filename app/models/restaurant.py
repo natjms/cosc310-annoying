@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class Restaurant(BaseModel):
-    id: str | None  # None is used for creating a new restaurant that is yet to be saved to the database.
+    id: str | None  # None is used for creating a new model that is yet to be saved to the database.
     owner_id: str
     name: str
     description: str
