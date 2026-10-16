@@ -14,7 +14,8 @@ def create_restaurant(restaurant: Restaurant) -> Restaurant:
     if restaurant.id:
         raise ValueError("A restaurant ID must be set automatically.")
 
-    with open(FILENAME) as file:
+    file_path = get_repository_data_file_path(FILENAME)
+    with open(file_path) as file:
         data_json = load(file)
 
     if data_json:
@@ -30,12 +31,10 @@ def create_restaurant(restaurant: Restaurant) -> Restaurant:
 
     data_json[restaurant_key] = restaurant_json
 
-    with open(FILENAME, "w") as file:
+    with open(file_path, "w") as file:
         dump(data_json, file, indent=JSON_INDENT)
 
     return read_restaurant(restaurant_key)
-
-
 
 
 def read_restaurant(id: str) -> Restaurant:
