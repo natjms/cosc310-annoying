@@ -1,21 +1,50 @@
-import json
+from json import load, dump
 
-from app.schemas.restaurant import Restaurant
+from app.repositories import get_repository_data_file_path
+from app.models.restaurant import Restaurant
 
-from . import get_repo_data_path
 
-RESTAURANTS_PATH = get_repo_data_path("restaurants")
+FILENAME = "restaurants.json"
 
-"""
-Loads the restaurants from the data file and validates them.
-Returns:
-    list[Restaurant]: The list of restaurants.
-"""
-def load_restaurants() -> list[Restaurant]:
-    with open(RESTAURANTS_PATH) as file:
-        restaurants_array = json.load(file)
 
-    if type(restaurants_array) != list:
-        raise ValueError("restaurants.json must contain a list")
+def create_restaurant(restaurant: Restaurant) -> Restaurant:
+    JSON_INDENT = 4
 
-    return [Restaurant.model_validate(restaurant) for restaurant in restaurants_array]
+
+    if restaurant.id:
+        raise ValueError("A restaurant ID must be set automatically.")
+
+    with open(FILENAME) as file:
+        data_json = load(file)
+
+    if data_json:
+        keys = data_json.keys()
+        largest_key = max(keys, key=int)
+        largest_key_int = int(largest_key)
+        restaurant_key_int = largest_key_int + 1
+        restaurant_key = str(restaurant_key_int)
+    else:
+        restaurant_key = "1"
+
+    restaurant_json = restaurant.model_dump_json()
+
+    data_json[restaurant_key] = restaurant_json
+
+    with open(FILENAME, "w") as file:
+        dump(data_json, file, indent=JSON_INDENT)
+
+    return read_restaurant(restaurant_key)
+
+
+
+
+def read_restaurant(id: str) -> Restaurant:
+    return
+
+
+def update_restaurant() -> Restaurant:
+    return
+
+
+def delete_restaurant() -> Restaurant:
+    return
