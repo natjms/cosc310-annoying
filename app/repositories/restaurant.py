@@ -1,26 +1,26 @@
 import json
 
-from . import get_repository_data_file_path
+from app.repositories import get_repository_data_file_path
+from app.schemas.restaurant import Restaurant
 
 
 FILENAME = "restaurants.json"
 
 
-def create_restaurant() -> None:
+def create_restaurant(restaurant: Restaurant) -> Restaurant:
+    if restaurant.id:
+        raise ValueError("A restaurant ID must be set automatically.")
+
+    
+
+
+def read_restaurant() -> Restaurant:
     return
 
 
-def read_restaurants() -> None:
+def update_restaurant() -> Restaurant:
     return
 
 
-def read_restaurant() -> None:
-    return
-
-
-def update_restaurant() -> None:
-    return
-
-
-def delete_restaurant() -> None:
+def delete_restaurant() -> Restaurant:
     return
