@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import sys
 
 # reads configuration from .env file,
 # sets `os.environ` variables that can be used later
