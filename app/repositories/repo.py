@@ -1,15 +1,15 @@
 """Thread-safe in-memory relational database abstraction with persistence to disk and write-ahead logging.
 
-TODO: write documentation for the whole module. just go look at `Repo` for now.
+TODO
 """
 
-from io import FileIO
-import json
 import os
 import atexit
 import threading
-from collections.abc import Hashable, Iterable
+from io import FileIO
+import json
 from itertools import islice
+from collections.abc import Hashable, Iterable
 from typing import Any, Final, Literal, overload
 
 from pydantic import BaseModel, TypeAdapter
@@ -607,7 +607,7 @@ class Repo[T: BaseModel]:
 
 
 
-
+"""
 
 class User(BaseModel):
     id: Id
@@ -671,3 +671,5 @@ for post in posts.select():
 print("unique post with tags 'launch' and 'website':")
 post = posts.unique(tags=['launch', 'website'])
 print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
+
+"""
