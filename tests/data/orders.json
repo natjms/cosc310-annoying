@@ -1,0 +1,26 @@
+{
+    "1": {
+        "orderer_id": "1",
+        "address": {
+            "addressee": "John Doe",
+            "address_line_one": "123 Playground Street",
+            "address_line_two": "Glendale",
+            "city": "Kelowna",
+            "region": "British Columbia",
+            "postcode": "ABC DEF",
+            "country": "Canada"
+        },
+        "placed_at": "2026-10-10T18:30:00Z",
+        "state": "delivered",
+        "items": {
+            "1": {
+                "restaurant_id": "1",
+                "menu_id": "1",
+                "menu_item_id": "1",
+                "name_snapshot": "Club Sandwich",
+                "price_snapshot": 18.0,
+                "quantity": 2
+            }
+        }
+    }
+}

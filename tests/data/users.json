@@ -1,0 +1,60 @@
+{
+    "1": {
+        "email": "customer@gmail.com",
+        "password_hash": "abc123",
+        "is_admin": false,
+        "is_active": true,
+        "addresses": {
+            "1": {
+                "addressee": "John Doe",
+                "line_one": "123 Playground Street",
+                "line_two": "Glendale",
+                "city": "Kelowna",
+                "region": "British Columbia",
+                "postcode": "ABC DEF",
+                "country": "Canada"
+            },
+            "2": {
+                "addressee": "John Doe",
+                "line_one": "21 Fleet Street",
+                "line_two": "Bishopgate",
+                "city": "London",
+                "region": "Greater London",
+                "postcode": "ABC DEF",
+                "country": "United Kingdom"
+            }
+        },
+        "cart": {
+            "1": {
+                "restaurant_id": "1",
+                "menu_id": "2",
+                "menu_item_id": "2",
+                "quantity": 2
+            }
+        }
+    },
+    "2": {
+        "email": "restaurater@gmail.com",
+        "password_hash": "abc123",
+        "is_admin": false,
+        "is_active": true,
+        "addresses": {},
+        "cart": {}
+    },
+    "3": {
+        "email": "deliverer@gmail.com",
+        "password_hash": "abc123",
+        "is_admin": false,
+        "is_active": true,
+        "addresses": {},
+        "cart": {}
+    },
+    "4": {
+        "email": "admin@gmail.com",
+        "password_hash": "abc123",
+        "is_admin": true,
+        "is_active": true,
+        "addresses": {},
+        "cart": {}
+    }
+}

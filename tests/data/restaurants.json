@@ -1,0 +1,85 @@
+{
+    "1": {
+        "owner_id": "2",
+        "name": "The Copper Spoon",
+        "description": "A cosy neighbourhood restaurant serving modern Canadian dishes with locally sourced ingredients.",
+        "address": {
+            "line_one": "21 Fleet Street",
+            "line_two": "Bishopgate",
+            "city": "London",
+            "region": "Greater London",
+            "postcode": "ABC DEF",
+            "country": "United Kingdom"
+        },
+        "phone_number": "250-555-0101",
+        "is_active": true,
+        "cuisine_ids": ["1"],
+        "menus": {
+            "1": {
+                "name": "Lunch",
+                "is_active": true,
+                "items": {
+                    "1": {
+                        "name": "Club Sandwich",
+                        "price": 18.0,
+                        "is_active": true
+                    },
+                    "2": {
+                        "name": "Soup of the Day",
+                        "price": 12.0,
+                        "is_active": false
+                    }
+                } 
+            },
+            "2": {
+                "name": "Dinner",
+                "is_active": true,
+                "items": {
+                    "1": {
+                        "name": "Hawaiian Pizza",
+                        "price": 28.0,
+                        "is_active": true
+                    },
+                    "2": {
+                        "name": "Burger and Fries",
+                        "price": 30.0,
+                        "is_active": true
+                    }
+                } 
+            }
+        }
+    },
+    "2": {
+        "owner_id": "2",
+        "name": "McDonald's",
+        "description": "A fast food chain with cheap menu items.",
+        "address": {
+            "line_one": "21 Fleet Street",
+            "line_two": "Bishopgate",
+            "city": "London",
+            "region": "Greater London",
+            "postcode": "ABC DEF",
+            "country": "United Kingdom"
+        },
+        "phone_number": "250-555-0102",
+        "cuisine_ids": ["2"],
+        "menus": {
+            "1": {
+                "name": "Main",
+                "iS_active": true,
+                "items": {
+                    "1": {
+                        "name": "Big Mac",
+                        "price": 12.0,
+                        "iS_active": true
+                    },
+                    "2": {
+                        "name": "Milkshake",
+                        "price": 8.0,
+                        "iS_active": true
+                    }
+                } 
+            }
+        }
+    }
+}
