@@ -1,5 +1,5 @@
 import app.repositories.restaurant as repo
-from app.schemas.restaurant import Restaurant
+from app.models.restaurant import Restaurant
 
 def get_all_restaurants() -> list[Restaurant]:
     return repo.load_restaurants()

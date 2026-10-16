@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.restaurant import Restaurant
+from app.models.restaurant import Restaurant
 from app.services.restaurant import get_all_restaurants, get_restaurant_by_id
 
 restaurant_router = APIRouter()
