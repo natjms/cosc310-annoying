@@ -419,7 +419,7 @@ class Repo[T: BaseModel]:
     def close(self) -> None:
         self._shutdown()
 
-    def __enter__(self) -> Repo[T]:
+    def __enter__(self) -> 'Repo[T]':
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:

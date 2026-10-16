@@ -1,8 +1,13 @@
-import app.repositories.restaurant as repo
-from app.schemas.restaurant import Restaurant
+from ulid import ULID
 
-def get_all_restaurants() -> list[Restaurant]:
-    return repo.load_restaurants()
+from app.models.restaurant import Restaurant
+from app.repositories.restaurant import restaurants
 
-def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
-    return repo.read_restaurant(restaurant_id)
+def list_all_restaurants() -> list[Restaurant]:
+    return restaurants.select()
+
+def find_restaurant_by_id(restaurant_id: ULID | str) -> Restaurant:
+    return restaurants.unique(id=restaurant_id)
+
+def create_restaurant(owner_id: ULID | str, name: str) -> Restaurant:
+    return restaurants.create(owner_id=owner_id, name=name)
