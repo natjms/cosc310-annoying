@@ -1,27 +1,32 @@
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.restaurant import Restaurant
-from app.services.restaurant import get_all_restaurants, get_restaurant_by_id
+from app.exceptions import MissingValueException
+from app.models import Restaurant
+from app.services import restaurant as service
 
-restaurant_router = APIRouter()
+
+NOT_FOUND_STATUS = 404
 
 
-@restaurant_router.get(
+router = APIRouter()
+
+
+@router.get(
     "/restaurants",
     summary="Get a list of all restaurants.",
     response_model=list[Restaurant],
 )
-def get_restaurants() -> list[Restaurant]:
-    return get_all_restaurants()
+def get_all_restaurants() -> list[Restaurant]:
+    return service.get_all_restaurants()
 
 
-@restaurant_router.get(
+@router.get(
     "/restaurants/{restaurant_id}",
     summary="Get a specific restaurant using its ID.",
     response_model=Restaurant,
 )
-def get_restaurant(restaurant_id: str) -> Restaurant:
+def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     try:
-        return get_restaurant_by_id(restaurant_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404)
+        return service.get_restaurant_by_id(restaurant_id)
+    except MissingValueException:
+        raise HTTPException(status_code=NOT_FOUND_STATUS)
