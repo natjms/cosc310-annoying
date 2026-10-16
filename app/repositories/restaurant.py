@@ -1,21 +1,26 @@
 import json
 
-from app.schemas.restaurant import Restaurant
+from . import get_repository_data_file_path
 
-from . import get_repo_data_path
 
-RESTAURANTS_PATH = get_repo_data_path("restaurants")
+FILENAME = "restaurants.json"
 
-"""
-Loads the restaurants from the data file and validates them.
-Returns:
-    list[Restaurant]: The list of restaurants.
-"""
-def load_restaurants() -> list[Restaurant]:
-    with open(RESTAURANTS_PATH) as file:
-        restaurants_array = json.load(file)
 
-    if type(restaurants_array) != list:
-        raise ValueError("restaurants.json must contain a list")
+def create_restaurant() -> None:
+    return
 
-    return [Restaurant.model_validate(restaurant) for restaurant in restaurants_array]
+
+def read_restaurants() -> None:
+    return
+
+
+def read_restaurant() -> None:
+    return
+
+
+def update_restaurant() -> None:
+    return
+
+
+def delete_restaurant() -> None:
+    return
