@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from app.repositories.repo import UniqueError
 from app.models.user import User
@@ -39,24 +40,31 @@ def get_restaurant_id_menu(restaurant_id: str) -> list[Menu]:
     except UniqueError:
         raise HTTPException(status_code=404)
 
+class RestaurantCreateRequest(BaseModel):
+    owner_id: str
+    name: str
+
 @restaurant_router.post(
     "/restaurant",
     summary="Creates a new restaurant",
 )
-def post_restaurant(owner_id: str, name: str) -> Restaurant:
+def post_restaurant(request: RestaurantCreateRequest) -> Restaurant:
     try:
-        owner = find_user_by_id(owner_id)
+        owner = find_user_by_id(request.owner_id)
     except UniqueError:
         raise HTTPException(status_code=400)
-    return create_restaurant(owner.id, name)
+    return create_restaurant(owner.id, request.name)
+
+class MenuCreateRequest(BaseModel):
+    name: str
 
 @restaurant_router.post(
     "/restaurant/{restaurant_id}/menu",
     summary="Creates a new menu for the given restaurant",
 )
-def post_restaurant_id_menu(restaurant_id: str, name: str) -> Menu:
+def post_restaurant_id_menu(restaurant_id: str, request: MenuCreateRequest) -> Menu:
     try:
         restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
-        return create_menu(restaurant.id, name)
+        return create_menu(restaurant.id, request.name)
     except UniqueError:
         raise HTTPException(status_code=404)
