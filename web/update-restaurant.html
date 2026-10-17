@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Create a new restaurant</title>
+	</head>
+	<body>
+		<h1> Create a new restaurant </h1>
+		<form id='form' action='#' method='PATCH'><br>
+			<input name='owner_id' placeholder='ID of owner account' required><br>
+			<input name='name' placeholder='Restaurant name' required><br>
+			<input name='address' placeholder='Address' required><br>
+			<input name='phone_number' placeholder='Phone number' required><br>
+
+			<textarea name='description' placeholder='Restaurant description...' required></textarea><br>
+
+			<input type='submit'>
+		</form>
+		<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const params = new URLSearchParams(window.location.search);
+	const form = document.getElementById('form');
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+
+		await fetch(`/api/restaurant/${params.get('id')}`, {
+			method: 'PATCH',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(Object.fromEntries(new FormData(form))),
+		});
+
+		alert('Restaurant updated');
+		window.location.replace(`/web/restaurant.html?id=${params.get('id')}`);
+	});
+});
+		</script>
+	</body>
+</html>

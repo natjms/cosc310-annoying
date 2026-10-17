@@ -41,6 +41,11 @@
 					<td id='td:cuisine_ids'></td>
 				</tr>
 			</table>
+
+			<p>
+				<a id='a:update_link' href='#'>Update restaurant details</a>
+			</p>
+
 			<h2> Menus </h2>
 			<ul id='ul:menus'></ul>
 		</div>
@@ -48,6 +53,7 @@
 
 function render_restaurant_details(restaurant) {
 	document.getElementById('h1:title').textContent = restaurant.name;
+	document.getElementById('a:update_link').setAttribute('href', `/web/update-restaurant.html?id=${restaurant.id}`);
 
 	for (let key in restaurant) {
 		let value = restaurant[key];
