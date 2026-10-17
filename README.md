@@ -1,4 +1,4 @@
-# Milestone0 Submission
+# Milestone 1 Submission
 ## Team Name
 Our team name is simply 'Annoying Team'.
 
@@ -42,7 +42,10 @@ doesn't mess with the test suite, you should copy this directory to e.g.
 `data/` and set that as your `DATA_DIR` in the env file.
 
 ## How to start the application
-run: `python -m fastapi dev`
+run: `python -m fastapi dev`  
+
+Visit http://localhost:8000/web/
+
 ## API endpoint paths
 /docs
 /api/restaurants
