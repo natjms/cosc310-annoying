@@ -16,9 +16,3 @@ installing new dependencies*
 2. Click this button
 3. ???
 4. Profit
-
-## Test evidence
-
-```
-# Paste the output of `python -m pytest` here...
-```
