@@ -19,7 +19,7 @@ restaurant_router = APIRouter()
 def get_restaurant() -> list[Restaurant]:
     return list_all_restaurants()
     
-@restaurant_router_get(
+@restaurant_router.get(
     "/restaurant/search",
     summary="Search restaurants by name",
     response_model=list[Restaurant],
@@ -44,7 +44,7 @@ class RestaurantUpdateRequest(BaseModel):
     phone_number: str | None = None
 
 @restaurant_router.put(
-    f"/restaurant/{restaurant_id}",
+    "/restaurant/{restaurant_id}",
     summary="Updates a restaurant",
     response_model=Restaurant,
 )
@@ -56,7 +56,6 @@ def put_restaurant(restaurant_id: str, request: RestaurantUpdateRequest)-> Resta
     except UniqueError:
         raise HTTPException(status_code=404,detail="Restaurant does not exist")
 
-    }
 @restaurant_router.get(
     "/restaurant/{restaurant_id}/menu",
     summary="Returns the menus for the given restaurant",
