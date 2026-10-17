@@ -40,36 +40,53 @@
 					<td>Cuisine IDs:</td>
 					<td id='td:cuisine_ids'></td>
 				</tr>
-				<tr>
-					<td>Menus:</td>
-					<td id='td:menus'></td>
-				</tr>
 			</table>
-
+			<h2> Menus </h2>
+			<ul id='ul:menus'></ul>
 		</div>
 		<script>
 
-document.addEventListener('DOMContentLoaded', () => {
+function render_restaurant_details(restaurant) {
+	document.getElementById('h1:title').textContent = restaurant.name;
+
+	for (let key in restaurant) {
+		let value = restaurant[key];
+		if (!(typeof value === 'string' || typeof value === 'number')) {
+			value = JSON.stringify(value);
+		}
+		document.getElementById(`td:${key}`)
+			.textContent = value;
+	}
+}
+
+function render_restaurant_menus(menus) {
+	for (menu of menus) {
+		let list_item = document.createElement('li');
+		let anchor = document.createElement('a');
+		anchor.textContent = menu.name;
+		anchor.setAttribute('href', `/web/menu.html?id=${menu.id}`);
+		list_item.appendChild(anchor);
+
+		document.getElementById('ul:menus').appendChild(list_item);
+	}
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
 	let ul_restaurants = document.getElementById('ul:restaurants');
 	const params = new URLSearchParams(window.location.search);
 
-	fetch(`/api/restaurants/${params.get('id')}`)
+	await fetch(`/api/restaurant/${params.get('id')}`)
 		.then(body => body.json())
-		.then(restaurant => {
-			for (let key in restaurant) {
-				let value = restaurant[key];
-				if (!(typeof value === 'string' || typeof value === 'number')) {
-					value = JSON.stringify(value);
-				}
-				document.getElementById(`td:${key}`)
-					.textContent = value;
-			}
+		.then(restaurant => render_restaurant_details(restaurant));
 
-			document.getElementById('p:loading')
-				.setAttribute('hidden', 'hidden');
-			document.getElementById('div:restaurant-details')
-				.removeAttribute('hidden');
-		});
+	await fetch(`/api/restaurant/${params.get('id')}/menus`)
+		.then(body => body.json())
+		.then(menus => render_restaurant_menus(menus));
+
+	document.getElementById('p:loading')
+		.setAttribute('hidden', 'hidden');
+	document.getElementById('div:restaurant-details')
+		.removeAttribute('hidden');
 });
 
 		</script>
