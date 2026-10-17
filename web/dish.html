@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Dish</title>
+	</head>
+	<body>
+		<p id='p:loading'>Loading...</p>
+		<div id='div:dish' hidden>
+			<h1 id='h1:title'></h1>
+			<table>
+				<tr>
+					<td>Dish ID:</td>
+					<td id='td:id'></td>
+				</tr>
+				<tr>
+					<td>Name:</td>
+					<td id='td:name'></td>
+				</tr>
+				<tr>
+					<td>Price:</td>
+					<td id='td:price'></td>
+				</tr>
+				<tr>
+					<td>Is active:</td>
+					<td id='td:is_active'></td>
+				</tr>
+			</table>
+		</div>
+		<script>
+
+function render_dish(dish) {
+	document.getElementById('h1:title').textContent = dish.name;
+
+	for (let key in dish) {
+		let value = dish[key];
+		if (!(typeof value === 'string' || typeof value === 'number')) {
+			value = JSON.stringify(value);
+		}
+		document.getElementById(`td:${key}`)
+			.textContent = value;
+	}
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+	const params = new URLSearchParams(window.location.search);
+
+	await fetch(`/api/dish/${params.get('id')}`)
+		.then(body => body.json())
+		.then(dish => render_dish(dish));
+
+	document.getElementById('p:loading')
+		.setAttribute('hidden', 'hidden');
+	document.getElementById('div:dish')
+		.removeAttribute('hidden');
+});
+
+		</script>
+	</body>
+</html>
