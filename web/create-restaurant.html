@@ -5,7 +5,7 @@
 	</head>
 	<body>
 		<h1> Create a new restaurant </h1>
-		<form action='/api/restaurant/create' method='POST' required><br>
+		<form id='form' action='/api/restaurant/create' method='#'><br>
 			<input name='owner_id' placeholder='ID of owner account' required><br>
 			<input name='name' placeholder='Restaurant name' required><br>
 			<input name='address' placeholder='Address' required><br>
@@ -15,5 +15,23 @@
 
 			<input type='submit'>
 		</form>
+
+		<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const form = document.getElementById('form');
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+
+		await fetch(`/api/restaurant/create`, {
+			method: 'PUT',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(Object.fromEntries(new FormData(form))),
+		});
+
+		alert('New restaurant created');
+		window.location.replace('/web/');
+	});
+});
+		</script>
 	</body>
 </html>
