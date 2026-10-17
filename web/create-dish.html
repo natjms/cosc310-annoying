@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Add a dish to the menu</title>
+	</head>
+	<body>
+		<h1> Add a dish to the menu </h1>
+		<form id='form' action='#'><br>
+			<input name='name' placeholder='Dish name' required><br>
+			<input name='price' placeholder='Price' type='number' required><br>
+			<input type='submit'>
+		</form>
+		<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const params = new URLSearchParams(window.location.search);
+	const form = document.getElementById('form');
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+
+		let body = Object.fromEntries(new FormData(form));
+		body['menu_id'] = params.get('id');
+
+		await fetch(`/api/dish/create`, {
+			method: 'PUT',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(body),
+		});
+
+		alert('Dish created');
+		window.location.replace(`/web/restaurant.html?id=${params.get('id')}`);
+	});
+});
+		</script>
+	</body>
+</html>

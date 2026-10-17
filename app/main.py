@@ -6,6 +6,7 @@ import sys
 load_dotenv()
 
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -20,6 +21,7 @@ class ErrorResponse(BaseModel):
 
 app = FastAPI()
 
+app.mount('/web', StaticFiles(directory='web/', html=True), name='web')
 app.include_router(api_router)
 
 @app.exception_handler(MissingValueException)

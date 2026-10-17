@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Menu</title>
+	</head>
+	<body>
+		<h1 id='h1:title'>Menu</h1>
+		<ul id='ul:menu'>
+			<li>Nothing to show</li>
+		</ul>
+
+		<p>
+			<a href='#' id='a:new_dish'>Add a new dish</a>
+		</p>
+		<script>
+
+function render_menu(menu_items) {
+	let menu = document.getElementById('ul:menu');
+	menu.textContent = '';
+
+	for (item of menu_items) {
+		let list_item = document.createElement('li');
+		let anchor = document.createElement('a');
+		anchor.textContent = item.name;
+		anchor.setAttribute('href', `/web/dish.html?id=${item.id}`);
+		list_item.appendChild(anchor);
+		menu.append(list_item);
+	}
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+	let ul_restaurants = document.getElementById('ul:restaurants');
+	const params = new URLSearchParams(window.location.search);
+
+	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?menu_id=${params.get('id')}`);
+
+	fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('id')}/items`)
+		.then(body => body.json())
+		.then(menu_items => render_menu(menu_items));
+});
+
+		</script>
+	</body>
+</html>

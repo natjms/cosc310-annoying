@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Home</title>
+	</head>
+	<body>
+		<h1> Annoying Food Delivery </h1>
+		<ul>
+			<li><a href='/web/restaurants.html'>Show all restaurants</a></li>
+			<li><a href='/web/create-restaurant.html'>Create a new restaurant</a></li>
+		</ul>
+		<p>
+			User ID: <span id='user-id'>&nbsp;</span>
+		</p>
+
+		<script>
+document.addEventListener('DOMContentLoaded', () => {
+	fetch('/api/user', {method: 'POST'})
+		.then(body => body.json())
+		.then(({id}) => {
+			console.log('hi');
+			document.getElementById('user-id').textContent = id;
+		});
+});
+		</script>
+	</body>
+</html>

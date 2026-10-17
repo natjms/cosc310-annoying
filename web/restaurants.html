@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Restaurants</title>
+	</head>
+	<body>
+		<h1> All restaurants </h1>
+		<form action='?'>
+			<input name='query' type='text' placeholder='Search for restaurants...'>
+			<input type='submit'>
+		</form>
+		<ul id='ul:restaurants'>
+			<li>Loading...</li>
+		</ul>
+
+		<script>
+
+function restaurant_list_item(name, id) {
+	let list_item = document.createElement('li');
+	let anchor = document.createElement('a');
+	anchor.textContent = name;
+	anchor.setAttribute('href', `/web/restaurant.html?id=${id}`);
+	list_item.appendChild(anchor);
+	return list_item;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+	const params = new URLSearchParams(window.location.search);
+	let ul_restaurants = document.getElementById('ul:restaurants');
+
+	let api_endpoint;
+
+	if (!params.get('query')) {
+		api_endpoint = '/api/restaurant';
+	} else {
+		api_endpoint = `/api/restaurants/?query=${params.get('query')}`;
+	}
+
+	fetch(api_endpoint)
+		.then(body => body.json())
+		.then(restaurants => {
+			ul_restaurants.textContent = '';
+			for (const restaurant of restaurants) {
+				ul_restaurants.appendChild(
+					restaurant_list_item(restaurant.name, restaurant.id)
+				);
+			}
+		});
+});
+
+		</script>
+	</body>
+</html>
