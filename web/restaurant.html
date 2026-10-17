@@ -70,11 +70,12 @@ function render_restaurant_details(restaurant) {
 }
 
 function render_restaurant_menus(menus) {
+	const params = new URLSearchParams(window.location.search);
 	for (menu of menus) {
 		let list_item = document.createElement('li');
 		let anchor = document.createElement('a');
 		anchor.textContent = menu.name;
-		anchor.setAttribute('href', `/web/menu.html?id=${menu.id}`);
+		anchor.setAttribute('href', `/web/menu.html?id=${menu.id}&restaurant_id=${params.get('id')}`);
 		list_item.appendChild(anchor);
 
 		document.getElementById('ul:menus').appendChild(list_item);
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 		.then(body => body.json())
 		.then(restaurant => render_restaurant_details(restaurant));
 
-	await fetch(`/api/restaurant/${params.get('id')}/menus`)
+	await fetch(`/api/restaurant/${params.get('id')}/menu`)
 		.then(body => body.json())
 		.then(menus => render_restaurant_menus(menus));
 

@@ -6,7 +6,7 @@
 	<body>
 		<h1 id='h1:title'>Menu</h1>
 		<ul id='ul:menu'>
-			<li>Loading...</li>
+			<li>Nothing to show</li>
 		</ul>
 
 		<p>
@@ -32,17 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 	let ul_restaurants = document.getElementById('ul:restaurants');
 	const params = new URLSearchParams(window.location.search);
 
-	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?id=${params.get('id')}`);
+	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?menu_id=${params.get('id')}`);
 
-	fetch(`/api/menu/${params.get('id')}/`)
-		.then(body => body.json())
-		.then(menu => {
-			console.log(menu);
-			document.getElementById('h1:title').textContent = `Menu - ${menu.name}`;
-		});
-
-
-	fetch(`/api/menu/${params.get('id')}/items`)
+	fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('id')}/items`)
 		.then(body => body.json())
 		.then(menu_items => render_menu(menu_items));
 });

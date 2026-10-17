@@ -8,10 +8,6 @@
 		<form id='form' action='#' method='PATCH'><br>
 			<input name='owner_id' placeholder='ID of owner account' required><br>
 			<input name='name' placeholder='Restaurant name' required><br>
-			<input name='address' placeholder='Address' required><br>
-			<input name='phone_number' placeholder='Phone number' required><br>
-
-			<textarea name='description' placeholder='Restaurant description...' required></textarea><br>
 
 			<input type='submit'>
 		</form>
@@ -23,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 
 		await fetch(`/api/restaurant/${params.get('id')}`, {
-			method: 'PATCH',
+			method: 'PUT',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify(Object.fromEntries(new FormData(form))),
 		});

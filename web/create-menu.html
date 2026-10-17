@@ -17,10 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 
 		let body = Object.fromEntries(new FormData(form));
-		body['restaurant_id'] = params.get('id');
 
-		await fetch(`/api/menu/create`, {
-			method: 'PUT',
+		await fetch(`/api/restaurant/${params.get('id')}/menu`, {
+			method: 'POST',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify(body),
 		});
