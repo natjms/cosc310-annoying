@@ -8,6 +8,10 @@
 		<ul id='ul:menu'>
 			<li>Loading...</li>
 		</ul>
+
+		<p>
+			<a href='#' id='a:new_dish'>Add a new dish</a>
+		</p>
 		<script>
 
 function render_menu(menu_items) {
@@ -27,6 +31,8 @@ function render_menu(menu_items) {
 document.addEventListener('DOMContentLoaded', async () => {
 	let ul_restaurants = document.getElementById('ul:restaurants');
 	const params = new URLSearchParams(window.location.search);
+
+	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?id=${params.get('id')}`);
 
 	await fetch(`/api/menu/${params.get('id')}`)
 		.then(body => body.json())
