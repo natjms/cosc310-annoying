@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Create a new restaurant</title>
+	</head>
+	<body>
+		<h1> Create a new restaurant </h1>
+		<form action='/api/restaurant/create' method='POST' required><br>
+			<input name='owner_id' placeholder='ID of owner account' required><br>
+			<input name='name' placeholder='Restaurant name' required><br>
+			<input name='address' placeholder='Address' required><br>
+			<input name='phone_number' placeholder='Phone number' required><br>
+
+			<textarea name='description' placeholder='Restaurant description...' required></textarea><br>
+
+			<input type='submit'>
+		</form>
+	</body>
+</html>
