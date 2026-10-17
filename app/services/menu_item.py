@@ -8,7 +8,7 @@ def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
         menu = menus.unique(id=menu_id, restaurant_id=restaurant_id)
     except Exception:
         raise MissingValueException(f"Menu {menu_id} not found for restaurant {restaurant_id}")
-return [MenuItem(**item_data) for item_data in menu.items.values()] # returns the dict type menu.items properly
+        return [MenuItem(**item_data) for item_data in menu.items.values()] # returns the dict type menu.items properly
 
 def get_menu_item_by_id(
     restaurant_id: str,
