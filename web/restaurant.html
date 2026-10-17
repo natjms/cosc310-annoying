@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Restaurant</title>
+	</head>
+	<body>
+		<p id='p:loading'>Loading...</p>
+		<div id='div:restaurant-details' hidden>
+			<h1 id='h1:title'></h1>
+			<table>
+				<tr>
+					<td>Restaurant ID:</td>
+					<td id='td:id'></td>
+				</tr>
+				<tr>
+					<td>Owner ID:</td>
+					<td id='td:owner_id'></td>
+				</tr>
+				<tr>
+					<td>Name:</td>
+					<td id='td:name'></td>
+				</tr>
+				<tr>
+					<td>Description:</td>
+					<td id='td:description'></td>
+				</tr>
+				<tr>
+					<td>Address:</td>
+					<td id='td:address'></td>
+				</tr>
+				<tr>
+					<td>Phone number:</td>
+					<td id='td:phone_number'></td>
+				</tr>
+				<tr>
+					<td>Is active:</td>
+					<td id='td:is_active'></td>
+				</tr>
+				<tr>
+					<td>Cuisine IDs:</td>
+					<td id='td:cuisine_ids'></td>
+				</tr>
+				<tr>
+					<td>Menus:</td>
+					<td id='td:menus'></td>
+				</tr>
+			</table>
+
+		</div>
+		<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+	let ul_restaurants = document.getElementById('ul:restaurants');
+	const params = new URLSearchParams(window.location.search);
+
+	fetch(`/api/restaurants/${params.get('id')}`)
+		.then(body => body.json())
+		.then(restaurant => {
+			for (let key in restaurant) {
+				let value = restaurant[key];
+				if (!(typeof value === 'string' || typeof value === 'number')) {
+					value = JSON.stringify(value);
+				}
+				document.getElementById(`td:${key}`)
+					.textContent = value;
+			}
+
+			document.getElementById('p:loading')
+				.setAttribute('hidden', 'hidden');
+			document.getElementById('div:restaurant-details')
+				.removeAttribute('hidden');
+		});
+});
+
+		</script>
+	</body>
+</html>
