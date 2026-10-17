@@ -48,12 +48,16 @@
 
 			<h2> Menus </h2>
 			<ul id='ul:menus'></ul>
+			<p>
+				<a id='a:menu_create_link' href='#'>Add a menu</a>
+			</p>
 		</div>
 		<script>
 
 function render_restaurant_details(restaurant) {
 	document.getElementById('h1:title').textContent = restaurant.name;
 	document.getElementById('a:update_link').setAttribute('href', `/web/update-restaurant.html?id=${restaurant.id}`);
+	document.getElementById('a:menu_create_link').setAttribute('href', `/web/create-menu.html?id=${restaurant.id}`);
 
 	for (let key in restaurant) {
 		let value = restaurant[key];
