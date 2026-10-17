@@ -1,8 +1,10 @@
 from pydantic import BaseModel
+from ulid import ULID
 
 
 class Menu(BaseModel):
-    id: str | None  # None is used for creating a new model that is yet to be saved to the database.
+    id: ULID
+    restaurant_id: ULID | None
     name: str
-    is_active: bool
-    items: dict
+    is_active: bool = True
+    items: dict = {}

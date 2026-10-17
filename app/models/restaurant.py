@@ -1,13 +1,20 @@
 from pydantic import BaseModel
+from ulid import ULID
 
+class Address(BaseModel):
+    name: str = ""
+    street: str = ""
+    unit: str = ""
+    city: str = ""
+    province: str = ""
+    zip_code: str = ""
 
 class Restaurant(BaseModel):
-    id: str | None  # None is used for creating a new model that is yet to be saved to the database.
-    owner_id: str
+    id: ULID
+    owner_id: ULID
     name: str
-    description: str
-    address: dict
-    phone_number: str
-    is_active: bool
-    cuisine_ids: set[int]
-    menus: dict
+    description: str = ""
+    address: Address = Address()
+    phone_number: str = ""
+    is_active: bool = True
+    cuisine_ids: set[ULID] = set()
