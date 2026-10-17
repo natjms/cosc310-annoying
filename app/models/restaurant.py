@@ -10,7 +10,7 @@ class Address(BaseModel):
     zip_code: str = ""
 
 class Restaurant(BaseModel):
-    id: ULID | None = None
+    id: ULID
     owner_id: ULID
     name: str
     description: str = ""
