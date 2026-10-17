@@ -4,7 +4,7 @@
 		<title>Annoying Food Delivery - Menu</title>
 	</head>
 	<body>
-		<h1>Menu</h1>
+		<h1 id='h1:title'>Menu</h1>
 		<ul id='ul:menu'>
 			<li>Loading...</li>
 		</ul>
@@ -21,7 +21,7 @@ function render_menu(menu_items) {
 	for (item of menu_items) {
 		let list_item = document.createElement('li');
 		let anchor = document.createElement('a');
-		anchor.textContent = item;
+		anchor.textContent = item.name;
 		anchor.setAttribute('href', `/web/dish.html?id=${item.id}`);
 		list_item.appendChild(anchor);
 		menu.append(list_item);
@@ -34,7 +34,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?id=${params.get('id')}`);
 
-	await fetch(`/api/menu/${params.get('id')}`)
+	fetch(`/api/menu/${params.get('id')}/`)
+		.then(body => body.json())
+		.then(menu => {
+			console.log(menu);
+			document.getElementById('h1:title').textContent = `Menu - ${menu.name}`;
+		});
+
+
+	fetch(`/api/menu/${params.get('id')}/items`)
 		.then(body => body.json())
 		.then(menu_items => render_menu(menu_items));
 });

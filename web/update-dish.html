@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<title>Annoying Food Delivery - Update a restaurant</title>
+	</head>
+	<body>
+		<h1> Update a dish </h1>
+		<form id='form' action='#'><br>
+			<input name='name' placeholder='Dish name' required><br>
+			<input name='price' placeholder='Price' type='number' required><br>
+			<input type='submit'>
+		</form>
+		<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const params = new URLSearchParams(window.location.search);
+	const form = document.getElementById('form');
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+
+		let body = Object.fromEntries(new FormData(form));
+		body['dish_id'] = params.get('id');
+
+		await fetch(`/api/dish/${params.get('id')}`, {
+			method: 'PATCH',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(body),
+		});
+
+		alert('Dish updated');
+		window.location.replace(`/web/restaurants.html`);
+	});
+});
+		</script>
+	</body>
+</html>

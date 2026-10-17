@@ -25,6 +25,9 @@
 					<td id='td:is_active'></td>
 				</tr>
 			</table>
+			<p>
+				<a id='a:update_dish' href='#'>Update dish</a>
+			</p>
 		</div>
 		<script>
 
@@ -43,6 +46,7 @@ function render_dish(dish) {
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const params = new URLSearchParams(window.location.search);
+	document.getElementById('a:update_dish').setAttribute('href', `/web/update-dish.html?id=${params.get('id')}`);
 
 	await fetch(`/api/dish/${params.get('id')}`)
 		.then(body => body.json())
