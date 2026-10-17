@@ -58,12 +58,51 @@ Assuming '/' is the project root diretory: `/data/`
 run: `python -m pytest` from the project root
 
 ## Brief repository structure
-We decided to not deviate much from the example root structure:
+We decided to not deviate much from the example root structure. I have attached a top level overview from the project root below:
 
+```bash
+root/app <- contains the backend (api, repositories, schemas/models, services) 
+root/tests <- houses the tests along with their data
+root/scrum <- has team agreement, scrum and other project planning related data
 ```
-root/app <- contains the code (api, repositories, schemas, services)
-root/app/api <- has the api routes 
-root/data <- .json data
-root/tests <- houses the tests
-root/scrum <- has team agreement
+
+I have also attached the output of the `ls -R` command on Linux which is similar to the `tree` command on Windows, and recursively lists the directories descending from the current directory below:
+
+```bash
+. (aka Project Root)
+app/  example.env  README.md  requirements.txt  scrum/  tests/
+
+./app:
+api/  exceptions.py  __init__.py  main.py  models/  repositories/  services/
+
+./app/api:
+__init__.py  routes/
+
+./app/api/routes:
+health.py  __init__.py  menu.py  restaurant.py
+
+./app/models:
+__init__.py  menu.py  restaurant.py
+
+./app/repositories:
+__init__.py  restaurant.py
+
+./app/services:
+__init__.py  restaurant.py
+
+./scrum:
+design.md  media/  team-agreement.md
+
+./scrum/media:
+entity-relationship-diagram.png  menu-data-flow-diagram.png  order-data-flow-diagram.png  restaurant-data-flow-diagram.png
+
+./tests:
+data/  repositories/
+
+./tests/data:
+cuisines.json  deliveries.json  orders.json  restaurants.json  users.json
+
+./tests/repositories:
+test_get_repository_data_file_path.py
+
 ```

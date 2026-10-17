@@ -10,14 +10,11 @@ class Address(BaseModel):
     zip_code: str = ""
 
 class Restaurant(BaseModel):
-    id: ULID
+    id: ULID | None = None
     owner_id: ULID
-    cuisine_ids: set[ULID] = set()
-
     name: str
     description: str = ""
-
     address: Address = Address()
     phone_number: str = ""
-
     is_active: bool = True
+    cuisine_ids: set[ULID] = set()

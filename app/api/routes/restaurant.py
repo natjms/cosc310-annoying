@@ -9,7 +9,6 @@ from app.services.restaurant import list_all_restaurants, find_restaurant_by_id,
 from app.models.menu import Menu
 from app.services.menu import list_restaurant_menus, create_menu
 
-restaurant_router = APIRouter()
 
 @restaurant_router.get(
     "/restaurant",
