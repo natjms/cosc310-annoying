@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
 
 from app.exceptions import MissingValueException
 from app.models import MenuItem
@@ -32,7 +34,6 @@ def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
     except MissingValueException:
         raise HTTPException(status_code=NOT_FOUND_STATUS)
 
-
 @menu_item_router.get(
     "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
     summary="Get a menu item by restaurant ID, menu ID and menu item ID.",
@@ -56,6 +57,30 @@ def get_menu_item_by_id(
     """
     try:
         return service.get_menu_item_by_id(
+            restaurant_id,
+            menu_id,
+            menu_item_id,
+        )
+    except MissingValueException:
+        raise HTTPException(status_code=NOT_FOUND_STATUS)
+
+class MenuItemUpdateRequest(BaseModel):
+	name: str | None
+	price: float | None
+
+@menu_item_router.patch(
+    "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
+    summary="Get a menu item by restaurant ID, menu ID and menu item ID.",
+    response_model=MenuItem,
+)
+def patch_menu_item_by_id(
+    restaurant_id: str,
+    menu_id: str,
+    menu_item_id: str,
+	request: MenuItemUpdateRequest
+) -> MenuItem:
+    try:
+        return service.update_menu_item_by_id(
             restaurant_id,
             menu_id,
             menu_item_id,
