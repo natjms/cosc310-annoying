@@ -18,14 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		let body = Object.fromEntries(new FormData(form));
 
-		await fetch(`/api/restaurant/${params.get('id')}/menu`, {
+		await fetch(`/api/restaurant/${params.get('restaurant_id')}/menu`, {
 			method: 'POST',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify(body),
 		});
 
 		alert('Menu created');
-		window.location.replace(`/web/restaurant.html?id=${params.get('id')}`);
+		window.location.replace(`/web/restaurant.html?restaurant_id=${params.get('restaurant_id')}`);
 	});
 });
 		</script>

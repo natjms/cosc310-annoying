@@ -19,7 +19,7 @@ function restaurant_list_item(name, id) {
 	let list_item = document.createElement('li');
 	let anchor = document.createElement('a');
 	anchor.textContent = name;
-	anchor.setAttribute('href', `/web/restaurant.html?id=${id}`);
+	anchor.setAttribute('href', `/web/restaurant.html?restaurant_id=${id}`);
 	list_item.appendChild(anchor);
 	return list_item;
 }
