@@ -24,7 +24,7 @@ def get_restaurant() -> list[Restaurant]:
         A list of all restaurants.
     """
     return list_all_restaurants()
-    
+
 @restaurant_router.get(
     "/restaurant/search",
     summary="Search restaurants by name",
@@ -63,7 +63,7 @@ def get_restaurant_id(restaurant_id: str) -> Restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
 class RestaurantUpdateRequest(BaseModel):
-    name: str | None = None 
+    name: str | None = None
     description: str | None = None
     phone_number: str | None = None
 
@@ -74,11 +74,10 @@ class RestaurantUpdateRequest(BaseModel):
 )
 
 def put_restaurant(restaurant_id: str, request: RestaurantUpdateRequest)-> Restaurant:
-    update_data = {k: v for k, v in request.model_dump().items() if v is not None}
     try:
-        return update_restaurant(restaurant_id,update_data)
+        return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
-        raise HTTPException(status_code=404,detail="Restaurant does not exist")
+        raise HTTPException(status_code=404, detail="Restaurant does not exist")
 
 @restaurant_router.get(
     "/restaurant/{restaurant_id}/menu",
