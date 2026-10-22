@@ -80,6 +80,21 @@ def patch_menu_item_by_id(
     menu_item_id: str,
 	request: MenuItemUpdateRequest
 ) -> MenuItem:
+    """
+    Update an existing menu ID
+
+    Path arguments:
+        restaurant_id: The ID of the restaurant.
+        menu_id: The ID of the menu.
+        menu_item_id: The ID of the menu item.
+
+    Body arguments:
+        name: New name for the menu item. Optional
+        price: New cost of the menu item. Optional
+
+    Returns:
+        A single menu item.
+    """
     try:
         return service.update_menu_item_by_id(
             restaurant_id,
@@ -104,6 +119,20 @@ def post_menu_item(
     menu_item_id: str,
 	request: MenuItemCreateRequest
 ) -> MenuItem:
+    """
+    Create a new menu item
+
+    Path arguments:
+        restaurant_id: The ID of the restaurant.
+        menu_id: The ID of the menu.
+
+    Body arguments:
+        name: New name for the menu item. Optional
+        price: New cost of the menu item. Optional
+
+    Returns:
+        A single menu item.
+    """
     try:
         return service.create_menu_item(
             restaurant_id,
