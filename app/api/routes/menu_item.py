@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-
+from pydantic import BaseModel, AfterValidator
+from typing import Annotated
 
 from app.exceptions import MissingValueException
 from app.models import MenuItem
 from app.services import menu_item as service
+import app.validators as v
 
 
 NOT_FOUND_STATUS = 404
@@ -65,12 +66,12 @@ def get_menu_item_by_id(
         raise HTTPException(status_code=NOT_FOUND_STATUS)
 
 class MenuItemUpdateRequest(BaseModel):
-	name: str | None
-	price: float | None
+	name: Annotated[str | None, AfterValidator(v.coerce_empty_string_to_none)]
+	price: Annotated[float | None, AfterValidator(v.positive_float)]
 
 @menu_item_router.patch(
     "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
-    summary="Get a menu item by restaurant ID, menu ID and menu item ID.",
+    summary="Update a menu item by restaurant ID, menu ID and menu item ID.",
     response_model=MenuItem,
 )
 def patch_menu_item_by_id(
@@ -84,6 +85,31 @@ def patch_menu_item_by_id(
             restaurant_id,
             menu_id,
             menu_item_id,
+        )
+    except MissingValueException:
+        raise HTTPException(status_code=NOT_FOUND_STATUS)
+
+class MenuItemCreateRequest(BaseModel):
+	name: Annotated[str | None, AfterValidator(v.nonempty_string)]
+	price: Annotated[float | None, AfterValidator(v.positive_float)]
+
+@menu_item_router.post(
+    "/restaurants/{restaurant_id}/menus/{menu_id}/items/",
+	summary="Create a new menu item given the restaurant and menu ID",
+    response_model=MenuItem,
+)
+def post_menu_item(
+    restaurant_id: str,
+    menu_id: str,
+    menu_item_id: str,
+	request: MenuItemCreateRequest
+) -> MenuItem:
+    try:
+        return service.create_menu_item(
+            restaurant_id,
+            menu_id,
+			request['name'],
+			request['price']
         )
     except MissingValueException:
         raise HTTPException(status_code=NOT_FOUND_STATUS)
