@@ -19,3 +19,6 @@ def search_restaurants(query: str) -> list[Restaurant]:
 
 def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
     return restaurants.update(id=restaurant_id, **data)
+
+def delete_restaurant(restaurant_id: str) -> None:
+	restaurants.delete(restaurant_id)
