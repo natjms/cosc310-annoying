@@ -66,8 +66,8 @@ def get_menu_item_by_id(
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
 class MenuItemUpdateRequest(BaseModel):
-	name: Annotated[str | None, AfterValidator(v.coerce_empty_string_to_none)] = None
-	price: Annotated[float | None, AfterValidator(v.positive_float)] = None
+    name: Annotated[str | None, AfterValidator(v.coerce_empty_string_to_none)] = None
+    price: Annotated[float | None, AfterValidator(v.positive_float)] = None
 
 @menu_item_router.patch(
     "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
@@ -78,7 +78,7 @@ def patch_menu_item_by_id(
     restaurant_id: str,
     menu_id: str,
     menu_item_id: str,
-	request: MenuItemUpdateRequest
+    request: MenuItemUpdateRequest
 ) -> MenuItem:
     """
     Update an existing menu ID
@@ -106,18 +106,18 @@ def patch_menu_item_by_id(
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
 class MenuItemCreateRequest(BaseModel):
-	name: Annotated[str | None, AfterValidator(v.nonempty_string)]
-	price: Annotated[float | None, AfterValidator(v.positive_float)]
+    name: Annotated[str | None, AfterValidator(v.nonempty_string)]
+    price: Annotated[float | None, AfterValidator(v.positive_float)]
 
 @menu_item_router.post(
     "/restaurants/{restaurant_id}/menus/{menu_id}/items/",
-	summary="Create a new menu item given the restaurant and menu ID",
+    summary="Create a new menu item given the restaurant and menu ID",
     response_model=MenuItem,
 )
 def post_menu_item(
     restaurant_id: str,
     menu_id: str,
-	request: MenuItemCreateRequest,
+    request: MenuItemCreateRequest,
     response: Response
 ) -> MenuItem:
     """
@@ -138,8 +138,8 @@ def post_menu_item(
         new_menu_item = service.create_menu_item(
             restaurant_id,
             menu_id,
-			request.name,
-			request.price
+            request.name,
+            request.price
         )
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
