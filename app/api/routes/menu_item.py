@@ -17,6 +17,16 @@ menu_item_router = APIRouter()
     response_model=list[MenuItem],
 )
 def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
+    """
+    Retrieve all menu items from a given restaurant menu.
+
+    Args:
+        restaurant_id: The ID of the restaurant.
+        menu_id: The ID of the menu.
+
+    Returns:
+        A list of menu items.
+    """
     try:
         return service.get_all_menu_items(restaurant_id, menu_id)
     except MissingValueException:
@@ -33,6 +43,17 @@ def get_menu_item_by_id(
     menu_id: str,
     menu_item_id: str,
 ) -> MenuItem:
+    """
+    Retrieve a specific menu item by ID.
+
+    Args:
+        restaurant_id: The ID of the restaurant.
+        menu_id: The ID of the menu.
+        menu_item_id: The ID of the menu item.
+
+    Returns:
+        A single menu item.
+    """
     try:
         return service.get_menu_item_by_id(
             restaurant_id,

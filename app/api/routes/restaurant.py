@@ -17,6 +17,12 @@ restaurant_router = APIRouter()
     response_model=list[Restaurant],
 )
 def get_restaurant() -> list[Restaurant]:
+    """
+    Retrieve all restaurants.
+
+    Returns:
+        A list of all restaurants.
+    """
     return list_all_restaurants()
     
 @restaurant_router.get(
@@ -25,6 +31,15 @@ def get_restaurant() -> list[Restaurant]:
     response_model=list[Restaurant],
 )
 def search_restaurant_endpoint(query: str) -> list[Restaurant]:
+    """
+    Filter for restaurants by name.
+
+    Args:
+        query: The name of the restaurant you are looking for.
+
+    Returns:
+        A list of matching restaurants.
+    """
     return search_restaurants(query)
 
 @restaurant_router.get(
@@ -33,6 +48,15 @@ def search_restaurant_endpoint(query: str) -> list[Restaurant]:
     response_model=Restaurant,
 )
 def get_restaurant_id(restaurant_id: str) -> Restaurant:
+    """
+    Retrieve a restaurant by ID.
+
+    Args:
+        restaurant_id: The ID of the restaurant.
+
+    Returns:
+        A single restaurant.
+    """
     try:
         return find_restaurant_by_id(restaurant_id)
     except UniqueError:
@@ -62,6 +86,15 @@ def put_restaurant(restaurant_id: str, request: RestaurantUpdateRequest)-> Resta
     response_model=list[Menu],
 )
 def get_restaurant_id_menu(restaurant_id: str) -> list[Menu]:
+    """
+    Retrieve all menus from a given restaurant.
+
+    Args:
+        restaurant_id: The ID of the restaurant.
+
+    Returns:
+        A list of restaurant menus.
+    """
     try:
         restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
         return list_restaurant_menus(restaurant.id) # then return the menus
@@ -79,6 +112,15 @@ class RestaurantCreateRequest(BaseModel):
     response_model=Restaurant,
 )
 def post_restaurant(request: RestaurantCreateRequest) -> Restaurant:
+    """
+    Post a restaurant.
+
+    Args:
+        request: The restaurant data needed for the post request.
+
+    Returns:
+        The created restaurant.
+    """
     try:
         owner = find_user_by_id(request.owner_id)
     except UniqueError:
@@ -94,6 +136,17 @@ class MenuCreateRequest(BaseModel):
     response_model=Menu,
 )
 def post_restaurant_id_menu(restaurant_id: str, request: MenuCreateRequest) -> Menu:
+    """
+    Post a menu given.
+
+    Args:
+        restaurant_id: The restaurant ID that the menu is being posted to.
+        request: The menu data needed for the post request.
+
+    Returns:
+        The created menu.
+    """
+    
     try:
         restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
         return create_menu(restaurant.id, request.name)

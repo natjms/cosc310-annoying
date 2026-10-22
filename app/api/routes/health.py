@@ -8,4 +8,9 @@ class HealthResponse(BaseModel):
 
 @health_router.get('/health', summary='Checks if the API is online and responding')
 def get_health() -> HealthResponse:
+    """Get the current API health.
+
+    Returns:
+        An empty json object.
+    """
     return HealthResponse()

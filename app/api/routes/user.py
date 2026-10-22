@@ -11,6 +11,15 @@ user_router = APIRouter()
     summary="Returns a user by ID",
 )
 def get_user(user_id: str) -> User:
+    """
+    Retrieve a specific user by ID.
+
+    Args:
+        user_id: The ID of the user.
+
+    Returns:
+        A single user.
+    """
     try:
         return find_user_by_id(user_id)
     except UniqueError:
@@ -21,4 +30,10 @@ def get_user(user_id: str) -> User:
     summary="Creates a new user",
 )
 def post_user() -> User:
+    """
+    Create a user.
+
+    Returns:
+        A single user.
+    """
     return create_user()
