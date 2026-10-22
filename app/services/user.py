@@ -10,4 +10,4 @@ def create_user() -> User:
     return users.create()
 
 def delete_user(user_id: ULID | str) -> None:
-	users.delete(user_id)
+	users.delete(id=user_id)
