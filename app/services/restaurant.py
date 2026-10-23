@@ -27,14 +27,14 @@ def create_restaurant(owner_id: ULID | str, name: str) -> Restaurant:
 
 def search_restaurants(query: str) -> list[Restaurant]:
     return restaurants.select(name=query)
-  
+
 def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
-   if 'owner_id' in data:
+    if 'owner_id' in data:
         try:
             user = users.unique(id=data['owner_id'])
         except UniqueError:
             raise MissingValueException('No user with the given ID exists')
-            
+
     data = {k: v for k, v in data.items() if v is not None}
     return restaurants.update(id=restaurant_id, **data)
 
