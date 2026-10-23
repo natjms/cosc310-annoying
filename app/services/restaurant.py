@@ -38,5 +38,5 @@ def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
     data = {k: v for k, v in data.items() if v is not None}
     return restaurants.update(id=restaurant_id, **data)
 
-def delete_restaurant(restaurant_id: str) -> None:
+def delete_restaurant(restaurant_id: ULID) -> None:
     restaurants.delete(id=restaurant_id)
