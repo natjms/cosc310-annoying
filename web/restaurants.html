@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	if (!params.get('query')) {
 		api_endpoint = '/api/restaurant';
 	} else {
-		api_endpoint = `/api/restaurants/?query=${params.get('query')}`;
+		api_endpoint = `/api/restaurant/search?query=${params.get('query')}`;
 	}
 
 	fetch(api_endpoint)
