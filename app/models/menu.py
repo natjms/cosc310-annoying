@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from ulid import ULID
 
-from app.models import MenuItem
+from . import MenuItem
 
 
 class Menu(BaseModel):
@@ -10,3 +10,7 @@ class Menu(BaseModel):
     name: str
     is_active: bool = True
     items: dict[ULID, MenuItem] = {}
+
+
+class PostMenuRequest(BaseModel):
+    name: str

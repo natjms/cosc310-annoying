@@ -5,9 +5,9 @@ from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
 from app.models.user import User
 from app.services.user import find_user_by_id
-from app.models.restaurant import Restaurant
+from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
 from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
-from app.models.menu import Menu
+from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
 
 restaurant_router = APIRouter()
@@ -63,10 +63,6 @@ def get_restaurant_id(restaurant_id: str) -> Restaurant:
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
 
-class RestaurantUpdateRequest(BaseModel):
-    name: str | None = None
-    description: str | None = None
-    phone_number: str | None = None
 
 @restaurant_router.put(
     "/restaurant/{restaurant_id}",
@@ -74,7 +70,7 @@ class RestaurantUpdateRequest(BaseModel):
     response_model=Restaurant,
 )
 
-def put_restaurant(restaurant_id: str, request: RestaurantUpdateRequest)-> Restaurant:
+def put_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
     try:
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
@@ -104,16 +100,13 @@ def get_restaurant_id_menu(restaurant_id: str) -> list[Menu]:
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant is nonexistent")
 
-class RestaurantCreateRequest(BaseModel):
-    owner_id: str
-    name: str
 
 @restaurant_router.post(
     "/restaurant",
     summary="Creates a new restaurant",
     response_model=Restaurant,
 )
-def post_restaurant(request: RestaurantCreateRequest, response: Response) -> Restaurant:
+def post_restaurant(request: PostRestaurantRequest, response: Response) -> Restaurant:
     """
     Post a restaurant.
 
@@ -130,15 +123,13 @@ def post_restaurant(request: RestaurantCreateRequest, response: Response) -> Res
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
 
-class MenuCreateRequest(BaseModel):
-    name: str
 
 @restaurant_router.post(
     "/restaurant/{restaurant_id}/menu",
     summary="Creates a new menu for the given restaurant",
     response_model=Menu,
 )
-def post_restaurant_id_menu(restaurant_id: str, request: MenuCreateRequest) -> Menu:
+def post_restaurant_id_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
     """
     Post a menu given.
 
