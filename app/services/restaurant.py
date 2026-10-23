@@ -27,7 +27,7 @@ def create_restaurant(owner_id: ULID | str, name: str) -> Restaurant:
 
 def search_restaurants(query: str) -> list[Restaurant]:
     return restaurants.select(name=query)
-
+  
 def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
     if 'owner_id' in data:
         try:
@@ -36,3 +36,6 @@ def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
             raise MissingValueException('No user with the given ID exists')
 
     return restaurants.update(id=restaurant_id, **data)
+
+def delete_restaurant(restaurant_id: str) -> None:
+    restaurants.delete(id=restaurant_id)

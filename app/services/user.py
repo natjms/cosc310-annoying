@@ -8,3 +8,6 @@ def find_user_by_id(user_id: ULID | str) -> User:
 
 def create_user() -> User:
     return users.create()
+
+def delete_user(user_id: ULID | str) -> None:
+	users.delete(id=user_id)

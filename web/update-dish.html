@@ -18,16 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 
 		let body = Object.fromEntries(new FormData(form));
-		body['dish_id'] = params.get('id');
 
-		await fetch(`/api/dish/${params.get('id')}`, {
+		await fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('menu_id')}/items/${params.get('dish_id')}`, {
 			method: 'PATCH',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify(body),
 		});
 
 		alert('Dish updated');
-		window.location.replace(`/web/restaurants.html`);
+		window.location.replace(`/web/menu.html?menu_id=${params.get('menu_id')}&restaurant_id=${params.get('restaurant_id')}`);
 	});
 });
 		</script>

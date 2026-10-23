@@ -46,9 +46,9 @@ function render_dish(dish) {
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const params = new URLSearchParams(window.location.search);
-	document.getElementById('a:update_dish').setAttribute('href', `/web/update-dish.html?id=${params.get('id')}`);
+	document.getElementById('a:update_dish').setAttribute('href', `/web/update-dish.html?menu_id=${params.get('menu_id')}&restaurant_id=${params.get('restaurant_id')}&dish_id=${params.get('dish_id')}`);
 
-	await fetch(`/api/dish/${params.get('id')}`)
+	await fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('menu_id')}/items/${params.get('dish_id')}`)
 		.then(body => body.json())
 		.then(dish => render_dish(dish));
 

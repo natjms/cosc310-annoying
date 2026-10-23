@@ -17,12 +17,13 @@
 function render_menu(menu_items) {
 	let menu = document.getElementById('ul:menu');
 	menu.textContent = '';
+	const params = new URLSearchParams(window.location.search);
 
 	for (item of menu_items) {
 		let list_item = document.createElement('li');
 		let anchor = document.createElement('a');
 		anchor.textContent = item.name;
-		anchor.setAttribute('href', `/web/dish.html?id=${item.id}`);
+		anchor.setAttribute('href', `/web/dish.html?menu_id=${params.get('menu_id')}&restaurant_id=${params.get('restaurant_id')}&dish_id=${item.id}`);
 		list_item.appendChild(anchor);
 		menu.append(list_item);
 	}
@@ -32,9 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 	let ul_restaurants = document.getElementById('ul:restaurants');
 	const params = new URLSearchParams(window.location.search);
 
-	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?menu_id=${params.get('id')}`);
+	document.getElementById('a:new_dish').setAttribute('href', `/web/create-dish.html?menu_id=${params.get('menu_id')}&restaurant_id=${params.get('restaurant_id')}&dish_id=${params.get('dish_id')}`);
 
-	fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('id')}/items`)
+	fetch(`/api/restaurants/${params.get('restaurant_id')}/menus/${params.get('menu_id')}/items`)
 		.then(body => body.json())
 		.then(menu_items => render_menu(menu_items));
 });
