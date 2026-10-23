@@ -56,8 +56,8 @@
 
 function render_restaurant_details(restaurant) {
 	document.getElementById('h1:title').textContent = restaurant.name;
-	document.getElementById('a:update_link').setAttribute('href', `/web/update-restaurant.html?id=${restaurant.id}`);
-	document.getElementById('a:menu_create_link').setAttribute('href', `/web/create-menu.html?id=${restaurant.id}`);
+	document.getElementById('a:update_link').setAttribute('href', `/web/update-restaurant.html?restaurant_id=${restaurant.id}`);
+	document.getElementById('a:menu_create_link').setAttribute('href', `/web/create-menu.html?restaurant_id=${restaurant.id}`);
 
 	for (let key in restaurant) {
 		let value = restaurant[key];
@@ -75,7 +75,7 @@ function render_restaurant_menus(menus) {
 		let list_item = document.createElement('li');
 		let anchor = document.createElement('a');
 		anchor.textContent = menu.name;
-		anchor.setAttribute('href', `/web/menu.html?id=${menu.id}&restaurant_id=${params.get('id')}`);
+		anchor.setAttribute('href', `/web/menu.html?menu_id=${menu.id}&restaurant_id=${params.get('restaurant_id')}`);
 		list_item.appendChild(anchor);
 
 		document.getElementById('ul:menus').appendChild(list_item);
@@ -86,11 +86,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 	let ul_restaurants = document.getElementById('ul:restaurants');
 	const params = new URLSearchParams(window.location.search);
 
-	await fetch(`/api/restaurant/${params.get('id')}`)
+	await fetch(`/api/restaurant/${params.get('restaurant_id')}`)
 		.then(body => body.json())
 		.then(restaurant => render_restaurant_details(restaurant));
 
-	await fetch(`/api/restaurant/${params.get('id')}/menu`)
+	await fetch(`/api/restaurant/${params.get('restaurant_id')}/menu`)
 		.then(body => body.json())
 		.then(menus => render_restaurant_menus(menus));
 

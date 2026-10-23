@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
 
 from app.repositories.repo import UniqueError
+from app.exceptions import MissingValueException
 from app.models.user import User
 from app.services.user import find_user_by_id
 from app.models.restaurant import Restaurant
@@ -59,8 +60,8 @@ def get_restaurant_id(restaurant_id: str) -> Restaurant:
     """
     try:
         return find_restaurant_by_id(restaurant_id)
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
+    except MissingValueException as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
 class RestaurantUpdateRequest(BaseModel):
     name: str | None = None
@@ -78,6 +79,8 @@ def put_restaurant(restaurant_id: str, request: RestaurantUpdateRequest)-> Resta
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant does not exist")
+    except MissingValueException as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
 @restaurant_router.get(
     "/restaurant/{restaurant_id}/menu",
@@ -110,7 +113,7 @@ class RestaurantCreateRequest(BaseModel):
     summary="Creates a new restaurant",
     response_model=Restaurant,
 )
-def post_restaurant(request: RestaurantCreateRequest) -> Restaurant:
+def post_restaurant(request: RestaurantCreateRequest, response: Response) -> Restaurant:
     """
     Post a restaurant.
 
@@ -121,10 +124,11 @@ def post_restaurant(request: RestaurantCreateRequest) -> Restaurant:
         The created restaurant.
     """
     try:
-        owner = find_user_by_id(request.owner_id)
-    except UniqueError:
-        raise HTTPException(status_code=400, detail="Owner is nonexistent")
-    return create_restaurant(owner.id, request.name)
+        new_restaurant = create_restaurant(request.owner_id, request.name)
+        response.status_code = status.HTTP_201_CREATED
+        return new_restaurant
+    except MissingValueException as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
 class MenuCreateRequest(BaseModel):
     name: str
@@ -139,7 +143,7 @@ def post_restaurant_id_menu(restaurant_id: str, request: MenuCreateRequest) -> M
     Post a menu given.
 
     Args:
-        restaurant_id: The restaurant ID that the menu is being posted to.
+        restaurant_id: The restaurant ID that the menu is being posted t/o.
         request: The menu data needed for the post request.
 
     Returns:
