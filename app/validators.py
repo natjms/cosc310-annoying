@@ -1,6 +1,5 @@
 def coerce_empty_string_to_none(value: str) -> str:
-	"""
-	This validator is used to sanitize HTML forms which will include inputs
+	"""This validator is used to sanitize HTML forms which will include inputs
 	without a value as an empty string; a techncially valid value for many
 	models may be invalid in business logic
 	"""

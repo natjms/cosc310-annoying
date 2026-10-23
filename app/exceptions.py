@@ -1,5 +1,4 @@
-"""
-A generic exception to be raised by when the user expected something but
+"""A generic exception to be raised by when the user expected something but
 nothing was found. For example, if the user requested a restaurant by ID and
 the ID is valid, but no such restaurant exists.
 """

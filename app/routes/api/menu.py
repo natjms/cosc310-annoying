@@ -20,14 +20,14 @@ router = APIRouter()
     response_model=list[Menu],
 )
 def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
-    """
-    Retrieve all menus from a given restaurant.
+    """Retrieve all menus from a given restaurant.
 
     Args:
         restaurant_id: The ID of the restaurant.
 
     Returns:
         A list of restaurant menus.
+
     """
     try:
         restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
@@ -43,8 +43,7 @@ def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
     response_model=Menu,
 )
 def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
-    """
-    Post a menu given.
+    """Post a menu given.
 
     Args:
         restaurant_id: The restaurant ID that the menu is being posted t/o.
@@ -52,8 +51,8 @@ def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
 
     Returns:
         The created menu.
+
     """
-    
     try:
         restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
         return create_menu(restaurant.id, request.name)
