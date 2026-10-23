@@ -236,6 +236,8 @@ class Repo[T: BaseModel]:
         self._in_memory = in_memory
 
         data_dir = os.getenv('DATA_DIR', os.getcwd())
+        if data_dir == ':memory:':
+            self._in_memory = True
 
         self._path_dir = data_dir
         self._path_data = os.path.join(data_dir, f"{name}.json")
