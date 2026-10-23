@@ -10,17 +10,18 @@ from .routes import router
 """
 A basic Pydantic model corresponding to an error response with a message
 """
+
+
 class ErrorResponse(BaseModel):
-	message: str
+    message: str
+
 
 app = FastAPI()
 
-app.mount('/web', StaticFiles(directory='web/', html=True), name='web')
+app.mount("/web", StaticFiles(directory="web/", html=True), name="web")
 app.include_router(router)
+
 
 @app.exception_handler(MissingValueException)
 def missing_value_handler(_request: Request, e: MissingValueException) -> ErrorResponse:
-	return JSONResponse(
-		status_code=404,
-		content={ 'message': e.message }
-	)
+    return JSONResponse(status_code=404, content={"message": e.message})

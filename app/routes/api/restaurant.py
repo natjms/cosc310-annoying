@@ -6,7 +6,13 @@ from app.exceptions import MissingValueException
 from app.models.user import User
 from app.services.user import find_user_by_id
 from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
-from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
+from app.services.restaurant import (
+    list_all_restaurants,
+    find_restaurant_by_id,
+    create_restaurant,
+    search_restaurants,
+    update_restaurant,
+)
 from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
 
@@ -73,7 +79,7 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     summary="Updates a restaurant",
     response_model=Restaurant,
 )
-def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
+def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest) -> Restaurant:
     try:
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
