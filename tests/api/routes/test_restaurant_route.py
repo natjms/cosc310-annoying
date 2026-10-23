@@ -57,7 +57,7 @@ def test_attempt_to_create_restaurant_with_fake_user(test_data):
 
 def test_update_restaurant(test_data):
     (_, restaurant) = test_data
-    update_response = client.put(f'/api/restaurant/{restaurant.id}',
+    update_response = client.patch(f'/api/restaurant/{restaurant.id}',
         headers={'Content-Type': 'application/json'},
         json={ 'name': 'Updated Restaurant' }
     )

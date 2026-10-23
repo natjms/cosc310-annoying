@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from .exceptions import MissingValueException
 from .api.routes import api_router
-from .api.routes.health import health_router
+from .api.routes.health import router as health_router
 
 
 """
