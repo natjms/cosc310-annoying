@@ -1,9 +1,8 @@
 from fastapi import APIRouter
 
-from .health import health_router
-from .user import user_router
-from .restaurant import restaurant_router
-from .menu_item import menu_item_router
+from .user import router as user_router
+from .restaurant import router as restaurant_router
+from .menu_item import router as menu_item_router
 
 
 PREFIX = "/api"

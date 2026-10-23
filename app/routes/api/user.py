@@ -4,13 +4,15 @@ from app.repositories.repo import UniqueError
 from app.models.user import User
 from app.services.user import find_user_by_id, create_user
 
-user_router = APIRouter()
 
-@user_router.get(
+router = APIRouter()
+
+
+@router.get(
     "/user/{user_id}",
     summary="Returns a user by ID",
 )
-def get_user(user_id: str) -> User:
+def get_user_by_id(user_id: str) -> User:
     """
     Retrieve a specific user by ID.
 
@@ -25,7 +27,8 @@ def get_user(user_id: str) -> User:
     except UniqueError:
         raise HTTPException(status_code=400)
 
-@user_router.post(
+
+@router.post(
     "/user",
     summary="Creates a new user",
 )

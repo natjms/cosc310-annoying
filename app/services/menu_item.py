@@ -4,7 +4,7 @@ from app.models.menu_item import MenuItem
 from app.models.menu import Menu
 from app.repositories.menu import menus
 from app.repositories.repo import UniqueError
-from app.services import maybe_ulid
+from .utils import maybe_ulid
 from app.exceptions import MissingValueException
 
 def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:

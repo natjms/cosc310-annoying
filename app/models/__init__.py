@@ -1,3 +1,4 @@
-from app.models.menu_item import MenuItem
-from app.models.menu import Menu
-from app.models.restaurant import Restaurant
+from .menu_item import MenuItem
+from .menu import Menu, PostMenuRequest
+from .restaurant import Restaurant, PostRestaurantRequest, PatchRestaurantRequest
+from .user import User
