@@ -6,6 +6,7 @@ __pycache__/
 
 # Local configuration
 .env
+.env.test
 
 # Editor directories and files
 .vscode/*
