@@ -17,4 +17,4 @@ def test_menu_item_type_coercion():
 
 def test_menu_item_missing_required_fields():
     with pytest.raises(ValidationError):
-        MenuItem=(id=ULID())
+        MenuItem(id=ULID())

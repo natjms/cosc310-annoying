@@ -22,7 +22,7 @@ def test_menu_valid_with_items():
     assert menu.items[item_id].name == "Burger"
 
 def test_menu_defaults():
-    menu = Menu(id=ULID(),name="empty menu")
+    menu = Menu(id=ULID(),name="empty menu",restaurant_id=None)
     assert menu.restaurant_id is None
     assert menu.items == {}
     assert menu.is_active is True

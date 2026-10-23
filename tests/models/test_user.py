@@ -9,5 +9,5 @@ def test_user_valid():
     assert user.id == user_id
 
 def test_user_missing_id():
- with pytest.raises(ValidationError):
-     User()
+    with pytest.raises(ValidationError):
+        User()
