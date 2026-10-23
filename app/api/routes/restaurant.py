@@ -10,14 +10,16 @@ from app.services.restaurant import list_all_restaurants, find_restaurant_by_id,
 from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
 
+
 restaurant_router = APIRouter()
+
 
 @restaurant_router.get(
     "/restaurant",
     summary="Returns a list of all restaurants",
     response_model=list[Restaurant],
 )
-def get_restaurant() -> list[Restaurant]:
+def get_all_restaurants() -> list[Restaurant]:
     """
     Retrieve all restaurants.
 
@@ -26,12 +28,13 @@ def get_restaurant() -> list[Restaurant]:
     """
     return list_all_restaurants()
 
+
 @restaurant_router.get(
     "/restaurant/search",
     summary="Search restaurants by name",
     response_model=list[Restaurant],
 )
-def search_restaurant_endpoint(query: str) -> list[Restaurant]:
+def search_restaurants(query: str) -> list[Restaurant]:
     """
     Filter for restaurants by name.
 
@@ -43,12 +46,13 @@ def search_restaurant_endpoint(query: str) -> list[Restaurant]:
     """
     return search_restaurants(query)
 
+
 @restaurant_router.get(
     "/restaurant/{restaurant_id}",
     summary="Returns the restaurant with the given ID",
     response_model=Restaurant,
 )
-def get_restaurant_id(restaurant_id: str) -> Restaurant:
+def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     """
     Retrieve a restaurant by ID.
 
@@ -64,13 +68,12 @@ def get_restaurant_id(restaurant_id: str) -> Restaurant:
         raise HTTPException(status_code=404, detail=e.message)
 
 
-@restaurant_router.put(
+@restaurant_router.patch(
     "/restaurant/{restaurant_id}",
     summary="Updates a restaurant",
     response_model=Restaurant,
 )
-
-def put_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
+def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
     try:
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
@@ -78,12 +81,13 @@ def put_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restau
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
 
+
 @restaurant_router.get(
     "/restaurant/{restaurant_id}/menu",
     summary="Returns the menus for the given restaurant",
     response_model=list[Menu],
 )
-def get_restaurant_id_menu(restaurant_id: str) -> list[Menu]:
+def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
     """
     Retrieve all menus from a given restaurant.
 
@@ -129,7 +133,7 @@ def post_restaurant(request: PostRestaurantRequest, response: Response) -> Resta
     summary="Creates a new menu for the given restaurant",
     response_model=Menu,
 )
-def post_restaurant_id_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
+def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
     """
     Post a menu given.
 
