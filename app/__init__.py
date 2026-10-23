@@ -4,8 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from .exceptions import MissingValueException
-from .api.routes import api_router
-from .api.routes.health import router as health_router
+from .routes import router
 
 
 """
@@ -15,10 +14,9 @@ class ErrorResponse(BaseModel):
 	message: str
 
 app = FastAPI()
-app.include_router(health_router)
 
 app.mount('/web', StaticFiles(directory='web/', html=True), name='web')
-app.include_router(api_router)
+app.include_router(router)
 
 @app.exception_handler(MissingValueException)
 def missing_value_handler(_request: Request, e: MissingValueException) -> ErrorResponse:
