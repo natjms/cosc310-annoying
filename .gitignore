@@ -5,8 +5,7 @@ __pycache__/
 .pytest_cache/
 
 # Local configuration
-.env
-.env.test
+.env*
 
 # Editor directories and files
 .vscode/*
