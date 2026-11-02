@@ -1,6 +1,6 @@
 from ulid import ULID
 
-from app.models.user import User
+from app.schemas.user import User
 from app.repositories.user import users
 
 def find_user_by_id(user_id: ULID | str) -> User:

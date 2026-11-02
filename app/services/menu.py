@@ -1,6 +1,6 @@
 from ulid import ULID
 
-from app.models.menu import Menu
+from app.schemas.menu import Menu
 from app.repositories.menu import menus
 
 def list_restaurant_menus(restaurant_id: ULID | str) -> list[Menu]:

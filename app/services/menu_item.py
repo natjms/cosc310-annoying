@@ -1,7 +1,7 @@
 from ulid import ULID
 
-from app.models.menu_item import MenuItem
-from app.models.menu import Menu
+from app.schemas.menu_item import MenuItem
+from app.schemas.menu import Menu
 from app.repositories.menu import menus
 from app.repositories.repo import UniqueError
 from .utils import maybe_ulid
