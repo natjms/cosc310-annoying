@@ -1,6 +1,163 @@
 """Thread-safe in-memory relational database abstraction with persistence to disk and write-ahead logging.
 
-TODO
+Here's a comprehensive set of doctests that show how to use `Repo`,
+including all the CRUD operations and foreign key usage:
+
+>>> class User(BaseModel):
+...     id: Id
+...     name: str
+...     age: int
+...     tags: list[str] = []
+
+>>> class Post(BaseModel):
+...     id: Id
+...     author_id: Id  # foreign key User.id
+...     content: str
+
+Create/load repositories by calling the constructor with the name & model class:
+
+>>> users = Repo('users', User, indexed_fields=['name', 'age', 'tags'], in_memory=True)
+>>> posts = Repo('posts', Post, indexed_fields=['author_id'], in_memory=True)
+
+Create some users:
+
+>>> a = users.create(name='ada', age=30, tags=['admin', 'dev'])        # id is generated if omitted
+>>> b = users.create(User(id=Id(), name='bob', age=25, tags=['dev']))  # can pass a model instance
+>>> c = users.create(name='cy', age=30)                                # defaults used for missing fields
+
+Update a user's age, partial patch, by `id`:
+
+>>> new_b = users.update(id=b.id, age=26)
+>>> (new_b.name, new_b.age)
+('bob', 26)
+>>> new_b is b
+False
+
+Note that `new_b` is a copy, not the same instance as `b`.
+The repository always copies model instances, storing them as decomposed `Dump`s.
+This means that mutations to the original or returned instances do not affect the stored data.
+
+Find a single unique user by `id` or other indexed field:
+
+>>> ada = users.unique(name='ada')
+>>> ada == a    and ada is not a
+True
+
+>>> foo = users.unique(age=30)
+Traceback (most recent call last):
+app.repositories.repo.UniqueError: multiple rows found in users for query: {'age': 30}
+
+>>> bar = users.unique(id=Id())
+Traceback (most recent call last):
+app.repositories.repo.UniqueError: no row found in users for query: {'id': ...}
+
+Upsert full instances, creating or replacing as needed:
+
+>>> new_c = users.upsert(c.model_copy(update={'tags': ['ops']}))
+>>> new_c.tags
+['ops']
+
+>>> j = users.upsert(User(id=Id(), name='john', age=32))
+>>> j == users.unique(id=j.id)
+True
+
+Delete a user by `id`:
+
+>>> was_deleted = users.delete(id=j.id)
+>>> was_deleted
+True
+>>> users.delete(id=j.id)  # already deleted
+False
+
+This is just a utility function for the upcoming select examples:
+
+>>> def names(users: list[User]) -> list[str]:
+...     return [u.name for u in users]
+
+Select, equality on indexed fields, multiple fields are ANDed:
+
+>>> rows = users.select(age=30)
+>>> names(rows)
+['ada', 'cy']
+
+>>> rows = users.select(age=30, tags=['dev'])
+>>> names(rows)
+['ada']
+
+List fields match by their elements, multiple values are ANDed:
+
+>>> names( users.select(tags=['dev']) )
+['ada', 'bob']
+
+>>> names( users.select(tags=['dev', 'admin']) )
+['ada']
+
+Query values are coerced to the field's type automagically!
+E.g. `str -> int` or `str -> ULID`:
+
+>>> names( users.select(age='26', id=str(b.id)) )
+['bob']
+
+Ordering and pagination is supported via `_order_by`, `_order_desc`, `_skip`, `_limit`.
+Default order is by `id`, which contains creation time.
+
+Here's a complex query, get the oldest two users, skipping the oldest, ordered by age:
+
+>>> rows = users.select(_order_by='age', _order_desc=True, _skip=1, _limit=2)
+>>> names(rows)
+['cy', 'bob']
+
+Hrm. Let's add back John, and also give Ada a birthday, and try again:
+
+>>> _ = users.create(j)
+>>> _ = users.update(id=a.id, age=a.age + 1)
+
+>>> rows = users.select(_order_by='age', _order_desc=True, _skip=1, _limit=2)
+>>> names(rows)
+['ada', 'cy']
+
+And now, without the limit or the skip:
+
+>>> rows = users.select(_order_by='age', _order_desc=True)
+>>> names(rows)
+['john', 'ada', 'cy', 'bob']
+
+Without any query, select returns all rows, ordered by `id` (creation time):
+
+>>> names( users.select() )
+['ada', 'bob', 'cy', 'john']
+
+Unlike `unique`, `select` returns all matching rows, not just the first one. It can also return nothing!
+
+>>> users.select(tags=['manager'])
+[]
+
+Now, let's create some posts, with foreign keys linking them to their authors:
+
+>>> def create_post(author: User, content: str) -> Post:
+...     return posts.create(author_id=author.id, content=content)
+
+>>> def contents(posts: list[Post]) -> list[str]:
+...     return [post.content for post in posts]
+
+>>> _ = create_post(a, 'hello world')
+>>> _ = create_post(a, 'second post')
+>>> _ = create_post(c, 'hi from cy')
+
+One-to-many query, a user's posts:
+
+>>> rows = posts.select(author_id=a.id, _limit=10, _order_desc=True)
+>>> contents(rows)
+['second post', 'hello world']
+
+Many-to-one query, a post's author:
+
+>>> for post in posts.select():
+...     author = users.unique(id=post.author_id)
+...     print(f'{author.name}: {post.content}')
+ada: hello world
+ada: second post
+cy: hi from cy
 """
 
 import os
@@ -564,7 +721,7 @@ class Repo[T: BaseModel]:
                 return (v is None, v)
             rows.sort(key=key, reverse=order_desc) # type: ignore
         else:
-            rows.sort(key=lambda row: row['id']) # type: ignore
+            rows.sort(key=lambda row: row['id'], reverse=order_desc) # type: ignore
 
         stop = None if limit is None else skip + limit
 
