@@ -58,7 +58,7 @@ It is exposed by default. The path is `127.0.0.1:8000/docs`
 Assuming '/' is the project root diretory: `/data/`
 
 ## How to run tests
-run: `python -m pytest` from the project root
+run: `python -m pytest --doctest-modules` from the project root
 
 ## Brief repository structure
 We decided to not deviate much from the example root structure. I have attached a top level overview from the project root below:
