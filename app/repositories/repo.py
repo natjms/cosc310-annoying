@@ -17,7 +17,7 @@ including all the CRUD operations and foreign key usage:
 Create/load repositories by calling the constructor with the name & model class:
 
 >>> users = Repo('users', User, indexed_fields=['name', 'age', 'tags'], in_memory=True)
->>> posts = Repo('posts', Post, indexed_fields=['author_id'], in_memory=True)
+>>> posts = Repo('posts', Post, indexed_fields=['author_id'], fulltext_fields=['content'], in_memory=True)
 
 Create some users:
 
@@ -142,7 +142,7 @@ Now, let's create some posts, with foreign keys linking them to their authors:
 
 >>> _ = create_post(a, 'hello world')
 >>> _ = create_post(a, 'second post')
->>> _ = create_post(c, 'hi from cy')
+>>> _ = create_post(c, 'hello from cy')
 
 One-to-many query, a user's posts:
 
@@ -157,7 +157,40 @@ Many-to-one query, a post's author:
 ...     print(f'{author.name}: {post.content}')
 ada: hello world
 ada: second post
-cy: hi from cy
+cy: hello from cy
+
+Let's use fulltext search to find posts by content:
+
+>>> rows = posts.select(content='hello')
+>>> contents(rows)
+['hello world', 'hello from cy']
+
+Oh! Cy wants to edit his hello post:
+
+>>> p = posts.unique(author_id=c.id, content='hello from cy')
+>>> _ = posts.update(id=p.id, content='hello from cy. im having a good day!')
+
+Ada wants to delete all her data, so let's oblige.
+Note that you can only delete by ID:
+
+>>> a = users.unique(name='ada')
+>>> for p in posts.select(author_id=a.id):
+...     _ = posts.delete(id=p.id)
+>>> users.delete(id=a.id)
+True
+
+As you can see, she's been deleted:
+
+>>> users.select(id=a.id)
+[]
+>>> posts.select(author_id=a.id)
+[]
+
+And let's make sure fulltext search got updated after all those things happened:
+
+>>> rows = posts.select(content='hello')
+>>> contents(rows)
+['hello from cy. im having a good day!']
 
 Finally, in-memory databases support `delete_all`, used for testing:
 
@@ -166,6 +199,7 @@ Finally, in-memory databases support `delete_all`, used for testing:
 []
 """
 
+from abc import ABC, abstractmethod
 import os
 import atexit
 import threading
@@ -173,9 +207,10 @@ from io import FileIO
 import json
 from itertools import islice
 from collections.abc import Hashable, Iterable
-from typing import Any, Final, Literal, overload
+from typing import Any, Final, Literal, overload, override
 
 from pydantic import BaseModel, TypeAdapter
+from pocketsearch import Blob, PocketSearch, Schema, Text
 from ulid import ULID
 
 class UniqueError(Exception):
@@ -239,33 +274,50 @@ def freeze(value: Value) -> ValueKey:
     # all other values are left as-is
     return value
 
-class Index(dict[ValueKey, dict[Id, Dump]]):
-    """Represents an index over a specific field of `Dump` values for `Repo`.
+class Index(ABC):
+    """Represents an index over a specific field of `Dump` values for `Repo`."""
 
-    Given all rows in the repository, and the field to index, the `Index` is
-    interested in the set of all unique values for the field, e.g.
-    `set([ row[field] for row in repo ])`. We've implemented `Index` as a
+    @abstractmethod
+    def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None: ...
+
+    @abstractmethod
+    def put(self, vkey: ValueKey, id: Id, item: Dump) -> None: ...
+
+    @abstractmethod
+    def remove(self, vkey: ValueKey, id: Id) -> None: ...
+
+    @abstractmethod
+    def clear(self) -> None: ...
+
+class HashIndex(dict[ValueKey, dict[Id, Dump]], Index):
+    """Provides a dict-backed implementation of `Index`.
+
+    Given all rows in the repository, and the field to index, the `HashIndex`
+    is interested in the set of all unique values for the field, e.g.
+    `set([ row[field] for row in repo ])`. We've implemented `HashIndex` as a
     nested dictionary: it maps each unique field value to a sub-dictionary of
     `Id -> Dump` pairs, where each `Id`/`Dump` represents one of the rows that
     has that unique value in the indexed field. All mutation functions in
     `Repo` work very carefully to ensure this representation is accurate.
 
-    Additionally, the `Index` adds an additional rule for `tuple`/`frozenset`s
-    (and `list`/`set`/`dict`, which are frozen into `tuple`/`frozenset`),
-    where the first level of the container is flattened. Instead of the entire
-    container being treated as one unique value that the given `Id`/`Dump`
-    has, the container's values are all treated as seperate `ValueKey`s,
-    allowing queries to partial-match against a container's content. This
-    special querying functionality is implemented in `_slice_many`.
+    Additionally, the `HashIndex` adds an additional rule for
+    `tuple`/`frozenset`s (and `list`/`set`/`dict`, which are frozen into
+    `tuple`/`frozenset`), where the first level of the container is flattened.
+    Instead of the entire container being treated as one unique value that the
+    given `Id`/`Dump` has, the container's values are all treated as seperate
+    `ValueKey`s, allowing queries to partial-match against a container's
+    content. This special querying functionality is implemented in
+    `_slice_many`.
     """
 
     def _put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
-        """Adds the given `Id`/`Dump` pair to the `Index` under the given `ValueKey`."""
+        """Adds the given `Id`/`Dump` pair to the `HashIndex` under the given `ValueKey`."""
         if not vkey in self: self[vkey] = {}
         self[vkey][id] = item
 
+    @override
     def put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
-        """Adds the given `Id`/`Dump` pair to the `Index` under the given `ValueKey`,
+        """Adds the given `Id`/`Dump` pair to the `HashIndex` under the given `ValueKey`,
            flattening `tuple`/`frozenset` values.
         """
         if isinstance(vkey, (tuple, frozenset)):
@@ -274,15 +326,16 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
             self._put(vkey, id, item)
 
     def _remove(self, vkey: ValueKey, id: Id) -> None:
-        """Removes the given `Id`/`Dump` pair from the `Index` under the given `ValueKey`."""
+        """Removes the given `Id`/`Dump` pair from the `HashIndex` under the given `ValueKey`."""
         if not vkey in self: return
         leaf = self[vkey]
         if not id in leaf: return
         del leaf[id]
         if not leaf: del self[vkey]
 
+    @override
     def remove(self, vkey: ValueKey, id: Id) -> None:
-        """Removes the given `Id`/`Dump` pair from the `Index` under the given `ValueKey`,
+        """Removes the given `Id`/`Dump` pair from the `HashIndex` under the given `ValueKey`,
            flattening `tuple`/`frozenset` values.
         """
         if isinstance(vkey, (tuple, frozenset)):
@@ -291,11 +344,11 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
             self._remove(vkey, id)
 
     def _slice_one(self, vkey: ValueKey) -> dict[Id, Dump] | None:
-        """Returns the slice of the `Index` under the given `ValueKey`."""
+        """Returns the slice of the `HashIndex` under the given `ValueKey`."""
         return self.get(vkey, None)
 
     def _slice_many(self, vkeys: Iterable[ValueKey]) -> dict[Id, Dump] | None:
-        """Returns the intersection of the `Index` slices under the given `ValueKey` values."""
+        """Returns the intersection of the `HashIndex` slices under the given `ValueKey` values."""
         # we want the intersection, collect all slices
         slices = [self._slice_one(vkey) for vkey in vkeys]
         if not slices or not all(slices): return None
@@ -309,14 +362,67 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
         } or None
         # return None if the intersection is empty
 
+    @override
     def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
-        """Returns the slice of the `Index` under the given `ValueKey`,
+        """Returns the slice of the `HashIndex` under the given `ValueKey`,
            or performs an intersection of multiple slices if the `ValueKey` is a `tuple`/`frozenset`.
         """
         if isinstance(vkey, (tuple, frozenset)):
             return self._slice_many(vkey)
         else:
             return self._slice_one(vkey)
+
+FTS_MAX_RESULTS = 100
+
+def vkey_to_search(vkey: ValueKey) -> str:
+    if isinstance(vkey, (tuple, frozenset)):
+        return " ".join(str(v) for v in vkey)
+    else:
+        return str(vkey)
+
+class FTSSchema(Schema):
+    ulid = Blob(is_id_field=True)
+    text = Text(index=True)
+
+class FTSIndex(PocketSearch, Index):
+    """Provides a full-text search implementation of `Index`, powered by PocketSearch.
+
+    PocketSearch uses Python's built-in SQLite database support, and the FTS5
+    extension for full-text search: https://sqlite.org/fts5.html. The SQLite
+    database is in-memory, and I store `Id`/`Dump`s as `ulid BLOB, text TEXT`
+    where the `text` field is computed from the `ValueKey` using
+    `vkey_to_search`. Note that PocketSearch defaults to only returning 10
+    results, but I've adjusted it to up to 100 results in `slice`. Ideally
+    these should be most-to-least relevant.
+
+    This `Index` doesn't actually store the `Dump` values, so instead it takes
+    the `Repo`'s `_id` dict in the constructor to look up `Dump`s by `Id`
+    as-needed.
+    """
+
+    def __init__(self, id: dict[Id, Dump]):
+        super().__init__(schema=FTSSchema) # type: ignore
+        self._id = id
+
+    @override
+    def put(self, vkey: ValueKey, id: Id, item: Dump) -> None:
+        self.insert_or_update(ulid=id.bytes, text=vkey_to_search(vkey))
+
+    @override
+    def remove(self, vkey: ValueKey, id: Id) -> None:
+        if d := self.search(ulid=id.bytes)[0]:
+            self.delete(rowid=d.id) # type: ignore
+
+    @override
+    def clear(self) -> None:
+        self.delete_all()
+
+    @override
+    def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
+        return {
+            (i := ULID(d.ulid)): self._id[i]
+            for d in self.search(text=vkey_to_search(vkey))[:FTS_MAX_RESULTS] # type: ignore
+        }
 
 class Repo[T: BaseModel]:
     name: str
@@ -353,6 +459,7 @@ class Repo[T: BaseModel]:
         name: str,
         model: type[T],
         indexed_fields: Iterable[Name],
+        fulltext_fields: Iterable[Name] = (),
         in_memory: bool = False,
         wal_commit_interval: int = DEFAULT_WAL_COMMIT_INTERVAL
     ):
@@ -366,15 +473,17 @@ class Repo[T: BaseModel]:
             raise TypeError(f"model {model.__name__} must have an 'id' field of type ULID")
 
         indexed_fields = list(indexed_fields)
+        fulltext_fields = list(fulltext_fields)
+        all_fields = indexed_fields + fulltext_fields
 
-        for field in indexed_fields:
+        for field in all_fields:
             if field not in model.model_fields:
                 raise ValueError(f"indexed field {field!r} is not a field of model {model.__name__}")
 
-        if len(set(indexed_fields)) != len(indexed_fields):
-            raise ValueError("indexed_fields must be unique")
-        if 'id' in indexed_fields:
-            raise ValueError("indexed_fields must not contain 'id'")
+        if len(set(all_fields)) != len(all_fields):
+            raise ValueError("indexed fields must be unique")
+        if 'id' in all_fields:
+            raise ValueError("indexed fields must not contain 'id'")
 
         if type(wal_commit_interval) is not int or wal_commit_interval < 0:
             raise ValueError("wal_commit_interval must be a non-negative integer of seconds, 0 to disable")
@@ -385,7 +494,13 @@ class Repo[T: BaseModel]:
         self._lock = threading.RLock()
 
         self._id = {}
-        self._indices = { field: Index() for field in indexed_fields }
+        self._indices = {}
+
+        for field in indexed_fields:
+            self._indices[field] = HashIndex()
+
+        for field in fulltext_fields:
+            self._indices[field] = FTSIndex(self._id)
 
         # adapters are used for select()/unique() to convert query values to the model's type
         # this allows you to e.g. pass one type (e.g. str) and have it converted to the model's type (e.g. int)
