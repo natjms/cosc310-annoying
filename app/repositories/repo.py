@@ -1,6 +1,169 @@
 """Thread-safe in-memory relational database abstraction with persistence to disk and write-ahead logging.
 
-TODO
+Here's a comprehensive set of doctests that show how to use `Repo`,
+including all the CRUD operations and foreign key usage:
+
+>>> class User(BaseModel):
+...     id: Id
+...     name: str
+...     age: int
+...     tags: list[str] = []
+
+>>> class Post(BaseModel):
+...     id: Id
+...     author_id: Id  # foreign key User.id
+...     content: str
+
+Create/load repositories by calling the constructor with the name & model class:
+
+>>> users = Repo('users', User, indexed_fields=['name', 'age', 'tags'], in_memory=True)
+>>> posts = Repo('posts', Post, indexed_fields=['author_id'], in_memory=True)
+
+Create some users:
+
+>>> a = users.create(name='ada', age=30, tags=['admin', 'dev'])        # id is generated if omitted
+>>> b = users.create(User(id=Id(), name='bob', age=25, tags=['dev']))  # can pass a model instance
+>>> c = users.create(name='cy', age=30)                                # defaults used for missing fields
+
+Update a user's age, partial patch, by `id`:
+
+>>> new_b = users.update(id=b.id, age=26)
+>>> (new_b.name, new_b.age)
+('bob', 26)
+>>> new_b is b
+False
+
+Note that `new_b` is a copy, not the same instance as `b`.
+The repository always copies model instances, storing them as decomposed `Dump`s.
+This means that mutations to the original or returned instances do not affect the stored data.
+
+Find a single unique user by `id` or other indexed field:
+
+>>> ada = users.unique(name='ada')
+>>> ada == a    and ada is not a
+True
+
+>>> foo = users.unique(age=30)
+Traceback (most recent call last):
+app.repositories.repo.UniqueError: multiple rows found in users for query: {'age': 30}
+
+>>> bar = users.unique(id=Id())
+Traceback (most recent call last):
+app.repositories.repo.UniqueError: no row found in users for query: {'id': ...}
+
+Upsert full instances, creating or replacing as needed:
+
+>>> new_c = users.upsert(c.model_copy(update={'tags': ['ops']}))
+>>> new_c.tags
+['ops']
+
+>>> j = users.upsert(User(id=Id(), name='john', age=32))
+>>> j == users.unique(id=j.id)
+True
+
+Delete a user by `id`:
+
+>>> was_deleted = users.delete(id=j.id)
+>>> was_deleted
+True
+>>> users.delete(id=j.id)  # already deleted
+False
+
+This is just a utility function for the upcoming select examples:
+
+>>> def names(users: list[User]) -> list[str]:
+...     return [u.name for u in users]
+
+Select, equality on indexed fields, multiple fields are ANDed:
+
+>>> rows = users.select(age=30)
+>>> names(rows)
+['ada', 'cy']
+
+>>> rows = users.select(age=30, tags=['dev'])
+>>> names(rows)
+['ada']
+
+List fields match by their elements, multiple values are ANDed:
+
+>>> names( users.select(tags=['dev']) )
+['ada', 'bob']
+
+>>> names( users.select(tags=['dev', 'admin']) )
+['ada']
+
+Query values are coerced to the field's type automagically!
+E.g. `str -> int` or `str -> ULID`:
+
+>>> names( users.select(age='26', id=str(b.id)) )
+['bob']
+
+Ordering and pagination is supported via `_order_by`, `_order_desc`, `_skip`, `_limit`.
+Default order is by `id`, which contains creation time.
+
+Here's a complex query, get the oldest two users, skipping the oldest, ordered by age:
+
+>>> rows = users.select(_order_by='age', _order_desc=True, _skip=1, _limit=2)
+>>> names(rows)
+['cy', 'bob']
+
+Hrm. Let's add back John, and also give Ada a birthday, and try again:
+
+>>> _ = users.create(j)
+>>> _ = users.update(id=a.id, age=a.age + 1)
+
+>>> rows = users.select(_order_by='age', _order_desc=True, _skip=1, _limit=2)
+>>> names(rows)
+['ada', 'cy']
+
+And now, without the limit or the skip:
+
+>>> rows = users.select(_order_by='age', _order_desc=True)
+>>> names(rows)
+['john', 'ada', 'cy', 'bob']
+
+Without any query, select returns all rows, ordered by `id` (creation time):
+
+>>> names( users.select() )
+['ada', 'bob', 'cy', 'john']
+
+Unlike `unique`, `select` returns all matching rows, not just the first one. It can also return nothing!
+
+>>> users.select(tags=['manager'])
+[]
+
+Now, let's create some posts, with foreign keys linking them to their authors:
+
+>>> def create_post(author: User, content: str) -> Post:
+...     return posts.create(author_id=author.id, content=content)
+
+>>> def contents(posts: list[Post]) -> list[str]:
+...     return [post.content for post in posts]
+
+>>> _ = create_post(a, 'hello world')
+>>> _ = create_post(a, 'second post')
+>>> _ = create_post(c, 'hi from cy')
+
+One-to-many query, a user's posts:
+
+>>> rows = posts.select(author_id=a.id, _limit=10, _order_desc=True)
+>>> contents(rows)
+['second post', 'hello world']
+
+Many-to-one query, a post's author:
+
+>>> for post in posts.select():
+...     author = users.unique(id=post.author_id)
+...     print(f'{author.name}: {post.content}')
+ada: hello world
+ada: second post
+cy: hi from cy
+
+Finally, in-memory databases support `delete_all`, used for testing:
+
+>>> posts.delete_all()
+>>> posts.select()
+[]
 """
 
 import os
@@ -156,8 +319,6 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
             return self._slice_one(vkey)
 
 class Repo[T: BaseModel]:
-    """TODO"""
-
     name: str
     """Name of the repository."""
     model: type[T]
@@ -472,6 +633,15 @@ class Repo[T: BaseModel]:
             self._wal_write({ 'id': str(id), '__deleted__': True })
             return self._apply_delete(id)
 
+    def _delete_all(self) -> None: # aquires _lock
+        if not self._in_memory:
+            raise NotImplementedError("delete_all on-disk repo")
+
+        with self._lock:
+            self._id.clear()
+            for index in self._indices.values():
+                index.clear()
+
     def _adapt(self, field: Name, value: Value) -> Value:
         adapter = self._adapters[field]
         value = adapter.validate_python(value)
@@ -564,7 +734,7 @@ class Repo[T: BaseModel]:
                 return (v is None, v)
             rows.sort(key=key, reverse=order_desc) # type: ignore
         else:
-            rows.sort(key=lambda row: row['id']) # type: ignore
+            rows.sort(key=lambda row: row['id'], reverse=order_desc) # type: ignore
 
         stop = None if limit is None else skip + limit
 
@@ -606,72 +776,5 @@ class Repo[T: BaseModel]:
             raise UniqueError(f"multiple rows found in {self.name} for query: {query!r}")
         return results[0]
 
-
-
-
-"""
-
-class User(BaseModel):
-    id: Id
-    name: str
-    age: int
-    follows: list[Id] = []
-
-class Post(BaseModel):
-    id: Id
-    author_id: Id
-    content: str
-    tags: list[str]
-
-users = Repo('users', User, indexed_fields=['name', 'age', 'follows'], in_memory=True)
-posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'], in_memory=True)
-
-# create myself:
-lua = users.create(name='luavixen', age=22)
-# note that the ID is generated automatically
-
-# also create my girlfriend:
-iris = users.create(User(id=Id(), name='iris', age=21, follows=[lua.id]))
-
-# well obviously i follow her:
-users.update(id=lua.id, follows=[iris.id])
-
-# and john is here too:
-john = users.create(name='john', age=20)
-
-# john follows everyone:
-users.update(id=john.id, follows=[iris.id, lua.id])
-
-# let's print everyone who follows me:
-print("these users follow lua:")
-for user in users.select(follows=[lua.id]):
-    print(f"  - {user.name}")
-
-# ok let's get posting
-posts.create(author_id=lua.id, content='wow... what a cool website', tags=['hello', 'website'])
-posts.create(author_id=iris.id, content='just joined lol hi', tags=['hello', 'launch'])
-posts.create(author_id=john.id, content='first day gang', tags=['launch', 'hello'])
-posts.create(author_id=lua.id, content='posting works lets gooo', tags=['website', 'launch'])
-posts.create(author_id=iris.id, content='ok this is kinda cute', tags=['website', 'vibes'])
-posts.create(author_id=john.id, content='who up eating lunch rn. at the website launch', tags=['lunch', 'launch', 'wow'])
-
-# what posts are tagged with 'website'?
-print("posts tagged with 'website':")
-for post in posts.select(tags=['website']):
-    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
-
-# delete posts tagged with 'hello' i HATE saying hello
-for post in posts.select(tags=['hello']):
-    posts.delete(id=post.id)
-
-# ok print all posts
-print("all posts, after deleting 'hello' posts:")
-for post in posts.select():
-    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
-
-# find a unique post with the tags 'launch' and 'website'
-print("unique post with tags 'launch' and 'website':")
-post = posts.unique(tags=['launch', 'website'])
-print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
-
-"""
+    def delete_all(self) -> None:
+        self._delete_all()
