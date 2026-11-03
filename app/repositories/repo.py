@@ -141,14 +141,14 @@ Now, let's create some posts, with foreign keys linking them to their authors:
 ...     return [post.content for post in posts]
 
 >>> _ = create_post(a, 'hello world')
->>> _ = create_post(a, 'second post')
+>>> _ = create_post(a, 'my second post')
 >>> _ = create_post(c, 'hello from cy')
 
 One-to-many query, a user's posts:
 
 >>> rows = posts.select(author_id=a.id, _limit=10, _order_desc=True)
 >>> contents(rows)
-['second post', 'hello world']
+['my second post', 'hello world']
 
 Many-to-one query, a post's author:
 
@@ -156,7 +156,7 @@ Many-to-one query, a post's author:
 ...     author = users.unique(id=post.author_id)
 ...     print(f'{author.name}: {post.content}')
 ada: hello world
-ada: second post
+ada: my second post
 cy: hello from cy
 
 Let's use fulltext search to find posts by content:
@@ -168,7 +168,12 @@ Let's use fulltext search to find posts by content:
 Oh! Cy wants to edit his hello post:
 
 >>> p = posts.unique(author_id=c.id, content='hello from cy')
->>> _ = posts.update(id=p.id, content='hello from cy. im having a good day!')
+>>> _ = posts.update(id=p.id, content='hello from cy. it takes just a second to post!')
+
+Check how fulltext search matches "second post", including how the closer match comes first:
+>>> rows = posts.select(content='second post')
+>>> contents(rows)
+['my second post', 'hello from cy. it takes just a second to post!']
 
 Ada wants to delete all her data, so let's oblige.
 Note that you can only delete by ID:
@@ -186,11 +191,11 @@ As you can see, she's been deleted:
 >>> posts.select(author_id=a.id)
 []
 
-And let's make sure fulltext search got updated after all those things happened:
+And let's make sure fulltext search lost Ada's post:
 
 >>> rows = posts.select(content='hello')
 >>> contents(rows)
-['hello from cy. im having a good day!']
+['hello from cy. it takes just a second to post!']
 
 Finally, in-memory databases support `delete_all`, used for testing:
 
@@ -421,7 +426,7 @@ class FTSIndex(PocketSearch, Index):
     def slice(self, vkey: ValueKey) -> dict[Id, Dump] | None:
         return {
             (i := ULID(d.ulid)): self._id[i]
-            for d in self.search(text=vkey_to_search(vkey))[:FTS_MAX_RESULTS] # type: ignore
+            for d in self.search(text=vkey_to_search(vkey))[0:FTS_MAX_RESULTS] # type: ignore
         }
 
 class Repo[T: BaseModel]:
@@ -434,6 +439,7 @@ class Repo[T: BaseModel]:
 
     _id: dict[Id, Dump]
     _indices: dict[Name, Index]
+    _fulltext: set[Name]
 
     _adapters: dict[Name, TypeAdapter]
 
@@ -494,13 +500,9 @@ class Repo[T: BaseModel]:
         self._lock = threading.RLock()
 
         self._id = {}
-        self._indices = {}
-
-        for field in indexed_fields:
-            self._indices[field] = HashIndex()
-
-        for field in fulltext_fields:
-            self._indices[field] = FTSIndex(self._id)
+        self._indices = {field: HashIndex() for field in indexed_fields} | \
+                        {field: FTSIndex(self._id) for field in fulltext_fields} # type: ignore
+        self._fulltext = set(fulltext_fields)
 
         # adapters are used for select()/unique() to convert query values to the model's type
         # this allows you to e.g. pass one type (e.g. str) and have it converted to the model's type (e.g. int)
@@ -848,7 +850,7 @@ class Repo[T: BaseModel]:
                 v = row[order_by]
                 return (v is None, v)
             rows.sort(key=key, reverse=order_desc) # type: ignore
-        else:
+        elif self._fulltext.isdisjoint(slices):
             rows.sort(key=lambda row: row['id'], reverse=order_desc) # type: ignore
 
         stop = None if limit is None else skip + limit
