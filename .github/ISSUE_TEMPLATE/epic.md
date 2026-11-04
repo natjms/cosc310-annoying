@@ -1,21 +1,22 @@
-# Epic: (name)
+---
+name: Epic
+about: An epic for a large feature that will take multiple sprints to implement.
+title: 'EPIC: Title'
+labels: epic
+---
 
-<!-- Briefly describe the feature area or goal this epic represents. -->
+**Description**  
 
-## Problem / Opportunity
 
-<!-- What problem are we trying to solve or what opportunity are we pursuing? -->
 
-## Desired Outcome
+**Problem / Opportunity**  
 
-<!-- What should be different if this theme is successful? -->- 
 
-## Related User Stories
 
-<!-- Link related user stories here as they are created. -->
+**Desired Outcome**  
+
+
+
+**Related User Stories**  
 
 - #ISSUE_NUMBER
-
-## Notes
-
-<!-- Any additional context, constraints or relevant links. -->
