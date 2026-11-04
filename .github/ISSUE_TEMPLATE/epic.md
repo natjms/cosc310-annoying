@@ -5,18 +5,18 @@ title: 'EPIC: Title'
 labels: epic
 ---
 
-**Description**  
+# Description
 
 
 
-**Problem / Opportunity**  
+# Problem / Opportunity
 
 
 
-**Desired Outcome**  
+# Desired Outcome
 
 
 
-**Related User Stories**  
+# Related User Stories
 
 - #ISSUE_NUMBER
