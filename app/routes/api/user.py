@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.repositories.repo import UniqueError
-from app.models.user import User
+from app.schemas.user import User
 from app.services.user import find_user_by_id, create_user
 
 

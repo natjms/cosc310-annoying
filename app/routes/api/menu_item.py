@@ -3,8 +3,8 @@ from pydantic import BaseModel, AfterValidator
 from typing import Annotated
 
 from app.exceptions import MissingValueException
-from app.models import MenuItem
-from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
+from app.schemas import MenuItem
+from app.schemas.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
 import app.validators as v
 

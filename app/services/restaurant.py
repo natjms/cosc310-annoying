@@ -2,7 +2,7 @@ from abc import update_abstractmethods
 
 from ulid import ULID
 
-from app.models.restaurant import Restaurant
+from app.schemas.restaurant import Restaurant
 from app.repositories.restaurant import restaurants
 from app.repositories.user import users
 from app.repositories.repo import UniqueError
