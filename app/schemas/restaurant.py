@@ -1,8 +1,11 @@
 from pydantic import BaseModel
 from ulid import ULID
 
+from app.models import Restaurant
+
 
 class RestaurantBase(BaseModel):
+    owner_id: ULID  # Once auth is operational, move this to RestaurantResponse only (it should not exist in PatchRestaurantRequest) because users should not be able to create restaurants for other users. Derive the owner ID from the authenticated session.
     name: str
     description: str
     address: str
@@ -15,8 +18,8 @@ class PatchRestaurantRequest(BaseModel):
 
     # No ID needed because it can be passed via the URL.
 
-    name: str | None = None
     owner_id: ULID | None = None  # This allows restaurants to be transferred to other owners post-creation.
+    name: str | None = None
     description: str | None = None
     address: str | None = None
     phone_number: str | None = None
@@ -24,10 +27,11 @@ class PatchRestaurantRequest(BaseModel):
 
 
 class PostRestaurantRequest(RestaurantBase):
-    # No owner ID because users should not be able to create restaurants for other users. Derive the owner ID from the authenticated session.
     pass
 
     
 class RestaurantResponse(RestaurantBase):
     id: ULID
-    owner_id: ULID
+
+    def __init__(self, restaurant: Restaurant):
+        pass  # Create from restaurant instance.

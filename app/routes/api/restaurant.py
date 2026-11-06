@@ -3,11 +3,10 @@ from pydantic import BaseModel
 
 from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
-from app.schemas.user import User
+from app.schemas import User
 from app.services.user import find_user_by_id
-from app.schemas.restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
-from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
-from app.schemas.menu import Menu, PostMenuRequest
+from app.schemas.restaurant import PatchRestaurantRequest, PostRestaurantRequest, RestaurantResponse
+from app.services.restaurant import get_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
 from app.services.menu import list_restaurant_menus, create_menu
 
 
@@ -17,24 +16,26 @@ router = APIRouter()
 @router.get(
     "/restaurant",
     summary="Returns a list of all restaurants",
-    response_model=list[Restaurant],
+    response_model=list[RestaurantResponse],
 )
-def get_all_restaurants() -> list[Restaurant]:
+def get_all_restaurants() -> list[RestaurantResponse]:
     """
     Retrieve all restaurants.
 
     Returns:
         A list of all restaurants.
     """
-    return list_all_restaurants()
+    restaurants = get_all_restaurants()
+
+    return [RestaurantResponse(restaurant) for restaurant in restaurants]
 
 
 @router.get(
     "/restaurant/search",
     summary="Search restaurants by name",
-    response_model=list[Restaurant],
+    response_model=list[RestaurantResponse],
 )
-def search_restaurants(query: str) -> list[Restaurant]:
+def search_restaurants(query: str) -> list[RestaurantResponse]:
     """
     Filter for restaurants by name.
 
@@ -44,15 +45,17 @@ def search_restaurants(query: str) -> list[Restaurant]:
     Returns:
         A list of matching restaurants.
     """
-    return search_restaurants(query)
+    restaurants = search_restaurants(query)
+
+    return [RestaurantResponse(restaurant) for restaurant in restaurants]
 
 
 @router.get(
     "/restaurant/{restaurant_id}",
     summary="Returns the restaurant with the given ID",
-    response_model=Restaurant,
+    response_model=RestaurantResponse,
 )
-def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
+def get_restaurant_by_id(restaurant_id: str) -> RestaurantResponse:
     """
     Retrieve a restaurant by ID.
 
@@ -63,7 +66,8 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
         A single restaurant.
     """
     try:
-        return find_restaurant_by_id(restaurant_id)
+        restaurant = find_restaurant_by_id(restaurant_id)
+        return RestaurantResponse(restaurant)
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
 
@@ -71,11 +75,12 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 @router.patch(
     "/restaurant/{restaurant_id}",
     summary="Updates a restaurant",
-    response_model=Restaurant,
+    response_model=RestaurantResponse,
 )
-def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
+def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> RestaurantResponse:
     try:
-        return update_restaurant(restaurant_id, request.model_dump())
+        restaurant = update_restaurant(restaurant_id, request.model_dump())
+        return RestaurantResponse(restaurant)
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant does not exist")
     except MissingValueException as e:
@@ -85,9 +90,9 @@ def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Rest
 @router.post(
     "/restaurant",
     summary="Creates a new restaurant",
-    response_model=Restaurant,
+    response_model=RestaurantResponse,
 )
-def post_restaurant(request: PostRestaurantRequest, response: Response) -> Restaurant:
+def post_restaurant(request: PostRestaurantRequest, response: Response) -> RestaurantResponse:
     """
     Post a restaurant.
 
@@ -98,8 +103,8 @@ def post_restaurant(request: PostRestaurantRequest, response: Response) -> Resta
         The created restaurant.
     """
     try:
-        new_restaurant = create_restaurant(request.owner_id, request.name)
+        restaurant = create_restaurant(request.owner_id, request.name)
         response.status_code = status.HTTP_201_CREATED
-        return new_restaurant
+        return RestaurantResponse(restaurant)
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
