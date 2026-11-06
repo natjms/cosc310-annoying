@@ -5,20 +5,20 @@ title: "BUG: Title"
 labels: bug
 ---
 
-# Description
+## Description
 
 
 
-# Steps to Reproduce
+## Steps to Reproduce
 
 1. Go to...  
 2. Click on...  
 3. Enter...  
 
-# Expected Result
+## Expected Result
 
 
 
-# Actual Result
+## Actual Result
 
 

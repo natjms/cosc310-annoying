@@ -5,11 +5,11 @@ title: 'USER_STORY: Title'
 labels: user_story
 ---
 
-# Description
+## Description
 
 As a (specific user), I want (action) so that (result).
 
-# Acceptance Criteria
+## Acceptance Criteria
 
 1. X is persisted in the database.
 2. The user is redirected to page Y.
@@ -17,7 +17,7 @@ As a (specific user), I want (action) so that (result).
 
 ---
 
-# What Makes a Good User Story
+## What Makes a Good User Story
 
 - Independent of other user stories.
 - Negotiable (the dev team can discuss it so that it's understood).
@@ -26,7 +26,7 @@ As a (specific user), I want (action) so that (result).
 - Small (should not be broken into smaller user stories).
 - Testable (see acceptance criteria below).
 
-# Definition of Done
+## Definition of Done
 
 - All acceptance criteria are satisfied.
 - Code has been peer reviewed.
