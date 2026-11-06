@@ -8,16 +8,19 @@ from app.repositories.user import users
 from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
 
-def list_all_restaurants() -> list[Restaurant]:
+def get_all_restaurants() -> list[Restaurant]:
     return restaurants.select()
 
-def find_restaurant_by_id(restaurant_id: ULID | str) -> Restaurant:
+def find_restaurant_by_id(restaurant_id: int) -> Restaurant:
     try:
         return restaurants.unique(id=restaurant_id)
     except UniqueError:
         raise MissingValueException('The given restaurant does not exist')
 
-def create_restaurant(owner_id: ULID | str, name: str) -> Restaurant:
+def create_restaurant(**kwargs) -> Restaurant:
+    owner_id = kwargs["owner_id"]
+    name = kwargs["name"]
+
     try:
         user = users.unique(id=owner_id)
     except UniqueError:
