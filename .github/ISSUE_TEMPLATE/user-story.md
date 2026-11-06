@@ -1,13 +1,23 @@
-# User Story
+---
+name: User story
+about: A simple explanation of a feature written from the perspective of the end user.
+title: 'USER_STORY: Title'
+labels: user_story
+---
 
-As a (user), I want (action) so that (result).
+## Description
+
+As a (specific user), I want (action) so that (result).
 
 ## Acceptance Criteria
 
-1. The UI is updated.  
-2. Record is created in database.
+1. X is persisted in the database.
+2. The user is redirected to page Y.
+3. If Z fails, then the user should remain on the page and an error message it shown.
 
-## What Makes a Good User Story (Do Not Change)?
+---
+
+## What Makes a Good User Story
 
 - Independent of other user stories.
 - Negotiable (the dev team can discuss it so that it's understood).
@@ -16,7 +26,7 @@ As a (user), I want (action) so that (result).
 - Small (should not be broken into smaller user stories).
 - Testable (see acceptance criteria below).
 
-## Definition of Done (Do Not Change)
+## Definition of Done
 
 - All acceptance criteria are satisfied.
 - Code has been peer reviewed.

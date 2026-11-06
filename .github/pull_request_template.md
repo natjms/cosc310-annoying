@@ -1,18 +1,19 @@
-If merged, this PR will:
-- Do several things
+# Description
 
-## Related issues
-- Issue number 1
-- Issue number 2
+- Do several things.
 
-## Dependencies
+# Related Issues
 
-*Notice of anything that needs to be done before the PR can be tested, e.g.
-installing new dependencies*
+- #ISSUE_NUMBER.
 
-## Steps for manual testing
+# Steps for manual testing
 
-1. Open this page
-2. Click this button
+1. Open this page.
+2. Click this button.
 3. ???
-4. Profit
+4. Profit.
+
+# Dependencies
+
+Notice of anything that needs to be done before the PR can be tested, e.g.
+installing new dependencies.
