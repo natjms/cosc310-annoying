@@ -11,34 +11,34 @@ from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
 
 
-router = APIRouter()
+router = APIRouter(prefix="/menus")
 
 
 @router.get(
-    "/restaurant/{restaurant_id}/menu",
+    "/",
     summary="Returns the menus for the given restaurant",
     response_model=list[Menu],
 )
-def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
+def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
     """
     Retrieve all menus from a given restaurant.
 
     Args:
-        restaurant_id: The ID of the restaurant.
+        restaurant: The ID of the restaurant.
 
     Returns:
         A list of restaurant menus.
     """
     try:
-        restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
-        return list_restaurant_menus(restaurant.id) # then return the menus
-        # possibly also check if the restaurant is active?
+        restaurant_record = find_restaurant_by_id(restaurant)
+        return list_restaurant_menus(restaurant_record.id)
+        # TODO: possibly also check if the restaurant is active?
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant is nonexistent")
 
 
 @router.post(
-    "/restaurant/{restaurant_id}/menu",
+    "/",
     summary="Creates a new menu for the given restaurant",
     response_model=Menu,
 )
@@ -47,15 +47,14 @@ def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
     Post a menu given.
 
     Args:
-        restaurant_id: The restaurant ID that the menu is being posted t/o.
-        request: The menu data needed for the post request.
+        request: The menu data needed for the post request. See PostMenuRequest model
 
     Returns:
         The created menu.
     """
-    
+
     try:
-        restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
+        restaurant = find_restaurant_by_id(request.restaurant_id)
         return create_menu(restaurant.id, request.name)
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant not found.")
