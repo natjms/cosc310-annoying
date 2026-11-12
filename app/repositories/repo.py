@@ -158,6 +158,12 @@ Many-to-one query, a post's author:
 ada: hello world
 ada: second post
 cy: hi from cy
+
+Finally, in-memory databases support `delete_all`, used for testing:
+
+>>> posts.delete_all()
+>>> posts.select()
+[]
 """
 
 import os
@@ -313,8 +319,6 @@ class Index(dict[ValueKey, dict[Id, Dump]]):
             return self._slice_one(vkey)
 
 class Repo[T: BaseModel]:
-    """TODO"""
-
     name: str
     """Name of the repository."""
     model: type[T]
@@ -629,6 +633,15 @@ class Repo[T: BaseModel]:
             self._wal_write({ 'id': str(id), '__deleted__': True })
             return self._apply_delete(id)
 
+    def _delete_all(self) -> None: # aquires _lock
+        if not self._in_memory:
+            raise NotImplementedError("delete_all on-disk repo")
+
+        with self._lock:
+            self._id.clear()
+            for index in self._indices.values():
+                index.clear()
+
     def _adapt(self, field: Name, value: Value) -> Value:
         adapter = self._adapters[field]
         value = adapter.validate_python(value)
@@ -763,72 +776,5 @@ class Repo[T: BaseModel]:
             raise UniqueError(f"multiple rows found in {self.name} for query: {query!r}")
         return results[0]
 
-
-
-
-"""
-
-class User(BaseModel):
-    id: Id
-    name: str
-    age: int
-    follows: list[Id] = []
-
-class Post(BaseModel):
-    id: Id
-    author_id: Id
-    content: str
-    tags: list[str]
-
-users = Repo('users', User, indexed_fields=['name', 'age', 'follows'], in_memory=True)
-posts = Repo('posts', Post, indexed_fields=['author_id', 'tags'], in_memory=True)
-
-# create myself:
-lua = users.create(name='luavixen', age=22)
-# note that the ID is generated automatically
-
-# also create my girlfriend:
-iris = users.create(User(id=Id(), name='iris', age=21, follows=[lua.id]))
-
-# well obviously i follow her:
-users.update(id=lua.id, follows=[iris.id])
-
-# and john is here too:
-john = users.create(name='john', age=20)
-
-# john follows everyone:
-users.update(id=john.id, follows=[iris.id, lua.id])
-
-# let's print everyone who follows me:
-print("these users follow lua:")
-for user in users.select(follows=[lua.id]):
-    print(f"  - {user.name}")
-
-# ok let's get posting
-posts.create(author_id=lua.id, content='wow... what a cool website', tags=['hello', 'website'])
-posts.create(author_id=iris.id, content='just joined lol hi', tags=['hello', 'launch'])
-posts.create(author_id=john.id, content='first day gang', tags=['launch', 'hello'])
-posts.create(author_id=lua.id, content='posting works lets gooo', tags=['website', 'launch'])
-posts.create(author_id=iris.id, content='ok this is kinda cute', tags=['website', 'vibes'])
-posts.create(author_id=john.id, content='who up eating lunch rn. at the website launch', tags=['lunch', 'launch', 'wow'])
-
-# what posts are tagged with 'website'?
-print("posts tagged with 'website':")
-for post in posts.select(tags=['website']):
-    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
-
-# delete posts tagged with 'hello' i HATE saying hello
-for post in posts.select(tags=['hello']):
-    posts.delete(id=post.id)
-
-# ok print all posts
-print("all posts, after deleting 'hello' posts:")
-for post in posts.select():
-    print(f"  - {users.unique(id=post.author_id).name} says {post.content!r}")
-
-# find a unique post with the tags 'launch' and 'website'
-print("unique post with tags 'launch' and 'website':")
-post = posts.unique(tags=['launch', 'website'])
-print(f"  - {users.unique(id=post.author_id).name} says {post.content!r} with tags {post.tags!r}")
-
-"""
+    def delete_all(self) -> None:
+        self._delete_all()
