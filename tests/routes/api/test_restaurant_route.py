@@ -22,13 +22,13 @@ def test_data():
     user_repo.delete(id=user.id)
 
 def test_cannot_get_nonexistant_restaurant():
-    response = client.get(f'/api/restaurant/{ULID()}')
+    response = client.get(f'/api/restaurants/{ULID()}')
     assert response.status_code == 404
 
 def test_create_and_retrieve_restaurant(test_data):
     (user, _) = test_data
 
-    create_response = client.post('/api/restaurant/',
+    create_response = client.post('/api/restaurants/',
         headers={'Content-Type': 'application/json'},
         json={
             'owner_id': str(user.id),
@@ -39,13 +39,13 @@ def test_create_and_retrieve_restaurant(test_data):
     new_restaurant_id = create_response.json()['id']
     assert create_response.status_code == 201
 
-    retrieve_response = client.get(f'/api/restaurant/{new_restaurant_id}')
+    retrieve_response = client.get(f'/api/restaurants/{new_restaurant_id}')
     assert retrieve_response.json()['name'] == 'Created Restaurant'
 
     restaurant_repo.delete(id=ULID.from_str(new_restaurant_id))
 
 def test_attempt_to_create_restaurant_with_fake_user(test_data):
-    create_response = client.post('/api/restaurant/',
+    create_response = client.post('/api/restaurants/',
         headers={'Content-Type': 'application/json'},
         json={
             'owner_id': str(ULID()),
@@ -57,12 +57,12 @@ def test_attempt_to_create_restaurant_with_fake_user(test_data):
 
 def test_update_restaurant(test_data):
     (_, restaurant) = test_data
-    update_response = client.patch(f'/api/restaurant/{restaurant.id}',
+    update_response = client.patch(f'/api/restaurants/{restaurant.id}',
         headers={'Content-Type': 'application/json'},
         json={ 'name': 'Updated Restaurant' }
     )
 
     assert update_response.status_code == 200
 
-    retrieve_response = client.get(f'/api/restaurant/{restaurant.id}')
+    retrieve_response = client.get(f'/api/restaurants/{restaurant.id}')
     assert retrieve_response.json()['name'] == 'Updated Restaurant'
