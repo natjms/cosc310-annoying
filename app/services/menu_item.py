@@ -7,18 +7,16 @@ from app.repositories.repo import UniqueError
 from .utils import maybe_ulid
 from app.exceptions import MissingValueException
 
+
 def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
     try:
         menu = menus.unique(id=menu_id, restaurant_id=restaurant_id)
-        return [item for item in menu.items.values()] # returns the dict type menu.items properly
+        return [item for item in menu.items.values()]  # returns the dict type menu.items properly
     except UniqueError:
         raise MissingValueException(f"Menu or restaurant not found")
 
-def get_menu_item_by_id(
-    restaurant_id: str,
-    menu_id: str,
-    menu_item_id: str | ULID
-) -> MenuItem:
+
+def get_menu_item_by_id(restaurant_id: str, menu_id: str, menu_item_id: str | ULID) -> MenuItem:
     try:
         menu = menus.unique(id=menu_id, restaurant_id=restaurant_id)
         menu_item = menu.items[maybe_ulid(menu_item_id)]
@@ -28,11 +26,9 @@ def get_menu_item_by_id(
     except KeyError:
         raise MissingValueException("Menu item cannot be found")
 
+
 def update_menu_item_by_id(
-    restaurant_id: str,
-    menu_id: str,
-    menu_item_id: str,
-    menu_item_overwrite: dict
+    restaurant_id: str, menu_id: str, menu_item_id: str, menu_item_overwrite: dict
 ) -> MenuItem:
     menu_item_overwrite = {k: v for k, v in menu_item_overwrite.items() if v is not None}
     try:
@@ -49,12 +45,8 @@ def update_menu_item_by_id(
     except UniqueError:
         raise MissingValueException("Menu or restaurant cannot be found")
 
-def create_menu_item(
-    restaurant_id: str,
-    menu_id: str,
-    name: str,
-    price: float
-) -> MenuItem:
+
+def create_menu_item(restaurant_id: str, menu_id: str, name: str, price: float) -> MenuItem:
     try:
         menu = menus.unique(id=menu_id, restaurant_id=restaurant_id)
         updated_menu_items = menu.items
@@ -64,5 +56,5 @@ def create_menu_item(
         menus.update(id=menu_id, items=updated_menu_items)
         return menus.unique(id=menu_id, restaurant_id=restaurant_id).items[new_id]
     except Exception as e:
-        #raise MissingValueException(f"Menu could not be found")
+        # raise MissingValueException(f"Menu could not be found")
         raise e
