@@ -12,47 +12,44 @@ import app.validators as v
 NOT_FOUND_STATUS = 404
 
 
-router = APIRouter()
+router = APIRouter(prefix="/menu-items")
 
 
 @router.get(
-    "/restaurants/{restaurant_id}/menus/{menu_id}/items/",
-    summary="Get all menu item by restaurant ID and menu ID.",
+    "/",
+    summary="Get all menu items by menu ID.",
     response_model=list[MenuItem],
 )
-def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
+def get_all_menu_items(menu: str) -> list[MenuItem]:
     """
     Retrieve all menu items from a given restaurant menu.
 
     Args:
-        restaurant_id: The ID of the restaurant.
-        menu_id: The ID of the menu.
+        menu: The ID of the menu.
 
     Returns:
         A list of menu items.
     """
     try:
-        return service.get_all_menu_items(restaurant_id, menu_id)
+        return service.get_all_menu_items(menu)
     except MissingValueException:
         raise HTTPException(status_code=NOT_FOUND_STATUS)
 
 
 @router.get(
-    "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
-    summary="Get a menu item by restaurant ID, menu ID and menu item ID.",
+    "/{menu_item_id}",
+    summary="Get a menu item by menu ID and menu item ID.",
     response_model=MenuItem,
 )
 def get_menu_item_by_id(
-    restaurant_id: str,
-    menu_id: str,
+    menu: str,
     menu_item_id: str,
 ) -> MenuItem:
     """
     Retrieve a specific menu item by ID.
 
     Args:
-        restaurant_id: The ID of the restaurant.
-        menu_id: The ID of the menu.
+        menu: The ID of the menu.
         menu_item_id: The ID of the menu item.
 
     Returns:
@@ -60,8 +57,7 @@ def get_menu_item_by_id(
     """
     try:
         return service.get_menu_item_by_id(
-            restaurant_id,
-            menu_id,
+            menu,
             menu_item_id,
         )
     except MissingValueException as e:
@@ -69,13 +65,12 @@ def get_menu_item_by_id(
 
 
 @router.patch(
-    "/restaurants/{restaurant_id}/menus/{menu_id}/items/{menu_item_id}",
-    summary="Update a menu item by restaurant ID, menu ID and menu item ID.",
+    "/{menu_item_id}",
+    summary="Update a menu item by menu ID and menu item ID.",
     response_model=MenuItem,
 )
 def patch_menu_item(
-    restaurant_id: str,
-    menu_id: str,
+    menu: str,
     menu_item_id: str,
     request: PatchMenuItemRequest
 ) -> MenuItem:
@@ -83,8 +78,7 @@ def patch_menu_item(
     Update an existing menu ID
 
     Path arguments:
-        restaurant_id: The ID of the restaurant.
-        menu_id: The ID of the menu.
+        menu: The ID of the menu.
         menu_item_id: The ID of the menu item.
 
     Body arguments:
@@ -96,32 +90,29 @@ def patch_menu_item(
     """
     try:
         return service.update_menu_item_by_id(
-            restaurant_id,
-            menu_id,
+            menu,
             menu_item_id,
             request.model_dump()
         )
     except MissingValueException as e:
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
-    
+
 
 @router.post(
-    "/restaurants/{restaurant_id}/menus/{menu_id}/items/",
-    summary="Create a new menu item given the restaurant and menu ID",
+    "/",
+    summary="Create a new menu item given the menu ID",
     response_model=MenuItem,
 )
 def post_menu_item(
-    restaurant_id: str,
-    menu_id: str,
+    menu: str,
     request: PostMenuItemRequest,
     response: Response
 ) -> MenuItem:
     """
     Create a new menu item
 
-    Path arguments:
-        restaurant_id: The ID of the restaurant.
-        menu_id: The ID of the menu.
+    Args:
+        menu: The ID of the menu.
 
     Body arguments:
         name: New name for the menu item. Optional
@@ -132,8 +123,7 @@ def post_menu_item(
     """
     try:
         new_menu_item = service.create_menu_item(
-            restaurant_id,
-            menu_id,
+            menu,
             request.name,
             request.price
         )
