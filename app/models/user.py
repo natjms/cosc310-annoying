@@ -26,4 +26,3 @@ class PatchUserRequest(BaseModel):
     username: Annotated[str | None, AfterValidator(v.is_username)] = None
     email: Annotated[str | None, AfterValidator(v.is_email)] = None
     password_plaintext: Annotated[str | None, AfterValidator(v.password_is_strong)] = None
-
