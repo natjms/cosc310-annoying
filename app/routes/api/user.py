@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.repositories.repo import UniqueError
 from app.models.user import User
-from app.services.user import find_user_by_id, create_user
+from app.services.user import find_user_by_id
 
 
 router = APIRouter()
@@ -39,4 +39,4 @@ def post_user() -> User:
     Returns:
         A single user.
     """
-    return create_user()
+    raise NotImplemented()
