@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 from ulid import ULID
-from app.models.menu import Menu
-from app.models.menu_item import MenuItem
+from app.schemas.menu import Menu
+from app.schemas.menu_item import MenuItem
 
 def test_menu_valid_with_items():
     menu_id=ULID()

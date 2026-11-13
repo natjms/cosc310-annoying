@@ -1,61 +1,41 @@
-from fastapi import APIRouter, HTTPException, Response, status
-from pydantic import BaseModel
+from fastapi import APIRouter, status
 
-from app.repositories.repo import UniqueError
-from app.exceptions import MissingValueException
-from app.models.user import User
-from app.services.user import find_user_by_id
-from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
-from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
-from app.models.menu import Menu, PostMenuRequest
-from app.services.menu import list_restaurant_menus, create_menu
+from app.schemas import MenuResponse, PostMenuRequest
+from app.schemas.menu import PatchMenuRequest
+from app.services import MenuService
 
 
-router = APIRouter()
+PREFIX = "/menus"
 
 
-@router.get(
-    "/restaurant/{restaurant_id}/menu",
-    summary="Returns the menus for the given restaurant",
-    response_model=list[Menu],
-)
-def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
-    """
-    Retrieve all menus from a given restaurant.
+router = APIRouter(prefix=PREFIX)
+service = MenuService()  # Need to find a way to inject this dependency. MenuRouter object? Passing a service as an argument to route functions is bad because FastAPI expects all parameters to be parameters found in the request.
 
-    Args:
-        restaurant_id: The ID of the restaurant.
 
-    Returns:
-        A list of restaurant menus.
-    """
-    try:
-        restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
-        return list_restaurant_menus(restaurant.id) # then return the menus
-        # possibly also check if the restaurant is active?
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant is nonexistent")
+@router.get("", summary="Returns the menus for the given restaurant")
+def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[MenuResponse]:
+    raise NotImplementedError()
+
+
+@router.get("/{menu_id}", summary="Get a menu by ID")
+def get_menu_by_id(menu_id: str) -> MenuResponse:
+    raise NotImplementedError()
 
 
 @router.post(
-    "/restaurant/{restaurant_id}/menu",
-    summary="Creates a new menu for the given restaurant",
-    response_model=Menu,
+    "",
+    summary="Creates a new menu",
+    status_code=status.HTTP_201_CREATED,
 )
-def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
-    """
-    Post a menu given.
+def post_menu(request: PostMenuRequest) -> MenuResponse:
+    raise NotImplementedError()
 
-    Args:
-        restaurant_id: The restaurant ID that the menu is being posted t/o.
-        request: The menu data needed for the post request.
 
-    Returns:
-        The created menu.
-    """
-    
-    try:
-        restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
-        return create_menu(restaurant.id, request.name)
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant not found.")
+@router.patch("/{menu_id}", summary="Updates a menu")
+def patch_menu(request: PatchMenuRequest) -> MenuResponse:
+    raise NotImplementedError()
+
+
+@router.delete("/{menu_id}", summary="Deletes a menu")
+def delete_menu(request: PatchMenuRequest) -> MenuResponse:
+    raise NotImplementedError()

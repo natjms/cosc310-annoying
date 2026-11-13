@@ -1,18 +1,13 @@
 from fastapi import APIRouter, HTTPException, Response, status
-from pydantic import BaseModel, AfterValidator
-from typing import Annotated
 
 from app.exceptions import MissingValueException
-from app.models import MenuItem
-from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
-from app.services import menu_item as service
+from app.schemas import MenuItem
+from app.schemas.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 import app.validators as v
 
 
-NOT_FOUND_STATUS = 404
-
-
 router = APIRouter()
+service = MenuItemService()
 
 
 @router.get(
@@ -34,7 +29,7 @@ def get_all_menu_items(restaurant_id: str, menu_id: str) -> list[MenuItem]:
     try:
         return service.get_all_menu_items(restaurant_id, menu_id)
     except MissingValueException:
-        raise HTTPException(status_code=NOT_FOUND_STATUS)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @router.get(
@@ -65,7 +60,7 @@ def get_menu_item_by_id(
             menu_item_id,
         )
     except MissingValueException as e:
-        raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 
 @router.patch(
@@ -102,7 +97,7 @@ def patch_menu_item(
             request.model_dump()
         )
     except MissingValueException as e:
-        raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
     
 
 @router.post(
@@ -140,4 +135,4 @@ def post_menu_item(
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
     except MissingValueException:
-        raise HTTPException(status_code=NOT_FOUND_STATUS)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

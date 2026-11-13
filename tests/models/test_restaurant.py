@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 from ulid import ULID
-from app.models.restaurant import Restaurant,Address
+from app.schemas.restaurant import Restaurant,Address
 
 def test_restaurant_valid():
     rest_id = ULID()
