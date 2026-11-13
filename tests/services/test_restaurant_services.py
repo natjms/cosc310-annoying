@@ -9,7 +9,7 @@ from app.exceptions import MissingValueException
 
 @pytest.fixture
 def test_data():
-    user = user_service.create_user()
+    user = user_service.register_user('test', 'test@example.com', 'password')
     restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
 
     yield (user, restaurant)
@@ -73,7 +73,7 @@ def test_update_restaurant_name(test_data):
 
 def test_update_restaurant_owner(test_data):
     (_, restaurant) = test_data
-    new_user = user_service.create_user()
+    new_user = user_service.register_user('new_owner', 'new_owner@example.com', 'password')
     updated_restaurant = restaurant_service.update_restaurant(restaurant.id, {'owner_id': new_user.id})
     retrieved_restaurant = restaurant_service.find_restaurant_by_id(restaurant.id)
     assert updated_restaurant.owner_id == retrieved_restaurant.owner_id

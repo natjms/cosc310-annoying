@@ -12,7 +12,7 @@ client = TestClient(app)
 
 @pytest.fixture
 def test_data():
-    user = user_service.create_user()
+    user = user_service.register_user('test', 'test@example.com', 'password')
     restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
     menu = menu_service.create_menu(restaurant.id, 'Test Menu')
     menu_item = menu_item_service.create_menu_item(
