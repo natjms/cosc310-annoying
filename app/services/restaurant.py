@@ -1,45 +1,68 @@
-from abc import update_abstractmethods
-
-from ulid import ULID
-
 from app.schemas.restaurant import Restaurant
-from app.repositories.restaurant import restaurants
-from app.repositories.user import users
-from app.repositories.repo import UniqueError
+from app.repositories.repo import Repo, UniqueError
 from app.exceptions import MissingValueException
 
-def get_all_restaurants() -> list[Restaurant]:
-    return restaurants.select()
 
-def find_restaurant_by_id(restaurant_id: int) -> Restaurant:
-    try:
-        return restaurants.unique(id=restaurant_id)
-    except UniqueError:
-        raise MissingValueException('The given restaurant does not exist')
+class RestaurantService():
+    def __init__(
+            self,
+            restaurant_repository: Repo = Repo(),
+            user_repository: Repo = Repo(),
+        ) -> None:
+        self._restaurant_repository = restaurant_repository
+        self._user_repository = user_repository
 
-def create_restaurant(**kwargs) -> Restaurant:
-    owner_id = kwargs["owner_id"]
-    name = kwargs["name"]
+    def get_all_restaurants(self) -> list[Restaurant]:
+        return self._restaurant_repository.select()
 
-    try:
-        user = users.unique(id=owner_id)
-    except UniqueError:
-        raise MissingValueException('No user with the given ID exists')
+    def search_restaurants(self, query: str) -> list[Restaurant]:
+        return self._restaurant_repository.select(name=query)
 
-    return restaurants.create(owner_id=owner_id, name=name)
-
-def search_restaurants(query: str) -> list[Restaurant]:
-    return restaurants.select(name=query)
-
-def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
-    if 'owner_id' in data:
+    def get_restaurant_by_id(self, id: str) -> Restaurant:
         try:
-            user = users.unique(id=data['owner_id'])
+            return self._restaurant_repository.unique(id=id)
         except UniqueError:
-            raise MissingValueException('No user with the given ID exists')
+            raise MissingValueException('The given restaurant does not exist')
 
-    data = {k: v for k, v in data.items() if v is not None}
-    return restaurants.update(id=restaurant_id, **data)
+    def create_restaurant(
+            self,
+            *,
+            user_id: str,
+            name: str,
+            description: str,
+            address: str,
+            phone_number: str,
+            is_active: bool,
+        ) -> Restaurant:
+        raise NotImplementedError()
 
-def delete_restaurant(restaurant_id: str) -> None:
-    restaurants.delete(id=restaurant_id)
+    def update_restaurant(
+            self,
+            *,
+            id: str,
+            user_id: str,
+            name: str | None = None,
+            description: str | None = None,
+            address: str | None = None,
+            phone_number: str | None = None,
+            is_active: bool | None = None,
+        ) -> Restaurant:
+        raise NotImplementedError()
+
+        """
+        restaurant = restaurant_repository.get_by_id(id)
+
+        user_owns_restaurant = restaurant.is_owned_by(user_id)
+        if not user_owns_restaurant:
+            raise ForbiddenError("You must own the restaurant you are trying to edit.")
+
+        update the restaurant...
+        """
+
+    def delete_restaurant_by_id(
+            self,
+            *,
+            id: str,
+            user_id: str,
+        ) -> Restaurant:
+        raise NotImplementedError()

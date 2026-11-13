@@ -1,21 +1,31 @@
 from pydantic import BaseModel
-from ulid import ULID
+
+from app.models import Menu
 
 
-class MenuBase(BaseModel):
+class PostMenuRequest(BaseModel):
+    restaurant_id: str
     name: str
     is_active: bool
 
 
 class PatchMenuRequest(BaseModel):
+    restaurant_id: str | None = None
     name: str | None = None
     is_active: bool | None = None
 
 
-class PostMenuRequest(MenuBase):
-    restaurant_id: ULID  # This could be passed in the URL if we change the url design: POST api/restaurant/{restaurant_id}/menu. At the time of writing this comment, our design is this instead: POST /api/menu.
+class DeleteMenuRequest(BaseModel):
+    # Apparently, passing a request body for DELETE is bad HTTP practice. In future, we should move authentication to a JWT in the header or something similar.
+
+    restaurant_id: str
 
     
-class MenuResponse(MenuBase):
-    id: ULID
-    restaurant_id: ULID
+class MenuResponse(BaseModel):
+    id: str
+    restaurant_id: str
+    name: str
+    is_active: bool
+
+    def __init__(self, menu: Menu):
+        raise NotImplementedError()

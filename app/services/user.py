@@ -3,11 +3,13 @@ from ulid import ULID
 from app.schemas.user import User
 from app.repositories.user import users
 
-def find_user_by_id(user_id: ULID | str) -> User:
-    return users.unique(id=user_id)
 
-def create_user() -> User:
-    return users.create()
+class UserService:
+    def __init__(self, repository: Repo[User]) -> None:
+        self.repository = repository
 
-def delete_user(user_id: ULID | str) -> None:
-	users.delete(id=user_id)
+    def get_user_by_id(self, user_id: ULID | str) -> User:
+        return self.repository.unique(id=user_id)
+
+    def create_user(self) -> User:
+        return self.repository.create()

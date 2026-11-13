@@ -1,26 +1,27 @@
-from typing import Annotated
-
-from pydantic import AfterValidator, BaseModel
+from pydantic import BaseModel
 from ulid import ULID
 
-from app import validators as v
+from app.models import MenuItem
 
 
-# Note: unlike many of our models, this one is not actually represented by its
-# own repository. Rather, it's entirely dependent on the Menu repo; each menu
-# has a dict mapping ULID: MenuItem
-class MenuItem(BaseModel):
-    id: ULID
+class BaseMenuItemRequest(BaseModel):
     name: str
     price: float
     is_active: bool
 
 
-class PostMenuItemRequest(BaseModel):
-    name: Annotated[str | None, AfterValidator(v.nonempty_string)]
-    price: Annotated[float | None, AfterValidator(v.positive_float)]
-
-
 class PatchMenuItemRequest(BaseModel):
-    name: Annotated[str | None, AfterValidator(v.coerce_empty_string_to_none)] = None
-    price: Annotated[float | None, AfterValidator(v.positive_float)] = None
+    name: str | None = None
+    price: float | None = None
+    is_active: bool | None = None
+
+
+class PostMenuItemRequest(BaseMenuItemRequest):
+    pass
+
+    
+class MenuItemResponse(BaseMenuItemRequest):
+    id: ULID
+
+    def __init__(self, menu_item: MenuItem):
+            pass  # Create from restaurant instance.
