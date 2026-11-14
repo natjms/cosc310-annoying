@@ -1,3 +1,4 @@
+from fastapi import HTTPException, Request
 from ulid import ULID
 import datetime
 import secrets
@@ -50,3 +51,31 @@ def session_is_valid(session_token: str) -> bool:
     current_timestamp_utc = int(datetime.datetime.now(datetime.UTC).timestamp())
 
     return session.expiry_timestamp_utc > current_timestamp_utc
+
+def guard_authentication(request: Request):
+    if "authorization" not in request.headers:
+        raise HTTPException(status_code=401, detail="Session token not provided")
+
+    # e.g. Authorization: Bearer 056b322f90557e6796d4d76de5227d90...
+    try:
+        auth_scheme, session_token = request.headers["authorization"].split(" ")
+    except ValueError:
+        # Will occur if the header looks like "Authorization: 056b322f90557e6796d4d76de5227d90..."
+        # which is an incorrect use of the Authorization header
+        raise HTTPException(status_code=422, detail="Invalid Authorization header")
+
+    if auth_scheme != "Bearer":
+        raise HTTPException(status_code=422, detail="Only the Bearer authentication scheme is supported")
+
+    try:
+        session = find_session(session_token)
+    except MissingValueException:
+        raise HTTPException(status_code=401, detail="Session not found. Please try logging in again")
+
+    if not session_is_valid(session.token):
+        log_out(session.token)
+        raise HTTPException(status_code=401, detail="Your session has expired. Please try logging in again")
+
+    user = user_service.find_user_by_id(session.user_id)
+
+    return (user, session)
