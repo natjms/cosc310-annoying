@@ -1,16 +1,24 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 from ulid import ULID
 
 from app.exceptions import MissingValueException
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
+from app.models.session import Session
+from app.models.user import User
 from app.repositories import utils
 from app.services import cart as service
+from app.services.session import guard_authentication
+from app.services.utils import maybe_ulid
 
 router = APIRouter()
 
-# nts: have no wired up the user account system at all yet!!
+
+def get_current_user(
+    auth: tuple[User, Session] = Depends(guard_authentication),
+) -> User:
+    return auth[0]
 
 
 # nts: does the thing below work for using the given user (which in turn is passed by something else)
@@ -22,7 +30,7 @@ router = APIRouter()
     summary="Returns the current active cart for the curent user",
     response_model=Cart,
 )
-def get_active_cart(user_id: ULID) -> Cart:
+def get_active_cart(user: User = Depends(get_current_user)) -> Cart:
     """
     Retrieve what from who.
 
@@ -32,7 +40,10 @@ def get_active_cart(user_id: ULID) -> Cart:
     Returns:
         what?
     """
-    pass
+    try:
+        return service.get_active_cart(user.id)
+    except MissingValueException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.patch(
@@ -40,7 +51,7 @@ def get_active_cart(user_id: ULID) -> Cart:
     summary="Updates current active cart for the current user",
     response_model=Cart,
 )
-def update_current_cart(user_id: ULID):
+def update_current_cart(user_id: ULID) -> Cart:
     """
     Retrieve what from who.
 
@@ -50,7 +61,8 @@ def update_current_cart(user_id: ULID):
     Returns:
         what?
     """
-    pass
+    # try:
+    #    return service.update_cart_item
 
 
 @router.delete(
@@ -76,7 +88,7 @@ def clear_active_cart(user_id: ULID) -> Cart:
     summary="Returns the cart items for the given restaurant",
     response_model=Cart,
 )
-def get_cart(restaurant_id: ULID, user_id: ULID):
+def get_cart(restaurant_id: ULID, user: User = Depends(get_current_user)) -> Cart:
     """
     Retrieve what from who.
 
@@ -86,7 +98,7 @@ def get_cart(restaurant_id: ULID, user_id: ULID):
     Returns:
         what?
     """
-    pass
+    return service.get_or_create_cart(user.id, maybe_ulid(restaurant_id))
 
 
 # nts: how many carts can be *active* at a time?
@@ -96,7 +108,7 @@ def get_cart(restaurant_id: ULID, user_id: ULID):
     summary="Activates a cart for the given restaurant",
     response_model=Cart,
 )
-def activate_cart(user_id: ULID, restaurant_id: str):
+def activate_cart(restaurant_id: str, user: User = Depends(get_current_user)) -> Cart:
     """
     Activate a cart while deactivating all other ones.
 
@@ -105,7 +117,9 @@ def activate_cart(user_id: ULID, restaurant_id: str):
     Returns:
         TBD.
     """
-    pass
+    return service.activate_cart(
+        user.id, maybe_ulid(restaurant_id)
+    )  # nts: this is not in the service layer yet
 
 
 @router.patch(
@@ -113,7 +127,12 @@ def activate_cart(user_id: ULID, restaurant_id: str):
     summary="Updates the cart items for the given restaurant",
     response_model=Cart,
 )
-def update_cart(restaurant_id: str, menu_item_id: str, quantity: int, user_id: ULID):
+def update_cart(
+    restaurant_id: str,
+    menu_item_id: str,
+    quantity: int,
+    user: User = Depends(get_current_user),
+) -> Cart:
     """
     Retrieve what from who.
 
@@ -124,11 +143,12 @@ def update_cart(restaurant_id: str, menu_item_id: str, quantity: int, user_id: U
         what?
     """
 
-    # try
-    # service.add_item_to_cart
-    # except MissingValue
-
-    pass
+    try:
+        return service.update_cart_item(
+            user.id, maybe_ulid(restaurant_id), maybe_ulid(menu_item_id), quantity
+        )
+    except MissingValueException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete(
@@ -136,7 +156,7 @@ def update_cart(restaurant_id: str, menu_item_id: str, quantity: int, user_id: U
     summary="Deletes the cart for the given restaurant",
     response_model=Cart,
 )
-def clear_cart(restaurant_id: str, user_id: ULID) -> Cart:
+def clear_cart(restaurant_id: str, user: User = Depends(get_current_user)) -> Cart:
     """
     Retrieve what from who.
 
@@ -146,5 +166,4 @@ def clear_cart(restaurant_id: str, user_id: ULID) -> Cart:
     Returns:
         what?
     """
-    # return service.clear_cart(user_id,restaurant_id)
-    pass
+    return service.clear_cart(user.id, maybe_ulid(restaurant_id))
