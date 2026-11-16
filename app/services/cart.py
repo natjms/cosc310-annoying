@@ -24,6 +24,28 @@ def get_or_create_cart(user_id: ULID, restaurant_id: ULID) -> Cart:
         )
 
 
+def get_active_cart(user_id: ULID) -> Cart:
+    active_carts = carts.select(
+        user_id=user_id,
+        is_active=True,
+        _order_by="updated_at",
+        _order_desc=True,
+        _limit=1,
+    )
+    if not active_carts:
+        raise MissingValueException("no active cart was found")
+    return active_carts[0]
+
+
+def activate_cart(user_id: ULID, restaurant_id: ULID) -> Cart:
+    user_carts = carts.select(user_id=user_id)
+    for c in user_carts:
+        if c.is_active:
+            carts.update(id=c.id, is_active=False)
+    target_cart = get_or_create_cart(user_id, restaurant_id)
+    return carts.update(id=target_cart.id, is_active=True)
+
+
 def add_item_to_cart(
     user_id: ULID, restaurant_id: ULID, menu_item_id: ULID, quantity: int
 ) -> Cart:
