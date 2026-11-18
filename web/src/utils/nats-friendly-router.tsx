@@ -56,7 +56,6 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
 
     const [current_path, setCurrentPath] = useState(url_path);
     const [current_hashed_path, setCurrentHashedPath] = useState(hash_path(url_path));
-    console.info(current_path);
 
     const navigate_controller = (path: string) => {
         const hashed_path = path.replaceAll(param_regex, '\\VARIABLE\\')
