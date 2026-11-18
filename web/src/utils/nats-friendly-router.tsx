@@ -1,4 +1,4 @@
-import { useContext, createContext, useState, Children } from 'react';
+import { useContext, createContext, useState, useEffect, Children } from 'react';
 
 const NavigationContext = createContext(null);
 export const useNavigation = () => useContext(NavigationContext);
@@ -64,6 +64,19 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
         setCurrentPath(path);
         setCurrentHashedPath(hashed_path)
     };
+
+    // By handling the popstate event we can ensure that the browser's back
+    // button still works
+    const history_change_controller = () => {
+        navigate_controller(window.location.hash.substring(1));
+    };
+    window.addEventListener('popstate', history_change_controller);
+    useEffect(() => {
+        return () => {
+            // Remove the listener when the component is unmounted
+            window.removeEventListener('popstate', history_change_controller);
+        }
+    });
 
     let route_map = {};
     Children.map(props.children, child => {
