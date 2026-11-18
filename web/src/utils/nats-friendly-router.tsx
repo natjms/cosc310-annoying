@@ -1,6 +1,22 @@
-import { createContext, useState, Children } from 'react';
+import { useContext, createContext, useState, Children } from 'react';
 
-export const navigator = createContext(null);
+const NavigationContext = createContext(null);
+export const useNavigation = () => useContext(NavigationContext);
+
+
+type LinkProps = {
+    children: ReactNode;
+    path: string;
+};
+export function Link(props: LinkProps) {
+    const navigate = useNavigation();
+
+    const click_handler = () => {
+
+    }
+
+    return <a href={`#${props.path}`} onClick={() => navigate(props.path)}>{props.children}</a>;
+}
 
 const path_regex = /^\/(?:(?:[A-Za-z_](?:\w)*\/?)|(?:{([A-Za-z_](?:\w)*)}\/?))*$/g
 const param_regex = /{[A-Za-z_]\w*}/g
@@ -42,7 +58,7 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
     const [current_hashed_path, setCurrentHashedPath] = useState(hash_path(url_path));
     console.info(current_path);
 
-    const navigate = (path: string) => {
+    const navigate_controller = (path: string) => {
         const hashed_path = path.replaceAll(param_regex, '\\VARIABLE\\')
         window.location.hash = path;
         setCurrentPath(path);
@@ -62,8 +78,8 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
     const active_route = route_map[current_hashed_path];
 
     return (
-        <navigator value={navigate}>
+        <NavigationContext value={navigate_controller}>
             { active_route }
-        </navigator>
+        </NavigationContext>
     );
 }
