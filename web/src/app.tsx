@@ -7,6 +7,7 @@ import { SecurityContext } from '@/utils/security'
 import type { SecurityReference } from '@/utils/security'
 
 import RestaurantListPage from '@/pages/restaurant-list'
+import LogInPage from '@/pages/login'
 
 export function App() {
     const [security, setSecurity]: [SecurityReference, (s: SecurityReference) => void] = useState(null);
@@ -43,6 +44,7 @@ export function App() {
                 <NatsFriendlyRouter>
                     <Route path='/' component={<HomePage />} />
                     <Route path='/restaurants' component={<RestaurantListPage />} />
+                    <Route path='/login' component={<LogInPage />} />
                 </NatsFriendlyRouter>
             </SecurityContext>
         </>
@@ -52,6 +54,7 @@ export function App() {
 function HomePage() {
     return <>
         <p>Hello, world!</p>
+        <Link path='/login'>Log in</Link>
         <Link path='/restaurants'>See all restaurants</Link>
     </>;
 }
