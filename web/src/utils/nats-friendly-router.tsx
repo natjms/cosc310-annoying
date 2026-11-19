@@ -29,23 +29,54 @@ const param_regex = /{[A-Za-z_]\w*}/g
 type RouteProps = {
     path: string;
     component: ReactNode;
+    params: object;
 };
 
 export function Route(props: RouteProps) {
-    const {path, component} = props;
+    const {path, component, params} = props;
+    component.props.params = params;
     return component;
 }
 
-const hash_path = (path: string) => {
-    // Stub params
-    let hashed_path = path.replaceAll(param_regex, '\\VARIABLE\\');
+const trim_trailing_slash = (path: string): string => {
+    let trimmed = path;
 
-    // Remove trailing slashes
-    if (hashed_path.length > 1 && hashed_path.substring(hashed_path.length - 1) == '/') {
-        hashed_path = hashed_path.substring(0, hashed_path.length - 1)
+    if (trimmed.length > 1 && trimmed.substring(trimmed.length - 1) == '/') {
+        trimmed = trimmed.substring(0, trimmed.length - 1)
     }
 
-    return hashed_path;
+    return trimmed;
+};
+
+const path_to_regex = (path: string): RegExp => {
+    let trimmed_path = trim_trailing_slash(path);
+
+    return new RegExp(
+        `^${trimmed_path}$`.replaceAll('/', '\\/')
+               .replaceAll(/{[A-Za-z_]\w*}/g, '(\\w*)'), 'g'
+    );
+};
+
+const collect_path_params = (base_path: string, real_path: string): object => {
+    let base = trim_trailing_slash(base_path).split('/');
+    if (base[0] === '') {
+        base = base.splice(1);
+    }
+
+    let real = trim_trailing_slash(real_path).split('/');
+    if (real[0] === '') {
+        real = real.splice(1);
+    }
+
+    let params = {};
+    for (let i in base) {
+        if (base[i][0] === '{' && base[i][base[i].length - 1] === '}') {
+            const param_name = base[i].substring(1, base[i].length - 1);
+            params[param_name] = real[i];
+        }
+    }
+
+    return params;
 }
 
 type NatsFriendlyRouterProps = {
@@ -60,13 +91,10 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
     const url_path = window.location.hash.substring(1);
 
     const [current_path, setCurrentPath] = useState(url_path);
-    const [current_hashed_path, setCurrentHashedPath] = useState(hash_path(url_path));
 
     const navigate_controller = (path: string) => {
-        const hashed_path = path.replaceAll(param_regex, '\\VARIABLE\\')
         window.location.hash = path;
-        setCurrentPath(path);
-        setCurrentHashedPath(hashed_path)
+        setCurrentPath(trim_trailing_slash(path));
     };
 
     // By handling the popstate event we can ensure that the browser's back
@@ -86,18 +114,30 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
     let non_route_components = [];
     Children.map(props.children, child => {
         if (child.type === Route) {
-            const path_hash = child.props.path.replaceAll(param_regex, '\\VARIABLE\\')
-            route_map[path_hash] = child;
+            route_map[child.props.path] = {
+                path_regex: path_to_regex(child.props.path),
+                component: child
+            };
         } else {
             non_route_components.push(child);
         }
     });
 
-    if (!Object.hasOwn(route_map, current_hashed_path)) {
-        return <p>Page not found</p>;
+    let active_route = null;
+    for (let path in route_map) {
+        // FIXME: This test will not pass, seemingly though it should, when the
+        // user has refreshed the page and the current route is one with path
+        // parameters.
+        if (route_map[path].path_regex.test(current_path)) {
+            active_route = route_map[path].component;
+            active_route.props.params = collect_path_params(path, current_path);
+            break;
+        }
     }
 
-    const active_route = route_map[current_hashed_path];
+    if (active_route === null) {
+        return <p>Page not found</p>;
+    }
 
     return (
         <NavigationContext value={navigate_controller}>
