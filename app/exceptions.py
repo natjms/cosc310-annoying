@@ -13,21 +13,15 @@ class MissingRecordException(Exception):
 		self.message = message
 
 
+class NotOwnerException(Exception):
+	def __init__(self, message):
+		super().__init__(self, message)
+
+		self.message = message
+
+
 class ForbiddenException(Exception):
 	def __init__(self, message):
 		super().__init__(self, message)
 
-		# NOTE: if the message property is not explicitly declared here, the
-		# Python interpreter may complain that MissingValueException does not
-		# have such a property
-		self.message = message
-
-
-class BadRequestException(Exception):
-	def __init__(self, message):
-		super().__init__(self, message)
-
-		# NOTE: if the message property is not explicitly declared here, the
-		# Python interpreter may complain that MissingValueException does not
-		# have such a property
 		self.message = message

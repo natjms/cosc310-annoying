@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from .exceptions import MissingValueException
+from .exceptions import MissingRecordException
 from .routes import router
 
 
@@ -18,8 +18,8 @@ app = FastAPI()
 app.mount('/web', StaticFiles(directory='web/', html=True), name='web')
 app.include_router(router)
 
-@app.exception_handler(MissingValueException)
-def missing_value_handler(_request: Request, e: MissingValueException) -> ErrorResponse:
+@app.exception_handler(MissingRecordException)
+def missing_value_handler(_request: Request, e: MissingRecordException) -> ErrorResponse:
 	return JSONResponse(
 		status_code=404,
 		content={ 'message': e.message }

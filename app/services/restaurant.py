@@ -1,6 +1,5 @@
-from app.schemas.restaurant import Restaurant
-from app.repositories.repo import Repo, UniqueError
-from app.exceptions import MissingValueException
+from app.models import Restaurant
+from app.repositories.repo import Repo
 
 
 class RestaurantService():
@@ -13,16 +12,13 @@ class RestaurantService():
         self._user_repository = user_repository
 
     def get_all_restaurants(self) -> list[Restaurant]:
-        return self._restaurant_repository.select()
+        raise NotImplementedError()
 
     def search_restaurants(self, query: str) -> list[Restaurant]:
-        return self._restaurant_repository.select(name=query)
+        raise NotImplementedError()
 
     def get_restaurant_by_id(self, id: str) -> Restaurant:
-        try:
-            return self._restaurant_repository.unique(id=id)
-        except UniqueError:
-            raise MissingValueException('The given restaurant does not exist')
+        raise NotImplementedError()
 
     def create_restaurant(
             self,
@@ -49,19 +45,8 @@ class RestaurantService():
         ) -> Restaurant:
         raise NotImplementedError()
 
-        """
-        restaurant = restaurant_repository.get_by_id(id)
-
-        user_owns_restaurant = restaurant.is_owned_by(user_id)
-        if not user_owns_restaurant:
-            raise ForbiddenError("You must own the restaurant you are trying to edit.")
-
-        update the restaurant...
-        """
-
     def delete_restaurant_by_id(
             self,
-            *,
             id: str,
             user_id: str,
         ) -> Restaurant:

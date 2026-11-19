@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingRecordException
 from app.repositories.repo import UniqueError
 from app.schemas import UserResponse
 from app.services import UserService
