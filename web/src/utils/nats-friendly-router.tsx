@@ -11,11 +11,16 @@ type LinkProps = {
 export function Link(props: LinkProps) {
     const navigate = useNavigation();
 
-    const click_handler = () => {
-
-    }
-
     return <a href={`#${props.path}`} onClick={() => navigate(props.path)}>{props.children}</a>;
+}
+
+type RedirectProps = {
+    to: string
+};
+
+export function Redirect(props: RedirectProps) {
+    const navigate = useNavigation();
+    navigate(props.to);
 }
 
 const path_regex = /^\/(?:(?:[A-Za-z_](?:\w)*\/?)|(?:{([A-Za-z_](?:\w)*)}\/?))*$/g
