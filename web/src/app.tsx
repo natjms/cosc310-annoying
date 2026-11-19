@@ -6,7 +6,7 @@ import * as security from '@/utils/security'
 import { SecurityContext } from '@/utils/security'
 import type { SecurityReference } from '@/utils/security'
 
-import RestaurantListPage from '@/pages/restaurant-list-page'
+import RestaurantListPage from '@/pages/restaurant-list'
 
 export function App() {
     const [security, setSecurity]: [SecurityReference, (s: SecurityReference) => void] = useState(null);
