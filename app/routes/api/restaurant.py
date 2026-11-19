@@ -11,11 +11,11 @@ from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
 
 
-router = APIRouter()
+router = APIRouter(prefix="/restaurants")
 
 
 @router.get(
-    "/restaurant",
+    "/",
     summary="Returns a list of all restaurants",
     response_model=list[Restaurant],
 )
@@ -30,7 +30,7 @@ def get_all_restaurants() -> list[Restaurant]:
 
 
 @router.get(
-    "/restaurant/search",
+    "/search",
     summary="Search restaurants by name",
     response_model=list[Restaurant],
 )
@@ -48,7 +48,7 @@ def search_restaurants(query: str) -> list[Restaurant]:
 
 
 @router.get(
-    "/restaurant/{restaurant_id}",
+    "/{restaurant_id}",
     summary="Returns the restaurant with the given ID",
     response_model=Restaurant,
 )
@@ -69,7 +69,7 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 
 
 @router.patch(
-    "/restaurant/{restaurant_id}",
+    "/{restaurant_id}",
     summary="Updates a restaurant",
     response_model=Restaurant,
 )
@@ -83,7 +83,7 @@ def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Rest
 
 
 @router.post(
-    "/restaurant",
+    "/",
     summary="Creates a new restaurant",
     response_model=Restaurant,
 )
