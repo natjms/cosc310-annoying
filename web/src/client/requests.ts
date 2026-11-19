@@ -47,7 +47,7 @@ function base_request(method: HTTPMethod, path: string, body: object, query: obj
 
     return fetch(api_path(full_path), options)
         .then(response => {
-            if (repsponse.status == 401) {
+            if (response.status == 401) {
                 localStorage.setItem(LOCALSTORAGE_LOGOUT_FLAG, 'true');
             }
 
