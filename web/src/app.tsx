@@ -8,6 +8,7 @@ import type { SecurityReference } from '@/utils/security'
 
 import RestaurantListPage from '@/pages/restaurant-list'
 import LogInPage from '@/pages/login'
+import LogOutPage from '@/pages/logout'
 
 import Navbar from '@/components/navbar'
 
@@ -47,7 +48,10 @@ export function App() {
                     <Navbar />
                     <Route path='/' component={<HomePage />} />
                     <Route path='/restaurants' component={<RestaurantListPage />} />
-                    <Route path='/login' component={<LogInPage />} />
+                    { security === null &&
+                        <Route path='/login' component={<LogInPage />} /> }
+                    { security !== null &&
+                        <Route path='/logout' component={<LogOutPage />} /> }
                 </NatsFriendlyRouter>
             </SecurityContext>
         </>
