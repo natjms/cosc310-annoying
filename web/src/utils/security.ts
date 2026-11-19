@@ -1,6 +1,9 @@
 import { useContext, createContext } from 'react'
 
 export const SecurityContext = createContext(null);
+export const useSecurity = () => {
+    return useContext(SecurityContext);
+};
 
 enum RoleName {
     ADMIN = 'admin',
