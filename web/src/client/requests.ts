@@ -1,3 +1,5 @@
+import { LOCALSTORAGE_LOGOUT_FLAG, LOCALSTORAGE_TOKEN_KEY } from '@/utils/security'
+
 enum HTTPMethod {
     POST = 'POST',
     GET = 'GET',
@@ -22,8 +24,8 @@ function api_path(path: string) : string {
     return `${trimmed_base_url}/${trimmed_path}`;
 }
 
-function base_request<T>(method: HTTPMethod, path: string, body: object, query: object) : Promise<T> {
-    let options = {method};
+function base_request(method: HTTPMethod, path: string, body: object, query: object) : Promise<Response> {
+    let options = {method, headers: {}};
     let full_path = path;
 
     if (body !== undefined) {
@@ -39,26 +41,36 @@ function base_request<T>(method: HTTPMethod, path: string, body: object, query: 
         full_path += `?${params.toString()}`;
     }
 
+    if (localStorage.getItem(LOCALSTORAGE_TOKEN_KEY) !== null) {
+        options.headers['Authorization'] = `Bearer ${localStorage.getItem(LOCALSTORAGE_TOKEN_KEY)}`;
+    }
+
     return fetch(api_path(full_path), options)
-        .then(response => response.json());
+        .then(response => {
+            if (repsponse.status == 401) {
+                localStorage.setItem(LOCALSTORAGE_LOGOUT_FLAG, 'true');
+            }
+
+            return response;
+        });
 }
 
-export function get<T>(path: string, data?: {body: object, query: object}) : Promise<T> {
-    return base_request<T>(HTTPMethod.GET, path, data?.body, data?.query);
+export function get(path: string, data?: {body: object, query: object}) : Promise<Response> {
+    return base_request(HTTPMethod.GET, path, data?.body, data?.query);
 }
 
-export function post<T>(path: string, data?: {body: object, query: object}) : Promise<T> {
-    return base_request<T>(HTTPMethod.POST, path, data?.body, data?.query);
+export function post(path: string, data?: {body: object, query: object}) : Promise<Response> {
+    return base_request(HTTPMethod.POST, path, data?.body, data?.query);
 }
 
-export function put<T>(path: string, data?: {body: object, query: object}) : Promise<T> {
-    return base_request<T>(HTTPMethod.PUT, path, data?.body, data?.query);
+export function put<T>(path: string, data?: {body: object, query: object}) : Promise<Response> {
+    return base_request(HTTPMethod.PUT, path, data?.body, data?.query);
 }
 
-export function patch<T>(path: string, data?: {body: object, query: object}) : Promise<T> {
-    return base_request<T>(HTTPMethod.PATCH, path, data?.body, data?.query);
+export function patch(path: string, data?: {body: object, query: object}) : Promise<Response> {
+    return base_request(HTTPMethod.PATCH, path, data?.body, data?.query);
 }
 
-export function delete_(path: string, data?: {body: object, query: object}) : Promise {
+export function delete_(path: string, data?: {body: object, query: object}) : Promise<Response> {
     return base_request(HTTPMethod.DELETE, path, data?.body, data?.query);
 }

@@ -7,7 +7,7 @@ export default function RestaurantListPage() {
     const [restaurants, setRestaurants]: [Restaurant[], (a: Restaurant[]) => void] = useState([]);
     useEffect(() => {
         (async () => {
-            setRestaurants(await get_all_restaurants());
+            setRestaurants(await (get_all_restaurants().then(r => r.json())));
         })();
     }, []);
     return (
