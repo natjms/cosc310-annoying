@@ -19,6 +19,10 @@ export type Restaurant = {
     is_active: boolean;
 };
 
-export function get_all_restaurants() : Promise<Restaurant[]> {
-    return requests.get<Restaurant[]>('/restaurant/');
+export function get_all_restaurants() : Promise<Response> {
+    return requests.get('/restaurant/');
+}
+
+export function get_restaurant(id: string) : Promise<Response> {
+    return requests.get(`/restaurant/${id}`);
 }
