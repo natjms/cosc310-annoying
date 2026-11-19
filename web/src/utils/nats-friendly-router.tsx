@@ -83,9 +83,14 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
     });
 
     let route_map = {};
+    let non_route_components = [];
     Children.map(props.children, child => {
-        const path_hash = child.props.path.replaceAll(param_regex, '\\VARIABLE\\')
-        route_map[path_hash] = child;
+        if (child.type === Route) {
+            const path_hash = child.props.path.replaceAll(param_regex, '\\VARIABLE\\')
+            route_map[path_hash] = child;
+        } else {
+            non_route_components.push(child);
+        }
     });
 
     if (!Object.hasOwn(route_map, current_hashed_path)) {
@@ -96,6 +101,7 @@ export function NatsFriendlyRouter(props: NatsFriendlyRouterProps) {
 
     return (
         <NavigationContext value={navigate_controller}>
+            { non_route_components }
             { active_route }
         </NavigationContext>
     );
