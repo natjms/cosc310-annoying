@@ -1,0 +1,14 @@
+.navbar\:container {
+    border-bottom: 4px double black;
+}
+
+.navbar\:container > ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.navbar\:container > ul > li {
+    padding-right: 1em;
+}
