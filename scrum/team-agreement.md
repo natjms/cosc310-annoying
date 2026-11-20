@@ -2,15 +2,16 @@
 
 ## Team Information
 
-Lab section: Friday, L01
+Lab section: Friday, L01.
 
-Team name: Annoying Team
+Team name: Annoying Team.
 
 ### Team members
-- Lua
-- Nat
-- Sarthak
-- Christopher
+
+- Lua.
+- Nat.
+- Sarthak.
+- Christopher.
 
 ## Team Values
 
@@ -38,20 +39,20 @@ If we are at an impasse or other disagreement on the direction of our team or pr
 
 ## Anticipated Challenges
 
-- Tooling disagreement, what software to use and what is compatible
-	- Solve with normal methods
-	- We will try to use widely compatible tooling
-- Mismatch in the formatting of the code
-	- Use .editor format
+- Tooling disagreement, what software to use and what is compatible:
+	- Solve with normal methods.
+	- We will try to use widely compatible tooling.
+- Mismatch in the formatting of the code:
+	- Use a style guide.
 	- Maybe use linter?
-- Loss of project context between labs
-	- Some sort of note/log book and logging in the Signal group chat
-- Missed deadlines
-	- We will set personal deadlines sooner than the actual deadlines by one to two days
+- Loss of project context between labs:
+	- Some sort of note/log book and logging in the Signal group chat.
+- Missed deadlines:
+	- We will set personal deadlines sooner than the actual deadlines by one to two days.
 
 ## Individual Signatures and Commitments to the Above
 
-- Nat: "I make the commitment to the above"
-- Sarthak: "It's the same commitment to other members. Acknowledge that"
-- Lua: "I wrote this! I agree! I will do all of these things!"
-- Christopher: "Signed by Christopher"
+- Nat: "I make the commitment to the above".
+- Sarthak: "It's the same commitment to other members. Acknowledge that".
+- Lua: "I wrote this! I agree! I will do all of these things!".
+- Christopher: "Signed by Christopher".
