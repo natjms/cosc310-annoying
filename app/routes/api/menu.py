@@ -19,20 +19,20 @@ router = APIRouter(prefix="/menus")
     summary="Returns the menus for the given restaurant",
     response_model=list[Menu],
 )
-def get_all_menus_by_restaurant_id(restaurant_id: str) -> list[Menu]:
+def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
     """
     Retrieve all menus from a given restaurant.
 
     Args:
-        restaurant_id: The ID of the restaurant.
+        restaurant: The ID of the restaurant.
 
     Returns:
         A list of restaurant menus.
     """
     try:
-        restaurant = find_restaurant_by_id(restaurant_id) # assert restaurant exists
-        return list_restaurant_menus(restaurant.id) # then return the menus
-        # possibly also check if the restaurant is active?
+        restaurant_record = find_restaurant_by_id(restaurant)
+        return list_restaurant_menus(restaurant_record.id)
+        # TODO: possibly also check if the restaurant is active?
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant is nonexistent")
 
