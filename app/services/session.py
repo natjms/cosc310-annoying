@@ -23,7 +23,10 @@ def find_session(session_token: str) -> Session:
         raise MissingValueException('The given session does not exist. Please try logging in again')
 
 def log_in(credential: str, password_plaintext: str) -> Session:
-    user = user_service.find_user_by_credential(credential)
+    try:
+        user = user_service.find_user_by_credential(credential)
+    except MissingValueException:
+        raise AuthenticationException("Unknown user")
 
     if not user.is_active:
         raise AuthenticationException("Cannot log into a deactivated account")
