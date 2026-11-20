@@ -10,6 +10,7 @@ import type { SecurityReference } from '@/utils/security'
 import RestaurantListPage from '@/pages/restaurant-list'
 import RestaurantPage from '@/pages/restaurant'
 import CreateAccountPage from '@/pages/create-account'
+import AccountPage from '@/pages/account'
 import LogInPage from '@/pages/login'
 import LogOutPage from '@/pages/logout'
 
@@ -32,7 +33,7 @@ export function App() {
                 setSecurity({
                     user: JSON.parse(localStorage.getItem(security.LOCALSTORAGE_USER_KEY)),
                     token: localStorage.getItem(security.LOCALSTORAGE_TOKEN_KEY),
-                    roles: JSON.parse(localStorage.getItem(security.LOCALSTORAGE_TOKEN_KEY)),
+                    roles: JSON.parse(localStorage.getItem(security.LOCALSTORAGE_ROLES_KEY)),
                 })
             }
         }
@@ -56,8 +57,10 @@ export function App() {
                         <Route path='/login' component={LogInPage} />,
                         <Route path='/create-account' component={CreateAccountPage} />
                     ]}
-                    { security !== null &&
-                        <Route path='/logout' component={LogOutPage} /> }
+                    { security !== null && [
+                        <Route path='/logout' component={LogOutPage} />,
+                        <Route path='/account' component={AccountPage} />,
+                    ]}
                 </Router>
             </SecurityContext>
         </>
