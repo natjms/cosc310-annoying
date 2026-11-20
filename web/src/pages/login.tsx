@@ -1,36 +1,40 @@
 import { useState } from 'react'
 import { route } from 'preact-router'
+import Form from '@/components/form'
 
 type LogInPageProps = {
     created: boolean;
 };
 export default function LogInPage({ created }: LogInPageProps) {
-    const [email, setEmail]: [string, (e: string) => void]  = useState('');
-    const [password, setPassword]: [string, (e: string) => void] = useState('');
+    const [error, setError]: [object, (o: object) => void] = useState(null);
 
-    const handleLogin = (e) => {
-        e.preventDefault()
-
+    const handleLogin = (form_data) => {
         // TODO: call the log in endpoint, set the session values
-
         route('/');
     }
 
-    const inputHandler = (setter) => {
-        return (e) => {
-            setter(e.target.value)
-        };
-    };
-
     return <>
-        <h1>Log in</h1>
         { created &&
-            <p> Success! Your account has been created. You may now log in. </p>
+            <p>Success! You can now log in</p>
         }
-        <form action='#' onSubmit={handleLogin}>
-            <input placeholder='email' type='email' value={email} onChange={inputHandler(setEmail)} required={true} /><br/>
-            <input placeholder='Password' type='password' value={password} onChange={inputHandler(setPassword)} required={true} /><br/>
-            <input value='Log in' type='submit' />
-        </form>
+        <Form
+            name='Log in'
+            error={error}
+            callback={handleLogin}
+            fields={[
+                {
+                    label: 'Email',
+                    type: 'email',
+                    key: 'username_or_email',
+                    required: true,
+                },
+                {
+                    label: 'Password',
+                    type: 'password',
+                    key: 'password_plaintext',
+                    required: true,
+                },
+
+            ]}/>
     </>;
 }
