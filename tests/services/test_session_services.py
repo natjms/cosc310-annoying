@@ -24,7 +24,7 @@ def test_log_in_succeeds_with_email(test_data):
     assert session.user_id == user.id
 
 def test_log_in_with_invalid_account_raises():
-    with pytest.raises(MissingValueException):
+    with pytest.raises(AuthenticationException):
         session_service.log_in("fake_user", "password")
 
 def test_log_in_with_invalid_password_raises(test_data):
