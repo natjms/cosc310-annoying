@@ -13,7 +13,7 @@ client = TestClient(app)
 
 @pytest.fixture
 def test_data():
-    user = user_service.create_user()
+    user = user_service.register_user('test', 'test@example.com', 'password')
     restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
 
     yield (user, restaurant)
