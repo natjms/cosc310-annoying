@@ -46,7 +46,7 @@ def test_register_and_retrieve_success(test_data):
     session = session_service.log_in(response.json()["username"], "AVeryStr0ngPassw0rd!")
     retrieve_response = client.get(
         f"/api/users/{user_id}",
-        headers={"Authorization": f"Bearer {session.token}"}
+        headers={"X-Token": session.token}
     )
     assert retrieve_response.status_code == status.HTTP_200_OK
     assert retrieve_response.json()["id"] == user_id
@@ -95,7 +95,7 @@ def test_retrieve_someone_elses_user_fails(test_data):
 
     response = client.get(
         f"/api/users/{response.json()['id']}",
-        headers={"Authorization": f"Bearer {session.token}"}
+        headers={"X-Token": session.token}
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -104,7 +104,7 @@ def test_retrieve_missing_user_fails(test_data):
     (_, _, admin_session, *_) = test_data
     response = client.get(
         f"/api/users/{ULID()}",
-        headers={"Authorization": f"Bearer {admin_session.token}"}
+        headers={"X-Token": admin_session.token}
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -113,7 +113,7 @@ def test_admin_can_retrieve_others(test_data):
     (user, _, admin_session) = test_data
     response = client.get(
         f"/api/users/{user.id}",
-        headers={"Authorization": f"Bearer {admin_session.token}"}
+        headers={"X-Token": admin_session.token}
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -130,7 +130,7 @@ def test_update_user_successfully(test_data, payload):
         f"/api/users/{user.id}",
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {session.token}"
+            "X-Token": session.token
         },
         json=payload
     )
@@ -152,7 +152,7 @@ def test_update_user_with_invalid_payload(test_data, payload):
         f"/api/users/{user.id}",
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {session.token}"
+            "X-Token": session.token
         },
         json=payload
     )
@@ -166,7 +166,7 @@ def test_update_password_successfully(test_data):
         f"/api/users/{user.id}",
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {session.token}"
+            "X-Token": session.token
         },
         json={"password_plaintext": "AVeryStr0ngPassw0rd!Updated"}
     )
@@ -180,7 +180,7 @@ def test_update_password_successfully(test_data):
 
 def test_deactivate_account(test_data):
     (user, session, *_) = test_data
-    response = client.delete(f"/api/users/{user.id}", headers={"Authorization": f"Bearer {session.token}"})
+    response = client.delete(f"/api/users/{user.id}", headers={"X-Token": session.token})
     assert response.status_code == status.HTTP_204_NO_CONTENT
     with pytest.raises(AuthenticationException):
         session_service.log_in(user.username, "AVeryStr0ngPassw0rd!")
@@ -196,19 +196,19 @@ def test_deactivate_someone_elses_account_fails(test_data):
 
     response = client.delete(
         f"/api/users/{response.json()['id']}",
-        headers={"Authorization": f"Bearer {session.token}"}
+        headers={"X-Token": session.token}
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 def test_deactivate_someones_account_as_admin(test_data):
     (user, session, admin_session) = test_data
-    response = client.delete(f"/api/users/{user.id}", headers={"Authorization": f"Bearer {admin_session.token}"})
+    response = client.delete(f"/api/users/{user.id}", headers={"X-Token": admin_session.token})
     assert response.status_code == status.HTTP_204_NO_CONTENT
     with pytest.raises(AuthenticationException):
         session_service.log_in(user.username, "AVeryStr0ngPassw0rd!")
 
 def test_cannot_deactivate_non_existant_account(test_data):
     (_, _, admin_session) = test_data
-    response = client.delete(f"/api/users/{ULID()}", headers={"Authorization": f"Bearer {admin_session.token}"})
+    response = client.delete(f"/api/users/{ULID()}", headers={"X-Token": admin_session.token})
     assert response.status_code == status.HTTP_404_NOT_FOUND

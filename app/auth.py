@@ -1,27 +1,14 @@
-from fastapi import HTTPException, Request
+from typing import Annotated
+from fastapi import HTTPException, Header
 from app.exceptions import MissingValueException
 import app.services.session as session_service
 import app.services.role as role_service
 import app.services.user as user_service
 from app.models.role import RoleName
 
-def guard_authentication(request: Request):
-    if "authorization" not in request.headers:
-        raise HTTPException(status_code=401, detail="Session token not provided")
-
-    # e.g. Authorization: Bearer 056b322f90557e6796d4d76de5227d90...
+def guard_authentication(x_token: str):
     try:
-        auth_scheme, session_token = request.headers["authorization"].split(" ")
-    except ValueError:
-        # Will occur if the header looks like "Authorization: 056b322f90557e6796d4d76de5227d90..."
-        # which is an incorrect use of the Authorization header
-        raise HTTPException(status_code=422, detail="Invalid Authorization header")
-
-    if auth_scheme != "Bearer":
-        raise HTTPException(status_code=422, detail="Only the Bearer authentication scheme is supported")
-
-    try:
-        session = session_service.find_session(session_token)
+        session = session_service.find_session(x_token)
     except MissingValueException:
         raise HTTPException(status_code=401, detail="Session not found. Please try logging in again")
 
@@ -33,7 +20,7 @@ def guard_authentication(request: Request):
 
     return (user, session)
 
-def guard_authorization(request: Request, required_roles: set[RoleName]) -> list[RoleName]:
+def guard_authorization(x_token: str, required_roles: set[RoleName]) -> list[RoleName]:
     """
     Function invoked at the start of a route function to ensure only
     authenticated users with one of a set of roles can access it
@@ -43,7 +30,7 @@ def guard_authorization(request: Request, required_roles: set[RoleName]) -> list
     - Raises an HTTPException if the user is unauthenticated (see
       `app.services.session.guard_authentication` for more information)
     """
-    (user, session) = guard_authentication(request)
+    (user, session) = guard_authentication(x_token)
 
     if not role_service.user_has_any_roles_of(user.id, required_roles):
         raise HTTPException(

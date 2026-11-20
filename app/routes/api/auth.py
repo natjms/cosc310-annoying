@@ -33,11 +33,10 @@ def post_login(payload: PostSessionRequest, response: Response) -> SessionRespon
     summary="Log out, removing the session"
 )
 def post_logout(
-    request: Request,
     response: Response, 
-    authorization: Annotated[str, Header()]
+    x_token: Annotated[str, Header()]
 ) -> None:
-    (_, session) = guard_authentication(request)
+    (_, session) = guard_authentication(x_token)
     try:
         log_out(session.token)
     except MissingValueException as e:

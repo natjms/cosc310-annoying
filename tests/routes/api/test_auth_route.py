@@ -84,7 +84,7 @@ def test_logout_successfully(test_data):
 
     response = client.post(
         "/api/auth/logout",
-        headers={"Authorization": f"Bearer {session['token']}"}
+        headers={"X-Token": session['token']}
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -93,7 +93,7 @@ def test_logout_successfully(test_data):
 def test_cannot_logout_with_non_existant_session():
     response = client.post(
         "/api/auth/logout",
-        headers={"Authorization": f"Bearer faketoken"}
+        headers={"X-Token": "faketoken"}
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

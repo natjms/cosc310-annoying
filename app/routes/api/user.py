@@ -17,8 +17,7 @@ router = APIRouter(prefix='/users')
 )
 def get_user_by_id(
     user_id: ULID,
-    request: Request,
-    authorization: Annotated[str, Header()]
+    x_token: Annotated[str, Header()]
 ) -> UserResponse:
     """
     Retrieve a specific user by ID.
@@ -29,9 +28,9 @@ def get_user_by_id(
     Returns:
         A single user.
     """
-    (user, _) = guard_authentication(request)
+    (user, _) = guard_authentication(x_token)
     if user.id != user_id:
-        guard_authorization(request, {'admin'})
+        guard_authorization(x_token, {'admin'})
 
     try:
         return UserResponse(**find_user_by_id(user_id).model_dump())
@@ -57,13 +56,12 @@ def create_user(payload: PostUserRequest, response: Response) -> UserResponse:
 def patch_user(
     payload: PatchUserRequest,
     user_id: ULID,
-    request: Request,
     response: Response,
-    authorization: Annotated[str, Header()]
+    x_token: Annotated[str, Header()]
 ) -> UserResponse:
-    (user, _) = guard_authentication(request)
+    (user, _) = guard_authentication(x_token)
     if user.id != user_id:
-        guard_authorization(request, {'admin'})
+        guard_authorization(x_token, {'admin'})
 
     try:
         updated_user = update_user(user_id, change_set=payload.model_dump())
@@ -80,13 +78,12 @@ def patch_user(
 )
 def deactivate_user_request(
     user_id: ULID,
-    request: Request,
     response: Response,
-    authorization: Annotated[str, Header()]
+    x_token: Annotated[str, Header()]
 ) -> None:
-    (user, _) = guard_authentication(request)
+    (user, _) = guard_authentication(x_token)
     if user.id != user_id:
-        guard_authorization(request, {'admin'})
+        guard_authorization(x_token, {'admin'})
 
     try:
         deactivate_user(user_id)
