@@ -21,14 +21,14 @@ router = APIRouter(prefix="/users")
     summary="Returns a user by ID",
 )
 def get_user_by_id(user_id: ULID, x_token: Annotated[str, Header()]) -> UserResponse:
-    """
-    Retrieve a specific user by ID.
+    """Retrieve a specific user by ID.
 
     Args:
         user_id: The ID of the user.
 
     Returns:
         A single user.
+
     """
     (user, _) = guard_authentication(x_token)
     if user.id != user_id:

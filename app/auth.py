@@ -28,8 +28,7 @@ def guard_authentication(x_token: str):
 
 
 def guard_authorization(x_token: str, required_roles: set[RoleName]) -> list[RoleName]:
-    """
-    Function invoked at the start of a route function to ensure only
+    """Function invoked at the start of a route function to ensure only
     authenticated users with one of a set of roles can access it
 
     - Raises an HTTPException with status code 403 if the user lacks any of the

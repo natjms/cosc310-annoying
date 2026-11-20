@@ -14,5 +14,6 @@ def get_health() -> HealthResponse:
 
     Returns:
         An empty json object.
+
     """
     return HealthResponse()

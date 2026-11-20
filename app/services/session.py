@@ -56,8 +56,7 @@ def log_out(session_token: str) -> None:
 
 
 def session_is_valid(session_token: str) -> bool:
-    """
-    Determine if a session is valid. A session is valid if:
+    """Determine if a session is valid. A session is valid if:
     - It exists
     - It hasn't expired
     - It is owned by a user who isn't deactivated

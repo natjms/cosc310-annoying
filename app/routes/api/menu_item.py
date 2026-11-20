@@ -21,14 +21,14 @@ router = APIRouter(prefix="/menu-items")
     response_model=list[MenuItem],
 )
 def get_all_menu_items(menu: str) -> list[MenuItem]:
-    """
-    Retrieve all menu items from a given restaurant menu.
+    """Retrieve all menu items from a given restaurant menu.
 
     Args:
         menu: The ID of the menu.
 
     Returns:
         A list of menu items.
+
     """
     try:
         return service.get_all_menu_items(menu)
@@ -45,8 +45,7 @@ def get_menu_item_by_id(
     menu: str,
     menu_item_id: str,
 ) -> MenuItem:
-    """
-    Retrieve a specific menu item by ID.
+    """Retrieve a specific menu item by ID.
 
     Args:
         menu: The ID of the menu.
@@ -54,6 +53,7 @@ def get_menu_item_by_id(
 
     Returns:
         A single menu item.
+
     """
     try:
         return service.get_menu_item_by_id(
@@ -72,8 +72,7 @@ def get_menu_item_by_id(
 def patch_menu_item(
     menu: str, menu_item_id: str, request: PatchMenuItemRequest
 ) -> MenuItem:
-    """
-    Update an existing menu ID
+    """Update an existing menu ID
 
     Path arguments:
         menu: The ID of the menu.
@@ -85,6 +84,7 @@ def patch_menu_item(
 
     Returns:
         A single menu item.
+
     """
     try:
         return service.update_menu_item_by_id(menu, menu_item_id, request.model_dump())
@@ -100,8 +100,7 @@ def patch_menu_item(
 def post_menu_item(
     menu: str, request: PostMenuItemRequest, response: Response
 ) -> MenuItem:
-    """
-    Create a new menu item
+    """Create a new menu item
 
     Args:
         menu: The ID of the menu.
@@ -112,6 +111,7 @@ def post_menu_item(
 
     Returns:
         A single menu item.
+
     """
     try:
         new_menu_item = service.create_menu_item(menu, request.name, request.price)
