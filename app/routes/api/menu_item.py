@@ -72,7 +72,7 @@ def get_menu_item_by_id(
 def patch_menu_item(
     menu: str, menu_item_id: str, request: PatchMenuItemRequest
 ) -> MenuItem:
-    """Update an existing menu ID
+    """Update an existing menu ID.
 
     Path arguments:
         menu: The ID of the menu.
@@ -100,7 +100,7 @@ def patch_menu_item(
 def post_menu_item(
     menu: str, request: PostMenuItemRequest, response: Response
 ) -> MenuItem:
-    """Create a new menu item
+    """Create a new menu item.
 
     Args:
         menu: The ID of the menu.

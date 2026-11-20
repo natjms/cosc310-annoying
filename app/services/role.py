@@ -10,7 +10,7 @@ from app.services import user as user_service
 
 def assign_role(user_id: ULID, role: RoleName) -> None:
     """Grants a user a role if they don't already have it; otherwise, does nothing.
-    Raises MissingValueException if the user doesn't exist
+    Raises MissingValueException if the user doesn't exist.
     """
     if user_has_role(user_id, role):
         return
@@ -20,7 +20,7 @@ def assign_role(user_id: ULID, role: RoleName) -> None:
 
 def revoke_role(user_id: ULID, role: RoleName) -> None:
     """Revokes a user's role if they have it; otherwise, does nothing. Raises
-    MissingValueException if the user doesn't exist
+    MissingValueException if the user doesn't exist.
     """
     if not user_has_role(user_id, role):
         return
@@ -31,7 +31,7 @@ def revoke_role(user_id: ULID, role: RoleName) -> None:
 
 def find_user_roles(user_id: ULID) -> set[RoleName]:
     """Returns a set of roles possessed by a user. Raises MissingValueException if
-    the user doesn't exist
+    the user doesn't exist.
     """
     user = user_service.find_user_by_id(user_id)
     user_roles = roles.select(user_id=user_id)
@@ -40,7 +40,7 @@ def find_user_roles(user_id: ULID) -> set[RoleName]:
 
 def user_has_role(user_id: ULID, role: RoleName) -> bool:
     """Returns true if the given role is possessed by the given user. Raises
-    MissingValueException if the user doesn't exist
+    MissingValueException if the user doesn't exist.
     """
     return role in find_user_roles(user_id)
 
