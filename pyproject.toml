@@ -4,7 +4,7 @@ target-version = "py313"
 extend-exclude = ["app/repositories/repo.py","tests/"]
 
 [tool.ruff.lint]
-# Errors Warnings Naming Docstyle Bugs Upgrade Simplify FastAPI Async
+# Errors Warnings Naming Docstyle Bugs Upgrade Simplify FastAPI Async Imports
 select = [
 "E",
 "W",
@@ -15,6 +15,7 @@ select = [
 "SIM",
 "FAST",
 "ASYNC",
+"I"
 ] 
 
 [tool.ruff.format]
