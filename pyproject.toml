@@ -8,3 +8,6 @@ select = ["E", "W", "N", "D"]
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.fastapi]
+entrypoint = "app.main:app"
