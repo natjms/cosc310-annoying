@@ -41,6 +41,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
             Parameters: query (optional str).
             Responses:
                 200: a (potentially empty) list of restaurants matching the query is returned.
+                422: query is malformed.
         /{id}
             GET
                 Summary: get a restaurant by ID.
@@ -82,7 +83,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
             Responses:
                 200: a (potentially empty) list of the restaurant's menus is returned.
                 404: a restaurant with that ID does not exist.
-                422: the restaurant parameter is missing or malformed.
+                422: restaurant_id is missing or malformed.
         /{id}
             GET
                 Summary: get a menu by ID.
@@ -124,7 +125,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
             Responses:
                 200: a (potentially empty) list of matching menu items is returned.
                 404: a menu with the given ID does not exist.
-                422: a query parameter is malformed.
+                422: menu_id is missing or either menu_id or query are malformed.
         /{id}
             GET
                 Summary: get a menu item by ID.
@@ -191,7 +192,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
             Headers: authorization.
             Body: PostOrderRequest.
             Responses:
-                201: the order is created.
+                201: the order is created and returned.
                 401: the authorization token is missing or expired.
                 404: a menu-item in the order does not exist.
                 422: the PostOrderRequest is malformed.
@@ -204,7 +205,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
                 401: the authorization token is missing or expired.
                 403: the user is not an admin and is not getting their own orders.
                 404: a user with that ID does not exist.
-                422: a query parameter is malformed.
+                422: user_id is malformed.
         /{id}
             GET
                 Summary: get an order by ID.
@@ -227,10 +228,10 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
                     422: the PatchOrderRequest is malformed.
             /cancel
                 POST
-                    Summary: cancel a order by ID.
+                    Summary: cancel an order by ID.
                     Headers: authorization.
                     Responses:
-                        200: the order is cancelled.
+                        200: the order is cancelled and the updated order is returned.
                         401: the authorization token is missing or expired.
                         403: the user is not an admin and they do not own the order.
                         404: an order with that ID does not exist.
@@ -249,7 +250,7 @@ All endpoints will return 500 if an unhandled exception is raised in the backend
                 Summary: delete the current session.
                 Headers: authorization.
                 Responses:
-                    200 (not 204 because the method is POST): the session is deleted.
+                    200: the session is deleted.
                     401: the authorization token is missing or expired.
 
 
@@ -322,8 +323,6 @@ NOT /api!
             404: no restaurant, menu, or item matches the given slugs. 
 ```
 
-## Data Design
+## Entity Relationship Diagram
 
-### Entity Relationship Diagram
-
-The ERD on file is not up to date. It needs to be updated to support 1 cart per user per restaurant.
+![Entity Relationship Diagram](media/entity-relationship-diagram.png)
