@@ -1,4 +1,3 @@
-import { Link } from '@/utils/nats-friendly-router'
 import { useSecurity } from '@/utils/security'
 
 import '@/components/navbar.css'
@@ -8,12 +7,12 @@ export default function Navbar() {
 
     return <nav class='navbar:container'>
         <ul>
-            <li><Link path='/'>Home</Link></li>
-            <li><Link path='/restaurants'>Restaurants</Link></li>
+            <li><a href='/'>Home</a></li>
+            <li><a href='/restaurants'>Restaurants</a></li>
 
             { security === null ?
-                <li><Link path='/login'>Log in</Link></li>
-                : <li><Link path='/logout'>Log out</Link></li>
+                <li><a href='/login'>Log in</a></li>
+                : <li><a href='/logout'>Log out</a></li>
             }
         </ul>
     </nav>

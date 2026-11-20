@@ -1,22 +1,16 @@
 import { useState } from 'react'
-
-import { Redirect } from '@/utils/nats-friendly-router'
+import { route } from 'preact-router'
 
 export default function LogInPage() {
     const [email, setEmail]: [string, (e: string) => void]  = useState('');
     const [password, setPassword]: [string, (e: string) => void] = useState('');
-    const [should_redirect, setShouldRedirect]: [boolean, (e: boolean) => void] = useState(false);
 
     const handleLogin = (e) => {
         e.preventDefault()
 
         // TODO: call the log in endpoint, set the session values
 
-        setShouldRedirect(true);
-    }
-
-    if (should_redirect) {
-        return <Redirect to='/' />
+        route('/');
     }
 
     return <>

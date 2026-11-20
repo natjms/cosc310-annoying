@@ -20,9 +20,9 @@ export type Restaurant = {
 };
 
 export function get_all_restaurants() : Promise<Response> {
-    return requests.get('/restaurant/');
+    return requests.get('/restaurants/');
 }
 
 export function get_restaurant(id: string) : Promise<Response> {
-    return requests.get(`/restaurant/${id}`);
+    return requests.get(`/restaurants/${id}`);
 }

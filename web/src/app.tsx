@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'preact/hooks'
 import '@/app.css'
 
-import { NatsFriendlyRouter, Route, Link } from '@/utils/nats-friendly-router'
+import { Router, Route } from 'preact-router'
+
 import * as security from '@/utils/security'
 import { SecurityContext } from '@/utils/security'
 import type { SecurityReference } from '@/utils/security'
@@ -45,18 +46,16 @@ export function App() {
     return (
         <>
             <SecurityContext value={security}>
-                <NatsFriendlyRouter>
-                    <Navbar />
-                    <Route path='/' component={<HomePage />} />
-                    <Route path='/restaurants' component={<RestaurantListPage />} />
-
-                    <Route path='/_/{restaurant_id}' component={<RestaurantPage />} />
-
+                <Navbar />
+                <Router>
+                    <Route path='/' component={HomePage} />
+                    <Route path='/restaurants' component={RestaurantListPage} />
+                    <Route path='/_/:restaurant_id' component={RestaurantPage} />
                     { security === null &&
-                        <Route path='/login' component={<LogInPage />} /> }
+                        <Route path='/login' component={LogInPage} /> }
                     { security !== null &&
-                        <Route path='/logout' component={<LogOutPage />} /> }
-                </NatsFriendlyRouter>
+                        <Route path='/logout' component={LogOutPage} /> }
+                </Router>
             </SecurityContext>
         </>
     );
