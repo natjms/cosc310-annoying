@@ -61,9 +61,7 @@ def password_is_strong(value: str) -> str:
     has_digit = False
 
     for character in value:
-        if character in lowercase:
-            has_lowercase = True
-        elif character in uppercase:
+        if character in lowercase or character in uppercase:
             has_lowercase = True
         elif character in symbols:
             has_symbol = True

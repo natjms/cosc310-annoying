@@ -18,7 +18,6 @@ router = APIRouter(prefix="/menu-items")
 @router.get(
     "/",
     summary="Get all menu items by menu ID.",
-    response_model=list[MenuItem],
 )
 def get_all_menu_items(menu: str) -> list[MenuItem]:
     """Retrieve all menu items from a given restaurant menu.
@@ -39,7 +38,6 @@ def get_all_menu_items(menu: str) -> list[MenuItem]:
 @router.get(
     "/{menu_item_id}",
     summary="Get a menu item by menu ID and menu item ID.",
-    response_model=MenuItem,
 )
 def get_menu_item_by_id(
     menu: str,
@@ -67,7 +65,6 @@ def get_menu_item_by_id(
 @router.patch(
     "/{menu_item_id}",
     summary="Update a menu item by menu ID and menu item ID.",
-    response_model=MenuItem,
 )
 def patch_menu_item(
     menu: str, menu_item_id: str, request: PatchMenuItemRequest
@@ -95,7 +92,6 @@ def patch_menu_item(
 @router.post(
     "/",
     summary="Create a new menu item given the menu ID",
-    response_model=MenuItem,
 )
 def post_menu_item(
     menu: str, request: PostMenuItemRequest, response: Response

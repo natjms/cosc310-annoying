@@ -7,6 +7,7 @@ from app.repositories import sessions
 from app.repositories.repo import UniqueError
 from app.services import user as user_service
 from app.exceptions import AuthenticationException, MissingValueException
+import contextlib
 
 SESSION_DURATION = datetime.timedelta(hours=1)
 SESSION_TOKEN_BYTES = 128
@@ -62,10 +63,8 @@ def session_is_valid(session_token: str) -> bool:
     - It is owned by a user who isn't deactivated.
     """
     session = None
-    try:
+    with contextlib.suppress(MissingValueException):
         session = find_session(session_token)
-    except MissingValueException:
-        pass
 
     if session is None:
         return False
