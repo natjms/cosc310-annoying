@@ -25,6 +25,9 @@ def find_session(session_token: str) -> Session:
 def log_in(credential: str, password_plaintext: str) -> Session:
     user = user_service.find_user_by_credential(credential)
 
+    if not user.is_active:
+        raise AuthenticationException("Cannot log into a deactivated account")
+
     if user_service.validate_credentials(credential, password_plaintext):
         session_token = secrets.token_hex(SESSION_TOKEN_BYTES)
         sessions.create(user_id=user.id, token=session_token,
@@ -39,6 +42,12 @@ def log_out(session_token: str) -> None:
     sessions.delete(id=session.id)
 
 def session_is_valid(session_token: str) -> bool:
+    """
+    Determine if a session is valid. A session is valid if:
+    - It exists
+    - It hasn't expired
+    - It is owned by a user who isn't deactivated
+    """
     session = None
     try:
         session = find_session(session_token)
@@ -46,6 +55,10 @@ def session_is_valid(session_token: str) -> bool:
         pass
 
     if session is None:
+        return False
+
+    user = user_service.find_user_by_id(session.user_id)
+    if not user.is_active:
         return False
 
     current_timestamp_utc = int(datetime.datetime.now(datetime.UTC).timestamp())
