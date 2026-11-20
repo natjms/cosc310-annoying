@@ -13,4 +13,5 @@ class Menu(BaseModel):
 
 
 class PostMenuRequest(BaseModel):
+    restaurant_id: ULID
     name: str
