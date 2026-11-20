@@ -11,7 +11,10 @@ export default function Navbar() {
             <li><a href='/restaurants'>Restaurants</a></li>
 
             { security === null ?
-                <li><a href='/login'>Log in</a></li>
+                <>
+                    <li><a href='/create-account'>Create account</a></li>
+                    <li><a href='/login'>Log in</a></li>
+                </>
                 : <li><a href='/logout'>Log out</a></li>
             }
         </ul>

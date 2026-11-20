@@ -9,6 +9,7 @@ import type { SecurityReference } from '@/utils/security'
 
 import RestaurantListPage from '@/pages/restaurant-list'
 import RestaurantPage from '@/pages/restaurant'
+import CreateAccountPage from '@/pages/create-account'
 import LogInPage from '@/pages/login'
 import LogOutPage from '@/pages/logout'
 
@@ -51,8 +52,10 @@ export function App() {
                     <Route path='/' component={HomePage} />
                     <Route path='/restaurants' component={RestaurantListPage} />
                     <Route path='/_/:restaurant_id' component={RestaurantPage} />
-                    { security === null &&
-                        <Route path='/login' component={LogInPage} /> }
+                    { security === null && [
+                        <Route path='/login' component={LogInPage} />,
+                        <Route path='/create-account' component={CreateAccountPage} />
+                    ]}
                     { security !== null &&
                         <Route path='/logout' component={LogOutPage} /> }
                 </Router>
