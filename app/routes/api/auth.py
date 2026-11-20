@@ -4,8 +4,11 @@ from ulid import ULID
 
 from app.exceptions import MissingValueException, AuthenticationException
 from app.models.session import SessionResponse, PostSessionRequest
-from app.services.user import find_user_by_id, register_user, update_user, deactivate_user
-from app.services.session import guard_authentication, log_in, log_out
+from app.models.user import UserResponse
+from app.services.user import find_user_by_id
+from app.services.session import log_in, log_out
+from app.services.role import find_user_roles
+from app.auth import guard_authentication
 
 router = APIRouter(prefix="/auth")
 
@@ -17,7 +20,11 @@ def post_login(payload: PostSessionRequest, response: Response) -> SessionRespon
     try:
         session = log_in(payload.username_or_email, payload.password_plaintext)
         response.status_code = status.HTTP_200_OK
-        return SessionResponse(**session.model_dump())
+        return SessionResponse(
+            **session.model_dump(),
+            user=UserResponse(**find_user_by_id(session.user_id).model_dump()),
+            roles=find_user_roles(session.user_id)
+        )
     except AuthenticationException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
 

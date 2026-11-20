@@ -5,8 +5,7 @@ from ulid import ULID
 from app.exceptions import MissingValueException, ResourceConflictException
 from app.models.user import User, UserResponse, PostUserRequest, PatchUserRequest
 from app.services.user import find_user_by_id, register_user, update_user, deactivate_user
-from app.services.session import guard_authentication
-from app.services.role import guard_authorization
+from app.auth import guard_authorization, guard_authentication
 
 
 router = APIRouter(prefix='/users')

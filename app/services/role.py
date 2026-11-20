@@ -5,7 +5,7 @@ from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
 from app.models import Role, RoleName
 from app.repositories import roles
-from app.services import session as session_service, user as user_service
+from app.services import user as user_service
 
 def assign_role(user_id: ULID, role: RoleName) -> None:
     """
@@ -75,23 +75,3 @@ def user_has_all_roles_of(user_id: ULID, roles: set[RoleName]) -> bool:
         raise ValueError('At least one role must be provided for authorization')
 
     return len(roles.intersection(find_user_roles(user_id))) == len(roles)
-
-def guard_authorization(request: Request, required_roles: set[RoleName]) -> list[RoleName]:
-    """
-    Function invoked at the start of a route function to ensure only
-    authenticated users with one of a set of roles can access it
-
-    - Raises an HTTPException with status code 403 if the user lacks any of the
-      expected roles
-    - Raises an HTTPException if the user is unauthenticated (see
-      `app.services.session.guard_authentication` for more information)
-    """
-    (user, session) = session_service.guard_authentication(request)
-
-    if not user_has_any_roles_of(user.id, required_roles):
-        raise HTTPException(
-            status_code=403,
-            detail=f"Only the following kinds of users can do this: {', '.join(required_roles)}"
-        )
-
-    return (user, find_user_roles(user.id), session)
