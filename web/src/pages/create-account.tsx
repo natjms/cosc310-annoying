@@ -1,37 +1,42 @@
 import { useState } from 'react'
 import { route } from 'preact-router'
+import Form from '@/components/form'
 
 export default function CreateAccountPage() {
-    const [username, setUsername]: [string, (e: string) => void]  = useState('');
-    const [email, setEmail]: [string, (e: string) => void]  = useState('');
-    const [password, setPassword]: [string, (e: string) => void] = useState('');
+    const [form_state, setFormState]: [object, (o: object) => void] = useState({});
     const [error, setError]: [string, (e: string) => void] = useState(null);
-    
 
-    const handleLogin = (e) => {
-        e.preventDefault()
-
+    const handleSubmit = (form_data) => {
         // TODO: call the create user endpoint
 
         route('/login?created=true');
     }
 
-    const inputHandler = (setter) => {
-        return (e) => {
-            setter(e.target.value)
-        };
-    };
+    return (
+        <Form
+            name='Create account'
+            callback={handleSubmit}
+            error={error}
+            fields={[
+                {
+                    label: 'Username',
+                    type: 'text',
+                    key: 'username',
+                    required: true,
+                },
+                {
+                    label: 'Email',
+                    type: 'email',
+                    key: 'email',
+                    required: true,
+                },
+                {
+                    label: 'Password',
+                    type: 'password',
+                    key: 'password_plaintext',
+                    required: true,
+                },
 
-    return <>
-        <h1>Create account</h1>
-        { error !== null &&
-            <p> { error } </p>
-        }
-        <form action='#' onSubmit={handleLogin}>
-            <input placeholder='username' type='text' value={username} onChange={inputHandler(setUsername)} required={true} /><br/>
-            <input placeholder='email' type='email' value={email} onChange={inputHandler(setEmail)} required={true} /><br/>
-            <input placeholder='Password' type='password' value={password} onChange={inputHandler(setPassword)} required={true} /><br/>
-            <input value='Log in' type='submit' />
-        </form>
-    </>;
+            ]}/>
+    );
 }
