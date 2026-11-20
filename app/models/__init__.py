@@ -3,3 +3,4 @@ from .menu import Menu, PostMenuRequest
 from .restaurant import Restaurant, PostRestaurantRequest, PatchRestaurantRequest
 from .user import User
 from .session import Session
+from .role import Role, RoleName
