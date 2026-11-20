@@ -4,7 +4,18 @@ target-version = "py313"
 extend-exclude = ["app/repositories/repo.py","tests/"]
 
 [tool.ruff.lint]
-select = ["E", "W", "N", "D"] 
+# Errors Warnings Naming Docstyle Bugs Upgrade Simplify FastAPI Async
+select = [
+"E",
+"W",
+"N", 
+"D",
+"B",
+"UP",
+"SIM",
+"FAST",
+"ASYNC",
+] 
 
 [tool.ruff.format]
 quote-style = "double"
