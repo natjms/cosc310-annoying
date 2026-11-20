@@ -88,10 +88,10 @@ def guard_authorization(request: Request, required_roles: set[RoleName]) -> list
     """
     (user, session) = session_service.guard_authentication(request)
 
-    if not user_has_any_roles_of(user_id, required_roles):
+    if not user_has_any_roles_of(user.id, required_roles):
         raise HTTPException(
             status_code=403,
             detail=f"Only the following kinds of users can do this: {', '.join(required_roles)}"
         )
 
-    return (user, find_user_roles(), session)
+    return (user, find_user_roles(user.id), session)
