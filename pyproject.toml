@@ -1,0 +1,10 @@
+[tool.ruff]
+line-length = 102
+target-version = "py313"
+extend-exclude = ["app/repositories/repo.py","tests/"]
+
+[tool.ruff.lint]
+select = ["E", "W", "N", "D"] 
+
+[tool.ruff.format]
+quote-style = "double"
