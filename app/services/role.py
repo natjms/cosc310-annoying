@@ -7,6 +7,7 @@ from app.models import Role, RoleName
 from app.repositories import roles
 from app.services import user as user_service
 
+
 def assign_role(user_id: ULID, role: RoleName) -> None:
     """
     Grants a user a role if they don't already have it; otherwise, does nothing.
@@ -17,6 +18,7 @@ def assign_role(user_id: ULID, role: RoleName) -> None:
         return
 
     roles.create(user_id=user_id, role=role)
+
 
 def revoke_role(user_id: ULID, role: RoleName) -> None:
     """
@@ -30,6 +32,7 @@ def revoke_role(user_id: ULID, role: RoleName) -> None:
     role_record = roles.unique(user_id=user_id, role=role)
     roles.delete(id=role_record.id)
 
+
 def find_user_roles(user_id: ULID) -> set[RoleName]:
     """
     Returns a set of roles possessed by a user. Raises MissingValueException if
@@ -40,6 +43,7 @@ def find_user_roles(user_id: ULID) -> set[RoleName]:
     user_roles = roles.select(user_id=user_id)
     return set(r.role for r in user_roles)
 
+
 def user_has_role(user_id: ULID, role: RoleName) -> bool:
     """
     Returns true if the given role is possessed by the given user. Raises
@@ -47,6 +51,7 @@ def user_has_role(user_id: ULID, role: RoleName) -> bool:
     """
 
     return role in find_user_roles(user_id)
+
 
 def user_has_any_roles_of(user_id: ULID, roles: set[RoleName]) -> bool:
     """
@@ -58,9 +63,10 @@ def user_has_any_roles_of(user_id: ULID, roles: set[RoleName]) -> bool:
     """
 
     if len(roles) == 0:
-        raise ValueError('At least one role must be provided for authorization')
+        raise ValueError("At least one role must be provided for authorization")
 
     return len(roles.intersection(find_user_roles(user_id))) >= 1
+
 
 def user_has_all_roles_of(user_id: ULID, roles: set[RoleName]) -> bool:
     """
@@ -72,6 +78,6 @@ def user_has_all_roles_of(user_id: ULID, roles: set[RoleName]) -> bool:
     """
 
     if len(roles) == 0:
-        raise ValueError('At least one role must be provided for authorization')
+        raise ValueError("At least one role must be provided for authorization")
 
     return len(roles.intersection(find_user_roles(user_id))) == len(roles)

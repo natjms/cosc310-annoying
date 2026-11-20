@@ -70,9 +70,7 @@ def get_menu_item_by_id(
     response_model=MenuItem,
 )
 def patch_menu_item(
-    menu: str,
-    menu_item_id: str,
-    request: PatchMenuItemRequest
+    menu: str, menu_item_id: str, request: PatchMenuItemRequest
 ) -> MenuItem:
     """
     Update an existing menu ID
@@ -89,11 +87,7 @@ def patch_menu_item(
         A single menu item.
     """
     try:
-        return service.update_menu_item_by_id(
-            menu,
-            menu_item_id,
-            request.model_dump()
-        )
+        return service.update_menu_item_by_id(menu, menu_item_id, request.model_dump())
     except MissingValueException as e:
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
@@ -104,9 +98,7 @@ def patch_menu_item(
     response_model=MenuItem,
 )
 def post_menu_item(
-    menu: str,
-    request: PostMenuItemRequest,
-    response: Response
+    menu: str, request: PostMenuItemRequest, response: Response
 ) -> MenuItem:
     """
     Create a new menu item
@@ -122,11 +114,7 @@ def post_menu_item(
         A single menu item.
     """
     try:
-        new_menu_item = service.create_menu_item(
-            menu,
-            request.name,
-            request.price
-        )
+        new_menu_item = service.create_menu_item(menu, request.name, request.price)
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
     except MissingValueException:

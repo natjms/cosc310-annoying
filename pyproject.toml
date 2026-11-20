@@ -1,5 +1,5 @@
 [tool.ruff]
-line-length = 102
+line-length = 88
 target-version = "py313"
 extend-exclude = ["app/repositories/repo.py","tests/"]
 
