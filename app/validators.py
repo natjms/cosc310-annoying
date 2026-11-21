@@ -22,7 +22,12 @@ def nonempty_string(value: str) -> str:
 
 def positive_float(value: float) -> float:
 	if value < 0:
-		raise ValueError('Given numeric value must not be less than zero')
+		raise ValueError('Given numeric float value must not be less than zero')
+	return value
+
+def positive_int(value: int) -> int:
+	if value <= 0:
+		raise ValueError('Given numeric integer value must not be less than zero')
 	return value
 
 def regex_validator_factory(value, regex, message) -> str:
