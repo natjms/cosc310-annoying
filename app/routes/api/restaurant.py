@@ -1,17 +1,32 @@
-from fastapi import APIRouter, HTTPException, Response, status, Header
-from pydantic import BaseModel
 from typing import Annotated
 
-from app.repositories.repo import UniqueError
-from app.exceptions import MissingValueException
-from app.models.user import User
-from app.services.user import find_user_by_id
-from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
-from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
-from app.models.menu import Menu, PostMenuRequest
-from app.services.menu import list_restaurant_menus, create_menu
-from app.auth import guard_authorization
+from fastapi import APIRouter, Header, HTTPException, Response, status
+from pydantic import BaseModel
 
+from app.auth import guard_authorization
+from app.exceptions import MissingValueException
+from app.models.menu import Menu, PostMenuRequest
+from app.models.restaurant import (
+    PatchRestaurantRequest,
+    PostRestaurantRequest,
+    Restaurant,
+)
+from app.models.user import User
+from app.repositories.repo import UniqueError
+from app.services.menu import create_menu, list_restaurant_menus
+from app.services.restaurant import (
+    create_restaurant,
+    find_restaurant_by_id,
+    list_all_restaurants,
+    update_restaurant,
+)
+from app.services.restaurant import (
+    delete_restaurant as delete_restaurant_service,
+)
+from app.services.restaurant import (
+    search_restaurants as search_restaurants_service,
+)
+from app.services.user import find_user_by_id
 
 router = APIRouter(prefix="/restaurants")
 
@@ -46,7 +61,7 @@ def search_restaurants(query: str) -> list[Restaurant]:
     Returns:
         A list of matching restaurants.
     """
-    return search_restaurants(query)
+    return search_restaurants_service(query)
 
 
 @router.get(
@@ -78,9 +93,9 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 def patch_restaurant(
     restaurant_id: str,
     request: PatchRestaurantRequest,
-    x_token: Annotated[str, Header()]
-)-> Restaurant:
-    guard_authorization(x_token, {'restaurateur'})
+    x_token: Annotated[str, Header()],
+) -> Restaurant:
+    guard_authorization(x_token, {"restaurateur"})
     try:
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
@@ -97,7 +112,7 @@ def patch_restaurant(
 def post_restaurant(
     request: PostRestaurantRequest,
     response: Response,
-    x_token: Annotated[str, Header()]
+    x_token: Annotated[str, Header()],
 ) -> Restaurant:
     """
     Post a restaurant.
@@ -108,10 +123,25 @@ def post_restaurant(
     Returns:
         The created restaurant.
     """
-    guard_authorization(x_token, {'restaurateur'})
+    guard_authorization(x_token, {"restaurateur"})
     try:
         new_restaurant = create_restaurant(request.owner_id, request.name)
         response.status_code = status.HTTP_201_CREATED
         return new_restaurant
     except MissingValueException as e:
         raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.delete(
+    "/{restaurant_id}",
+    summary="Delets a restaurant",
+)
+def delete_restaurant(
+    restaurant_id: str,
+    x_token: Annotated[str, Header()],
+) -> None:
+    guard_authorization(x_token, {"restaurateur"})
+    try:
+        delete_restaurant_service(restaurant_id)
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="restaurant does not exist")

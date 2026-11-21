@@ -1,14 +1,14 @@
-from fastapi import APIRouter, HTTPException, Response, status, Header
-from pydantic import BaseModel, AfterValidator
 from typing import Annotated
 
+from fastapi import APIRouter, Header, HTTPException, Response, status
+from pydantic import AfterValidator, BaseModel
+
+import app.validators as v
+from app.auth import guard_authorization
 from app.exceptions import MissingValueException
 from app.models import MenuItem
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
-import app.validators as v
-from app.auth import guard_authorization
-
 
 NOT_FOUND_STATUS = 404
 
@@ -74,7 +74,7 @@ def patch_menu_item(
     menu: str,
     menu_item_id: str,
     request: PatchMenuItemRequest,
-    x_token: Annotated[str, Header()]
+    x_token: Annotated[str, Header()],
 ) -> MenuItem:
     """
     Update an existing menu ID
@@ -90,13 +90,9 @@ def patch_menu_item(
     Returns:
         A single menu item.
     """
-    guard_authorization(x_token, {'restaurateur'})
+    guard_authorization(x_token, {"restaurateur"})
     try:
-        return service.update_menu_item_by_id(
-            menu,
-            menu_item_id,
-            request.model_dump()
-        )
+        return service.update_menu_item_by_id(menu, menu_item_id, request.model_dump())
     except MissingValueException as e:
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
@@ -110,7 +106,7 @@ def post_menu_item(
     menu: str,
     request: PostMenuItemRequest,
     response: Response,
-    x_token: Annotated[str, Header()]
+    x_token: Annotated[str, Header()],
 ) -> MenuItem:
     """
     Create a new menu item
@@ -125,14 +121,25 @@ def post_menu_item(
     Returns:
         A single menu item.
     """
-    guard_authorization(x_token, {'restaurateur'})
+    guard_authorization(x_token, {"restaurateur"})
     try:
-        new_menu_item = service.create_menu_item(
-            menu,
-            request.name,
-            request.price
-        )
+        new_menu_item = service.create_menu_item(menu, request.name, request.price)
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
     except MissingValueException:
         raise HTTPException(status_code=NOT_FOUND_STATUS)
+
+
+@router.delete(
+    "/{menu_item_id}", summary="delete a menu item using the id", status_code=204
+)
+def delete_menu_item(
+    menu: str,
+    menu_item_id: str,
+    x_token: Annotated[str, Header()],
+) -> None:
+    guard_authorization(x_token, {"restaurateur"})
+    try:
+        service.delete_menu_item(menu, menu_item_id)
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="menu item not found")
