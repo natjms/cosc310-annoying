@@ -69,9 +69,15 @@ def update_cart_item(
             "item not in cart"
         )  # nts: make this missing record later
     if quantity <= 0:
-        del cart.items[menu_item_id]
+        if menu_item_id in cart.items:
+            del cart.items[menu_item_id]
     else:
-        cart.items[menu_item_id].quantity = quantity
+        if menu_item_id in cart.items:
+            cart.items[menu_item_id].quantity = quantity
+        else:
+            cart.items[menu_item_id] = CartItem(
+                id=ULID(), menu_item_id=menu_item_id, quantity=quantity
+            )
     return carts.update(id=cart.id, items=cart.items, updated_at=datetime.now())
 
 

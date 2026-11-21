@@ -1,7 +1,10 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel
+from pydantic import AfterValidator, BaseModel
 from ulid import ULID
 
+import app.validators as v
 from app.exceptions import MissingValueException
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
@@ -52,7 +55,9 @@ def get_active_cart(user: User = Depends(get_current_user)) -> Cart:
     response_model=Cart,
 )
 def update_current_cart(
-    menu_item_id: str, quantity: int, user: User = Depends(get_current_user)
+    menu_item_id: str,
+    quantity: Annotated[int, AfterValidator(v.positive_int)],
+    user: User = Depends(get_current_user),
 ) -> Cart:
     """
     Retrieve what from who.
