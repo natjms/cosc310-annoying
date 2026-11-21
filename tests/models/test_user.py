@@ -1,7 +1,9 @@
 import pytest
 from pydantic import ValidationError
 from ulid import ULID
+
 from app.models.user import User
+
 
 def test_user_valid():
     user_id = ULID()

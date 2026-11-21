@@ -1,11 +1,12 @@
-from ulid import ULID
 import pytest
+from ulid import ULID
 
-from app.services import restaurant as restaurant_service
-from app.services import user as user_service
+from app.exceptions import MissingValueException
 from app.repositories.restaurant import restaurants as restaurant_repo
 from app.repositories.user import users as user_repo
-from app.exceptions import MissingValueException
+from app.services import restaurant as restaurant_service
+from app.services import user as user_service
+
 
 @pytest.fixture
 def test_data():

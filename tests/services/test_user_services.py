@@ -1,8 +1,9 @@
 import pytest
 
-from app.services import user as user_service
-from app.repositories.user import users as user_repository
 from app.exceptions import MissingValueException, ResourceConflictException
+from app.repositories.user import users as user_repository
+from app.services import user as user_service
+
 
 @pytest.fixture
 def test_data():

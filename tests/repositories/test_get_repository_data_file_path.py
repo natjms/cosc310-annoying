@@ -1,6 +1,10 @@
 import pytest
 
-from app.repositories.utils import get_repository_data_file_path, DATA_DIRECTORY_ENVIRONMENT_VARIABLE
+from app.repositories.utils import (
+    DATA_DIRECTORY_ENVIRONMENT_VARIABLE,
+    get_repository_data_file_path,
+)
+
 FILENAME = "restaurants.json"
 
 

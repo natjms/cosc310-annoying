@@ -1,8 +1,11 @@
 import sys
 import threading
+
 import pytest
 from pydantic import BaseModel, ValidationError
+
 from app.repositories.repo import Id, Repo, UniqueError
+
 
 class Item(BaseModel):
 	id: Id

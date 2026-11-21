@@ -1,12 +1,14 @@
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from ulid import ULID
-import pytest
-from app import app
 
+from app import app
 from app.exceptions import AuthenticationException
-from app.repositories import users as user_repo, sessions as session_repo
-from app.services import user as user_service, session as session_service
+from app.repositories import sessions as session_repo
+from app.repositories import users as user_repo
+from app.services import session as session_service
+from app.services import user as user_service
 
 # "AVeryStr0ngPassw0rd!" hashed
 password_hash = b"$2b$12$fuwt7LndvSSufxkgphaaEeLMD4/idE1ULAP2hqoOTWB9L2clq0DHO"

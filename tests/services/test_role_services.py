@@ -1,10 +1,12 @@
-from ulid import ULID
 import pytest
+from ulid import ULID
 
 from app.models import RoleName
+from app.repositories import roles as role_repository
+from app.repositories import users as user_repository
 from app.services import user as user_service
 from app.services.role import *
-from app.repositories import users as user_repository, roles as role_repository
+
 
 @pytest.fixture
 def test_data():

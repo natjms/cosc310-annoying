@@ -1,8 +1,11 @@
 import pytest
 
-from app.services import user as user_service, session as session_service
-from app.repositories import users as user_repository, sessions as session_repository
-from app.exceptions import MissingValueException, AuthenticationException
+from app.exceptions import AuthenticationException, MissingValueException
+from app.repositories import sessions as session_repository
+from app.repositories import users as user_repository
+from app.services import session as session_service
+from app.services import user as user_service
+
 
 @pytest.fixture
 def test_data():

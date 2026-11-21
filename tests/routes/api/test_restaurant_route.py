@@ -1,13 +1,13 @@
-from fastapi.testclient import TestClient
 import pytest
-from app import app
+from fastapi.testclient import TestClient
 from ulid import ULID
 
-from app.services import restaurant as restaurant_service
-from app.services import user as user_service
+from app import app
+from app.exceptions import MissingValueException
 from app.repositories.restaurant import restaurants as restaurant_repo
 from app.repositories.user import users as user_repo
-from app.exceptions import MissingValueException
+from app.services import restaurant as restaurant_service
+from app.services import user as user_service
 
 client = TestClient(app)
 

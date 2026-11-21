@@ -1,12 +1,12 @@
-from fastapi.testclient import TestClient
 import pytest
-from app import app
+from fastapi.testclient import TestClient
 from ulid import ULID
 
-from app.services import restaurant as restaurant_service
+from app import app
 from app.services import menu as menu_service
-from app.services import user as user_service
 from app.services import menu_item as menu_item_service
+from app.services import restaurant as restaurant_service
+from app.services import user as user_service
 
 client = TestClient(app)
 
