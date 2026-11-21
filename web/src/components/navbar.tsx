@@ -15,7 +15,10 @@ export default function Navbar() {
                     <li><a href='/create-account'>Create account</a></li>
                     <li><a href='/login'>Log in</a></li>
                 </>
-                : <li><a href='/logout'>Log out</a></li>
+                : <>
+                    <li><a href='/account'>Account</a></li>
+                    <li><a href='/logout'>Log out</a></li>
+                </>
             }
         </ul>
     </nav>

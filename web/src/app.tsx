@@ -12,7 +12,7 @@ import RestaurantListPage from '@/pages/restaurant-list'
 import UpdateRestaurantPage from '@/pages/update-restaurant'
 import CreateRestaurantPage from '@/pages/create-restaurant'
 
-//import AccountPage from '@/pages/account'
+import AccountPage from '@/pages/account'
 import CreateAccountPage from '@/pages/create-account'
 import UpdateAccountPage from '@/pages/update-account'
 //
@@ -88,9 +88,10 @@ export function App() {
                         <Route path='/login' component={LogInPage} />,
                         <Route path='/create-account' component={CreateAccountPage} />
                     ]}
-                    { security !== null &&
-                        <Route path='/logout' component={LogOutPage} />
-                    }
+                    { security !== null && [
+                        <Route path='/logout' component={LogOutPage} />,
+                        <Route path='/account' component={AccountPage} />
+                    ]}
                 </Router>
         </>
     );

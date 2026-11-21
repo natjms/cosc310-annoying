@@ -31,6 +31,7 @@ export default function AccountPage() {
 
     return <>
         <h1> {user.username} </h1>
-        <DisplayTable item={username} />
+        <DisplayTable item={user} />
+        <a href='/account/update'>Update account</a>
     </>
 }
