@@ -51,7 +51,9 @@ def get_active_cart(user: User = Depends(get_current_user)) -> Cart:
     summary="Updates current active cart for the current user",
     response_model=Cart,
 )
-def update_current_cart(user_id: ULID) -> Cart:
+def update_current_cart(
+    menu_item_id: str, quantity: int, user: User = Depends(get_current_user)
+) -> Cart:
     """
     Retrieve what from who.
 
@@ -61,8 +63,13 @@ def update_current_cart(user_id: ULID) -> Cart:
     Returns:
         what?
     """
-    # try:
-    #    return service.update_cart_item
+    try:
+        active_cart = service.get_active_cart(user.id)
+        return service.update_cart_item(
+            user.id, active_cart.restaurant_id, maybe_ulid(menu_item_id), quantity
+        )
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="missing value")
 
 
 @router.delete(
@@ -70,7 +77,7 @@ def update_current_cart(user_id: ULID) -> Cart:
     summary="Clears the current active cart for the current restaurant",
     response_model=Cart,
 )
-def clear_active_cart(user_id: ULID) -> Cart:
+def clear_active_cart(user: User = Depends(get_current_user)) -> Cart:
     """
     Retrieve what from who.
 
@@ -80,7 +87,11 @@ def clear_active_cart(user_id: ULID) -> Cart:
     Returns:
         what?
     """
-    pass
+    try:
+        active_cart = service.get_active_cart(user.id)
+        return service.clear_cart(user.id, active_cart.restaurant_id)
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="missing value")
 
 
 @router.get(
