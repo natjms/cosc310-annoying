@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, Header
 from pydantic import BaseModel
+from typing import Annotated
 
 from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
@@ -9,6 +10,7 @@ from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest,
 from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
 from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
+from app.auth import guard_authorization
 
 
 router = APIRouter(prefix="/restaurants")
@@ -73,7 +75,12 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     summary="Updates a restaurant",
     response_model=Restaurant,
 )
-def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Restaurant:
+def patch_restaurant(
+    restaurant_id: str,
+    request: PatchRestaurantRequest,
+    x_token: Annotated[str, Header()]
+)-> Restaurant:
+    guard_authorization(x_token, {'restaurateur'})
     try:
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
@@ -87,7 +94,11 @@ def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest)-> Rest
     summary="Creates a new restaurant",
     response_model=Restaurant,
 )
-def post_restaurant(request: PostRestaurantRequest, response: Response) -> Restaurant:
+def post_restaurant(
+    request: PostRestaurantRequest,
+    response: Response,
+    x_token: Annotated[str, Header()]
+) -> Restaurant:
     """
     Post a restaurant.
 
@@ -97,6 +108,7 @@ def post_restaurant(request: PostRestaurantRequest, response: Response) -> Resta
     Returns:
         The created restaurant.
     """
+    guard_authorization(x_token, {'restaurateur'})
     try:
         new_restaurant = create_restaurant(request.owner_id, request.name)
         response.status_code = status.HTTP_201_CREATED
