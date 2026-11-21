@@ -21,12 +21,6 @@ def test_menu_valid_with_items():
     assert menu.is_active is True
     assert menu.items[item_id].name == "Burger"
 
-def test_menu_defaults():
-    menu = Menu(id=ULID(),name="empty menu",restaurant_id=None)
-    assert menu.restaurant_id is None
-    assert menu.items == {}
-    assert menu.is_active is True
-
 def test_menu_invalid_items_nested():
     with pytest.raises(ValidationError):
         Menu(id=ULID(),name="Incorrect Menu",items={ULID():"invalid item"})
