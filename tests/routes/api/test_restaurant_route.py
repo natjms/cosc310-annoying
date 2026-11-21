@@ -11,58 +11,66 @@ from app.services import user as user_service
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def test_data():
-    user = user_service.register_user('test', 'test@example.com', 'password')
-    restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
+    user = user_service.register_user("test", "test@example.com", "password")
+    restaurant = restaurant_service.create_restaurant(user.id, "Test Restaurant")
 
     yield (user, restaurant)
 
     restaurant_repo.delete(id=restaurant.id)
     user_repo.delete(id=user.id)
 
+
 def test_cannot_get_nonexistant_restaurant():
-    response = client.get(f'/api/restaurants/{ULID()}')
+    response = client.get(f"/api/restaurants/{ULID()}")
     assert response.status_code == 404
+
 
 def test_create_and_retrieve_restaurant(test_data):
     (user, _) = test_data
 
-    create_response = client.post('/api/restaurants/',
-        headers={'Content-Type': 'application/json'},
+    create_response = client.post(
+        "/api/restaurants/",
+        headers={"Content-Type": "application/json"},
         json={
-            'owner_id': str(user.id),
-            'name': 'Created Restaurant',
-        }
+            "owner_id": str(user.id),
+            "name": "Created Restaurant",
+        },
     )
 
-    new_restaurant_id = create_response.json()['id']
+    new_restaurant_id = create_response.json()["id"]
     assert create_response.status_code == 201
 
-    retrieve_response = client.get(f'/api/restaurants/{new_restaurant_id}')
-    assert retrieve_response.json()['name'] == 'Created Restaurant'
+    retrieve_response = client.get(f"/api/restaurants/{new_restaurant_id}")
+    assert retrieve_response.json()["name"] == "Created Restaurant"
 
     restaurant_repo.delete(id=ULID.from_str(new_restaurant_id))
 
+
 def test_attempt_to_create_restaurant_with_fake_user(test_data):
-    create_response = client.post('/api/restaurants/',
-        headers={'Content-Type': 'application/json'},
+    create_response = client.post(
+        "/api/restaurants/",
+        headers={"Content-Type": "application/json"},
         json={
-            'owner_id': str(ULID()),
-            'name': 'Created Restaurant',
-        }
+            "owner_id": str(ULID()),
+            "name": "Created Restaurant",
+        },
     )
 
     assert create_response.status_code == 404
 
+
 def test_update_restaurant(test_data):
     (_, restaurant) = test_data
-    update_response = client.patch(f'/api/restaurants/{restaurant.id}',
-        headers={'Content-Type': 'application/json'},
-        json={ 'name': 'Updated Restaurant' }
+    update_response = client.patch(
+        f"/api/restaurants/{restaurant.id}",
+        headers={"Content-Type": "application/json"},
+        json={"name": "Updated Restaurant"},
     )
 
     assert update_response.status_code == 200
 
-    retrieve_response = client.get(f'/api/restaurants/{restaurant.id}')
-    assert retrieve_response.json()['name'] == 'Updated Restaurant'
+    retrieve_response = client.get(f"/api/restaurants/{restaurant.id}")
+    assert retrieve_response.json()["name"] == "Updated Restaurant"
