@@ -4,14 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import AfterValidator, BaseModel
 
 import app.validators as v
-from app.auth import get_current_user
+from app.auth import get_current_user, guard_authentication
 from app.exceptions import MissingValueError
-from app.models import MenuItem, User
+from app.models import MenuItem, Session, User
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
 
 router = APIRouter(prefix="/menu-items")
-
 
 @router.get(
     "/",
@@ -68,7 +67,6 @@ def patch_menu_item(
     menu: str,
     menu_item_id: str,
     request: PatchMenuItemRequest,
-    user: Annotated[User, Depends(get_current_user)],
 ) -> MenuItem:
     """Update an existing menu ID.
 
@@ -98,7 +96,6 @@ def post_menu_item(
     menu: str,
     request: PostMenuItemRequest,
     response: Response,
-    user: Annotated[User, Depends(get_current_user)],
 ) -> MenuItem:
     """Create a new menu item.
 

@@ -83,7 +83,6 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 def patch_restaurant(
     restaurant_id: str,
     request: PatchRestaurantRequest,
-    user: Annotated[User, Depends(get_current_user)],
 ) -> Restaurant:
     try:
         return update_restaurant(restaurant_id, request.model_dump())
@@ -98,7 +97,6 @@ def patch_restaurant(
 def post_restaurant(
     request: PostRestaurantRequest,
     response: Response,
-    user: Annotated[User, Depends(get_current_user)],
 ) -> Restaurant:
     """Post a restaurant.
 
