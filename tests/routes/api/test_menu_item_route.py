@@ -7,12 +7,17 @@ from app.services import restaurant as restaurant_service
 from app.services import menu as menu_service
 from app.services import user as user_service
 from app.services import menu_item as menu_item_service
+from app.services import session as session_service
 
 client = TestClient(app)
 
+# "AVeryStr0ngPassw0rd!" hashed
+password_hash = b"$2b$12$fuwt7LndvSSufxkgphaaEeLMD4/idE1ULAP2hqoOTWB9L2clq0DHO"
+
 @pytest.fixture
 def test_data():
-    user = user_service.register_user('test', 'test@example.com', 'password')
+    user = user_service.register_user('test', 'test@example.com', 'password', dangerously_set_password_hash=password_hash, role='restaurateur')
+    session = session_service.log_in(user.username, 'AVeryStr0ngPassw0rd!')
     restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
     menu = menu_service.create_menu(restaurant.id, 'Test Menu')
     menu_item = menu_item_service.create_menu_item(
@@ -21,17 +26,17 @@ def test_data():
         5.00
     )
 
-    yield (user, restaurant, menu, menu_item)
+    yield (user, restaurant, menu, menu_item, session)
 
     menu_service.delete_menu(restaurant.id, menu.id)
     restaurant_service.delete_restaurant(restaurant.id)
     user_service.delete_user(user.id)
 
 def test_create_and_retrieve_single_menu_item(test_data):
-    (_, restaurant, menu, _) = test_data
+    (_, restaurant, menu, _, session) = test_data
 
     response = client.post(f'/api/menu-items/?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'X-Token': session.token},
         json={
             'name': 'Test Item',
             'price': 5.00
@@ -46,9 +51,9 @@ def test_create_and_retrieve_single_menu_item(test_data):
     assert response.json()['name'] == 'Test Item'
 
 def test_create_with_missing_data(test_data):
-    (_, restaurant, menu, _) = test_data
+    (_, restaurant, menu, _, session) = test_data
     response = client.post(f'/api/menu-items/?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'X-Token': session.token},
         json={
             'name': 'Test Item',
         }
@@ -57,22 +62,22 @@ def test_create_with_missing_data(test_data):
     assert response.status_code == 422
 
 def test_retrieve_all_missing_menu_returns_404(test_data):
-    (_, restaurant, _, menu_item) = test_data
+    (_, restaurant, _, menu_item, session) = test_data
 
     response = client.get(f'/api/menu-items/{menu_item.id}?menu={ULID()}')
     assert response.status_code == 404
 
 def test_retrieve_single_missing_menu_returns_404(test_data):
-    (_, restaurant, _, menu_item) = test_data
+    (_, restaurant, _, menu_item, _) = test_data
 
     response = client.get(f'/api/menu-items/?menu={ULID()}')
     assert response.status_code == 404
 
 def test_update_menu_item(test_data):
-    (_, restaurant, menu, menu_item) = test_data
+    (_, restaurant, menu, menu_item, session) = test_data
 
     update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'X-Token': session.token},
         json={
             'name': 'New title',
         }
@@ -85,10 +90,10 @@ def test_update_menu_item(test_data):
     assert response.json()['name'] == 'New title'
 
 def test_update_menu_item_with_invalid_price(test_data):
-    (_, restaurant, menu, menu_item) = test_data
+    (_, restaurant, menu, menu_item, session) = test_data
 
     update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'X-Token': session.token},
         json={
             'price': -5.00,
         }
@@ -97,10 +102,10 @@ def test_update_menu_item_with_invalid_price(test_data):
     assert update_response.status_code == 422
 
 def test_update_menu_item_with_empty_string_is_idempotent(test_data):
-    (_, restaurant, menu, menu_item) = test_data
+    (_, restaurant, menu, menu_item, session) = test_data
 
     update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'X-Token': session.token},
         json={
             'name': '',
         }

@@ -6,7 +6,7 @@ from . import MenuItem
 
 class Menu(BaseModel):
     id: ULID
-    restaurant_id: ULID | None
+    restaurant_id: ULID
     name: str
     is_active: bool = True
     items: dict[ULID, MenuItem] = {}

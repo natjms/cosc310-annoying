@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, Header
 from pydantic import BaseModel
+from typing import Annotated
 
 from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
@@ -9,6 +10,7 @@ from app.models.restaurant import PatchRestaurantRequest, PostRestaurantRequest,
 from app.services.restaurant import list_all_restaurants, find_restaurant_by_id, create_restaurant, search_restaurants, update_restaurant
 from app.models.menu import Menu, PostMenuRequest
 from app.services.menu import list_restaurant_menus, create_menu
+from app.auth import guard_authorization
 
 
 router = APIRouter(prefix="/menus")
@@ -42,7 +44,11 @@ def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
     summary="Creates a new menu for the given restaurant",
     response_model=Menu,
 )
-def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
+def post_menu(
+    request: PostMenuRequest,
+    response: Response,
+    x_token: Annotated[str, Header()]
+) -> Menu:
     """
     Post a menu given.
 
@@ -52,9 +58,11 @@ def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
     Returns:
         The created menu.
     """
+    guard_authorization(x_token, {'restaurateur'})
 
     try:
         restaurant = find_restaurant_by_id(request.restaurant_id)
+        response.status_code = status.HTTP_201_CREATED
         return create_menu(restaurant.id, request.name)
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant not found.")
