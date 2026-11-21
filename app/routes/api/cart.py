@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from pydantic import BaseModel
 from ulid import ULID
 
+from app.auth import guard_authorization
 from app.exceptions import MissingValueException
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
@@ -9,20 +12,15 @@ from app.models.session import Session
 from app.models.user import User
 from app.repositories import utils
 from app.services import cart as service
-from app.services.session import guard_authentication
 from app.services.utils import maybe_ulid
 
 router = APIRouter()
 
 
-def get_current_user(
-    auth: tuple[User, Session] = Depends(guard_authentication),
-) -> User:
+def get_current_user(x_token: Annotated[str, Header()]) -> User:
+    # Passing standard roles so any authenticated user can access carts
+    auth = guard_authorization(x_token, {"customer", "restaurateur", "admin"})
     return auth[0]
-
-
-# nts: does the thing below work for using the given user (which in turn is passed by something else)
-# or are we relying on a session variable that holds the current active user?
 
 
 @router.get(

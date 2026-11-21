@@ -1,21 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from ulid import ULID
 
+from app.auth import guard_authorization
 from app.exceptions import MissingValueException
 from app.models.order import Order
 from app.models.session import Session
 from app.models.user import User
 from app.services import order as service
-from app.services.session import guard_authentication
 from app.services.utils import maybe_ulid
 
 router = APIRouter()
 
 
-def get_current_user(
-    auth: tuple[User, Session] = Depends(guard_authentication),
-) -> User:
+def get_current_user(x_token: Annotated[str, Header()]) -> User:
+    # ugly hack
+    auth = guard_authorization(x_token, {"customer", "restaurateur", "admin"})
     return auth[0]
 
 
@@ -72,7 +74,7 @@ def get_order_by_id(order_id: str, user: User = Depends(get_current_user)):
 )
 def update_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     try:
-        return service.update_order(user.id,maybe_ulid(order_id),status="preparing")
+        return service.update_order(user.id, maybe_ulid(order_id), status="preparing")
     except MissingValueException:
         raise HTTPException(status_code=404, detail="missing value")
 

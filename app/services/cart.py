@@ -47,7 +47,7 @@ def activate_cart(user_id: ULID, restaurant_id: ULID) -> Cart:
 
 
 def add_item_to_cart(
-    user_id: ULID, restaurant_id: ULID, menu_item_id: ULID, quantity: int
+    user_id: ULID, restaurant_id: ULID, menu_id: ULID, menu_item_id: ULID, quantity: int
 ) -> Cart:
     cart = get_or_create_cart(user_id, restaurant_id)
     if menu_item_id in cart.items:
@@ -55,7 +55,7 @@ def add_item_to_cart(
     else:
         new_id = ULID()
         cart.items[menu_item_id] = CartItem(
-            id=new_id, menu_item_id=menu_item_id, quantity=quantity
+            id=new_id, menu_id=menu_id, menu_item_id=menu_item_id, quantity=quantity
         )
     return carts.update(id=cart.id, items=cart.items, updated_at=datetime.now())
 
