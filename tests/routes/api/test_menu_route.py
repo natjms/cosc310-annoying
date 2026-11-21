@@ -22,7 +22,7 @@ def test_data():
 
     yield (user, restaurant, menu, session)
 
-    menu_service.delete_menu(restaurant.id, menu.id)
+    menu_service.delete_menu(menu.id)
     restaurant_service.delete_restaurant(restaurant.id)
     user_service.delete_user(user.id)
 
