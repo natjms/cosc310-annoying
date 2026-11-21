@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from ulid import ULID
 
-from . import MenuItem
+from .menu_item import MenuItem
 
 
 class Menu(BaseModel):

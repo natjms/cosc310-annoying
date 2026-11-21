@@ -1,5 +1,5 @@
 from .menu import menus
 from .restaurant import restaurants
-from .user import users
-from .session import sessions
 from .role import roles
+from .session import sessions
+from .user import users

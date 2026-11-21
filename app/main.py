@@ -4,4 +4,4 @@ from dotenv import load_dotenv
 # sets `os.environ` variables that can be used later
 load_dotenv()
 
-from app import app
+from app import app  # noqa: E402

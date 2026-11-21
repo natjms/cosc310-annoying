@@ -1,11 +1,14 @@
-from pydantic import BaseModel
-from ulid import ULID
 from enum import StrEnum
 
+from pydantic import BaseModel
+from ulid import ULID
+
+
 class RoleName(StrEnum):
-    admin = 'admin'
-    customer = 'customer'
-    restaurateur = 'restaurateur'
+    admin = "admin"
+    customer = "customer"
+    restaurateur = "restaurateur"
+
 
 class Role(BaseModel):
     id: ULID

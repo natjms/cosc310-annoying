@@ -1,25 +1,22 @@
-from fastapi.testclient import TestClient
 import pytest
-from app import app
+from fastapi.testclient import TestClient
 from ulid import ULID
 
-from app.services import restaurant as restaurant_service
+from app import app
 from app.services import menu as menu_service
-from app.services import user as user_service
 from app.services import menu_item as menu_item_service
+from app.services import restaurant as restaurant_service
+from app.services import user as user_service
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def test_data():
-    user = user_service.register_user('test', 'test@example.com', 'password')
-    restaurant = restaurant_service.create_restaurant(user.id, 'Test Restaurant')
-    menu = menu_service.create_menu(restaurant.id, 'Test Menu')
-    menu_item = menu_item_service.create_menu_item(
-        menu.id,
-        'Test Menu Item',
-        5.00
-    )
+    user = user_service.register_user("test", "test@example.com", "password")
+    restaurant = restaurant_service.create_restaurant(user.id, "Test Restaurant")
+    menu = menu_service.create_menu(restaurant.id, "Test Menu")
+    menu_item = menu_item_service.create_menu_item(menu.id, "Test Menu Item", 5.00)
 
     yield (user, restaurant, menu, menu_item)
 
@@ -27,86 +24,95 @@ def test_data():
     restaurant_service.delete_restaurant(restaurant.id)
     user_service.delete_user(user.id)
 
+
 def test_create_and_retrieve_single_menu_item(test_data):
     (_, restaurant, menu, _) = test_data
 
-    response = client.post(f'/api/menu-items/?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
-        json={
-            'name': 'Test Item',
-            'price': 5.00
-        }
+    response = client.post(
+        f"/api/menu-items/?menu={menu.id}",
+        headers={"Content-Type": "application/json"},
+        json={"name": "Test Item", "price": 5.00},
     )
     created_menu_item = response.json()
 
     assert response.status_code == 201
 
-    response = client.get(f'/api/menu-items/{created_menu_item["id"]}?menu={menu.id}')
+    response = client.get(f"/api/menu-items/{created_menu_item['id']}?menu={menu.id}")
     assert response.status_code == 200
-    assert response.json()['name'] == 'Test Item'
+    assert response.json()["name"] == "Test Item"
+
 
 def test_create_with_missing_data(test_data):
     (_, restaurant, menu, _) = test_data
-    response = client.post(f'/api/menu-items/?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+    response = client.post(
+        f"/api/menu-items/?menu={menu.id}",
+        headers={"Content-Type": "application/json"},
         json={
-            'name': 'Test Item',
-        }
+            "name": "Test Item",
+        },
     )
 
     assert response.status_code == 422
 
+
 def test_retrieve_all_missing_menu_returns_404(test_data):
     (_, restaurant, _, menu_item) = test_data
 
-    response = client.get(f'/api/menu-items/{menu_item.id}?menu={ULID()}')
+    response = client.get(f"/api/menu-items/{menu_item.id}?menu={ULID()}")
     assert response.status_code == 404
+
 
 def test_retrieve_single_missing_menu_returns_404(test_data):
     (_, restaurant, _, menu_item) = test_data
 
-    response = client.get(f'/api/menu-items/?menu={ULID()}')
+    response = client.get(f"/api/menu-items/?menu={ULID()}")
     assert response.status_code == 404
+
 
 def test_update_menu_item(test_data):
     (_, restaurant, menu, menu_item) = test_data
 
-    update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+    update_response = client.patch(
+        f"/api/menu-items/{menu_item.id}?menu={menu.id}",
+        headers={"Content-Type": "application/json"},
         json={
-            'name': 'New title',
-        }
+            "name": "New title",
+        },
     )
 
     assert update_response.status_code == 200
 
-    response = client.get(f'/api/menu-items/{menu_item.id}?menu={menu.id}')
+    response = client.get(f"/api/menu-items/{menu_item.id}?menu={menu.id}")
     assert response.status_code == 200
-    assert response.json()['name'] == 'New title'
+    assert response.json()["name"] == "New title"
+
 
 def test_update_menu_item_with_invalid_price(test_data):
     (_, restaurant, menu, menu_item) = test_data
 
-    update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+    update_response = client.patch(
+        f"/api/menu-items/{menu_item.id}?menu={menu.id}",
+        headers={"Content-Type": "application/json"},
         json={
-            'price': -5.00,
-        }
+            "price": -5.00,
+        },
     )
 
     assert update_response.status_code == 422
 
+
 def test_update_menu_item_with_empty_string_is_idempotent(test_data):
     (_, restaurant, menu, menu_item) = test_data
 
-    update_response = client.patch(f'/api/menu-items/{menu_item.id}?menu={menu.id}',
-        headers={'Content-Type': 'application/json'},
+    update_response = client.patch(
+        f"/api/menu-items/{menu_item.id}?menu={menu.id}",
+        headers={"Content-Type": "application/json"},
         json={
-            'name': '',
-        }
+            "name": "",
+        },
     )
 
     assert update_response.status_code == 200
 
-    retrieve_response = client.get(f'/api/menu-items/{menu_item.id}?menu={menu.id}')
-    assert retrieve_response.json()['name'] == menu_item.name
+    retrieve_response = client.get(f"/api/menu-items/{menu_item.id}?menu={menu.id}")
+    assert retrieve_response.json()["name"] == menu_item.name

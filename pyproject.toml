@@ -1,0 +1,28 @@
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+# extend-exclude = ["app/repositories/repo.py","tests/"]
+extend-exclude = ["app/repositories/repo.py"]
+
+[tool.ruff.lint]
+#B904 is exception handling related
+ignore = ["B904"]
+
+# Errors Warnings Naming Docstyle Bugs UPgrade SIMplify FASTapi ASYNC Imports
+select = [
+"E",
+"W",
+"N", 
+"B",
+"UP",
+"SIM",
+"FAST",
+"ASYNC",
+"I"
+] 
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.fastapi]
+entrypoint = "app.main:app"
