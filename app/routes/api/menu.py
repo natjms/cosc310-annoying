@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 
 from app.exceptions import MissingValueError
@@ -41,8 +41,8 @@ def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
         restaurant_record = find_restaurant_by_id(restaurant)
         return list_restaurant_menus(restaurant_record.id)
         # TODO: possibly also check if the restaurant is active?
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant is nonexistent")
+    except (UniqueError, MissingValueError):
+        raise HTTPException(status_code=404, detail="restaurant not found")
 
 
 @router.post(
@@ -62,5 +62,5 @@ def post_menu(restaurant_id: str, request: PostMenuRequest) -> Menu:
     try:
         restaurant = find_restaurant_by_id(request.restaurant_id)
         return create_menu(restaurant.id, request.name)
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant not found.")
+    except (UniqueError, MissingValueError):
+        raise HTTPException(status_code=404, detail="restaurant not found")

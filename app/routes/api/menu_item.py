@@ -1,16 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import AfterValidator, BaseModel
 
 import app.validators as v
+from app.auth import get_current_user
 from app.exceptions import MissingValueError
-from app.models import MenuItem
+from app.models import MenuItem, User
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
-
-NOT_FOUND_STATUS = 404
-
 
 router = APIRouter(prefix="/menu-items")
 
@@ -32,7 +30,7 @@ def get_all_menu_items(menu: str) -> list[MenuItem]:
     try:
         return service.get_all_menu_items(menu)
     except MissingValueError:
-        raise HTTPException(status_code=NOT_FOUND_STATUS)
+        raise HTTPException(status_code=404, detail="missing value")
 
 
 @router.get(
@@ -58,8 +56,8 @@ def get_menu_item_by_id(
             menu,
             menu_item_id,
         )
-    except MissingValueError as e:
-        raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
+    except MissingValueError:
+        raise HTTPException(status_code=404, detail="missing value error")
 
 
 @router.patch(
@@ -67,7 +65,10 @@ def get_menu_item_by_id(
     summary="Update a menu item by menu ID and menu item ID.",
 )
 def patch_menu_item(
-    menu: str, menu_item_id: str, request: PatchMenuItemRequest
+    menu: str,
+    menu_item_id: str,
+    request: PatchMenuItemRequest,
+    user: User = Depends(get_current_user),
 ) -> MenuItem:
     """Update an existing menu ID.
 
@@ -85,8 +86,8 @@ def patch_menu_item(
     """
     try:
         return service.update_menu_item_by_id(menu, menu_item_id, request.model_dump())
-    except MissingValueError as e:
-        raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
+    except MissingValueError:
+        raise HTTPException(status_code=404, detail="value is missing")
 
 
 @router.post(
@@ -94,7 +95,10 @@ def patch_menu_item(
     summary="Create a new menu item given the menu ID",
 )
 def post_menu_item(
-    menu: str, request: PostMenuItemRequest, response: Response
+    menu: str,
+    request: PostMenuItemRequest,
+    response: Response,
+    user: User = Depends(get_current_user),
 ) -> MenuItem:
     """Create a new menu item.
 
@@ -114,4 +118,4 @@ def post_menu_item(
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
     except MissingValueError:
-        raise HTTPException(status_code=NOT_FOUND_STATUS)
+        raise HTTPException(status_code=404)

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 
-from app.exceptions import MissingValueError
+from app.auth import get_current_user
+from app.exceptions import AuthenticationError, MissingValueError
 from app.models.menu import Menu, PostMenuRequest
 from app.models.restaurant import (
     PatchRestaurantRequest,
@@ -18,7 +19,6 @@ from app.services.restaurant import (
     search_restaurants,
     update_restaurant,
 )
-from app.services.user import find_user_by_id
 
 router = APIRouter(prefix="/restaurants")
 
@@ -70,28 +70,34 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     """
     try:
         return find_restaurant_by_id(restaurant_id)
-    except MissingValueError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    except MissingValueError:
+        raise HTTPException(status_code=404, detail="restaurant not found")
 
 
 @router.patch(
     "/{restaurant_id}",
     summary="Updates a restaurant",
 )
-def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest) -> Restaurant:
+def patch_restaurant(
+    restaurant_id: str,
+    request: PatchRestaurantRequest,
+    user: User = Depends(get_current_user),
+) -> Restaurant:
     try:
         return update_restaurant(restaurant_id, request.model_dump())
-    except UniqueError:
-        raise HTTPException(status_code=404, detail="Restaurant does not exist")
-    except MissingValueError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    except (UniqueError, MissingValueError):
+        raise HTTPException(status_code=404, detail="restaurant does not exist")
 
 
 @router.post(
     "/",
     summary="Creates a new restaurant",
 )
-def post_restaurant(request: PostRestaurantRequest, response: Response) -> Restaurant:
+def post_restaurant(
+    request: PostRestaurantRequest,
+    response: Response,
+    user: User = Depends(get_current_user),
+) -> Restaurant:
     """Post a restaurant.
 
     Args:
@@ -105,5 +111,10 @@ def post_restaurant(request: PostRestaurantRequest, response: Response) -> Resta
         new_restaurant = create_restaurant(request.owner_id, request.name)
         response.status_code = status.HTTP_201_CREATED
         return new_restaurant
-    except MissingValueError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    except AuthenticationError:
+        raise HTTPException(status_code=401, detail="authentication failed")
+    except MissingValueError:
+        raise HTTPException(status_code=404, detail="value missing")
+
+
+#### ADD DELETE ENDPOINT HERE
