@@ -6,6 +6,11 @@ from app.models.user import User
 from app.repositories.repo import UniqueError
 from app.repositories.user import users
 
+from app.models.role import RoleName
+from app.repositories.user import users
+from app.repositories.repo import UniqueError
+from app.services import role as role_service
+from app.exceptions import MissingValueException, ResourceConflictException, AuthorizationException
 
 def find_user_by_id(user_id: ULID | str) -> User:
     try:
@@ -60,9 +65,14 @@ def register_user(
     username: str,
     email: str,
     password_plaintext: str,
-    dangerously_set_password_hash: str = None,
+    role = None,
+    dangerously_set_password_hash: str = None
 ) -> User:
     _check_for_conflicts(username, email)
+
+    if role is not None:
+        if role not in {RoleName.restaurateur, RoleName.customer}:
+            raise AuthorizationException('You can only enroll as a customer or restaurateur')
 
     if dangerously_set_password_hash is None:
         password_hash = bcrypt.hashpw(
@@ -71,17 +81,22 @@ def register_user(
     else:
         password_hash = dangerously_set_password_hash
 
-    return users.create(
-        username=username, email=email, password_hash=password_hash, is_active=True
-    )
+    user = users.create(username=username, email=email, password_hash=password_hash, is_active=True)
 
+    if role is not None:
+        role_service.assign_role(user.id, role)
+
+    return user
 
 def update_user(user_id: ULID, change_set: dict) -> User:
     user = find_user_by_id(user_id)
     change_set = {k: v for k, v in change_set.items() if v is not None}
-    _check_for_conflicts(
-        username=change_set.get("username"), email=change_set.get("email")
-    )
+
+    if 'username' in change_set and user.username == change_set['username']:
+        del change_set['username']
+
+    if 'email' in change_set and user.email == change_set['email']:
+        del change_set['email']
 
     if "password_plaintext" in change_set:
         password_hash = bcrypt.hashpw(
