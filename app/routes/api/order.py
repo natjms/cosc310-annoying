@@ -36,8 +36,8 @@ def get_all_orders(user: User = Depends(get_current_user)) -> list[Order]:
     """
     try:
         return service.get_all_orders(user.id)
-    except MissingValueException as e:
-        raise HTTPException(status_code=418, detail=str(e))
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="missing value")
 
 
 @router.post(
@@ -48,8 +48,8 @@ def get_all_orders(user: User = Depends(get_current_user)) -> list[Order]:
 def create_order(restaurant_id: str, user: User = Depends(get_current_user)):
     try:
         return service.create_order_from_cart(user.id, maybe_ulid(restaurant_id))
-    except MissingValueException as e:
-        raise HTTPException(status_code=418, detail=str(e))
+    except MissingValueException:
+        raise HTTPException(status_code=400, detail="bad request")
 
 
 @router.get(
@@ -60,8 +60,8 @@ def create_order(restaurant_id: str, user: User = Depends(get_current_user)):
 def get_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     try:
         return service.get_order_by_id(user.id, maybe_ulid(order_id))
-    except MissingValueException as e:
-        raise HTTPException(status_code=418, detail=str(e))
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="bad request")
 
 
 # STUB STUB STUB
@@ -72,9 +72,9 @@ def get_order_by_id(order_id: str, user: User = Depends(get_current_user)):
 )
 def update_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     try:
-        return service.update_order()
-    except MissingValueException as e:
-        raise HTTPException(status_code=418, detail=str(e))
+        return service.update_order(user.id,maybe_ulid(order_id),status="preparing")
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="missing value")
 
 
 @router.post(
@@ -85,5 +85,5 @@ def update_order_by_id(order_id: str, user: User = Depends(get_current_user)):
 def cancel_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     try:
         return service.cancel_order(user.id, maybe_ulid(order_id))
-    except MissingValueException as e:
-        raise HTTPException(status_code=418, detail=str(e))
+    except MissingValueException:
+        raise HTTPException(status_code=404, detail="missing value")
