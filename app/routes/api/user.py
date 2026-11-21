@@ -4,6 +4,7 @@ from ulid import ULID
 
 from app.exceptions import MissingValueException, ResourceConflictException
 from app.models.user import User, UserResponse, PostUserRequest, PatchUserRequest
+from app.models.role import RoleName
 from app.services.user import find_user_by_id, register_user, update_user, deactivate_user
 from app.auth import guard_authorization, guard_authentication
 
@@ -41,9 +42,9 @@ def get_user_by_id(
     "/",
     summary="Register a user"
 )
-def create_user(payload: PostUserRequest, response: Response) -> UserResponse:
+def create_user(payload: PostUserRequest, response: Response, role: RoleName | None = None) -> UserResponse:
     try:
-        new_user = register_user(**payload.model_dump())
+        new_user = register_user(**payload.model_dump(), role=role)
         response.status_code = status.HTTP_201_CREATED
         return UserResponse(**new_user.model_dump())
     except ResourceConflictException as e:

@@ -29,3 +29,10 @@ requires authentication
 """
 class AuthenticationException(AppBaseException):
     pass
+
+"""
+Thrown when an actor has been authenticated, and the attempted action is not
+something for which they have been authorized
+"""
+class AuthorizationException(AppBaseException):
+    pass

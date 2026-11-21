@@ -2,9 +2,11 @@ from ulid import ULID
 import bcrypt
 
 from app.models.user import User
+from app.models.role import RoleName
 from app.repositories.user import users
 from app.repositories.repo import UniqueError
-from app.exceptions import MissingValueException, ResourceConflictException
+from app.services import role as role_service
+from app.exceptions import MissingValueException, ResourceConflictException, AuthorizationException
 
 def find_user_by_id(user_id: ULID | str) -> User:
     try:
@@ -55,16 +57,26 @@ def register_user(
     username: str,
     email: str,
     password_plaintext: str,
+    role = None,
     dangerously_set_password_hash: str = None
 ) -> User:
     _check_for_conflicts(username, email)
+
+    if role is not None:
+        if role not in {RoleName.restaurateur, RoleName.customer}:
+            raise AuthorizationException('You can only enroll as a customer or restaurateur')
 
     if dangerously_set_password_hash is None:
         password_hash = bcrypt.hashpw(password_plaintext.encode("utf-8"), bcrypt.gensalt())
     else:
         password_hash = dangerously_set_password_hash
 
-    return users.create(username=username, email=email, password_hash=password_hash, is_active=True)
+    user = users.create(username=username, email=email, password_hash=password_hash, is_active=True)
+
+    if role is not None:
+        role_service.assign_role(user.id, role)
+
+    return user
 
 def update_user(user_id: ULID, change_set: dict) -> User:
     user = find_user_by_id(user_id)
