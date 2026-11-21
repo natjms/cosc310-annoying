@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, Header
 from pydantic import BaseModel, AfterValidator
 from typing import Annotated
 
@@ -7,6 +7,7 @@ from app.models import MenuItem
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
 import app.validators as v
+from app.auth import guard_authorization
 
 
 NOT_FOUND_STATUS = 404
@@ -72,7 +73,8 @@ def get_menu_item_by_id(
 def patch_menu_item(
     menu: str,
     menu_item_id: str,
-    request: PatchMenuItemRequest
+    request: PatchMenuItemRequest,
+    x_token: Annotated[str, Header()]
 ) -> MenuItem:
     """
     Update an existing menu ID
@@ -88,6 +90,7 @@ def patch_menu_item(
     Returns:
         A single menu item.
     """
+    guard_authorization(x_token, {'restaurateur'})
     try:
         return service.update_menu_item_by_id(
             menu,
@@ -106,7 +109,8 @@ def patch_menu_item(
 def post_menu_item(
     menu: str,
     request: PostMenuItemRequest,
-    response: Response
+    response: Response,
+    x_token: Annotated[str, Header()]
 ) -> MenuItem:
     """
     Create a new menu item
@@ -121,6 +125,7 @@ def post_menu_item(
     Returns:
         A single menu item.
     """
+    guard_authorization(x_token, {'restaurateur'})
     try:
         new_menu_item = service.create_menu_item(
             menu,
