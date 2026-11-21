@@ -11,6 +11,7 @@ from app import validators as v
 # has a dict mapping ULID: CartItem
 class CartItem(BaseModel):
     id: ULID
+    menu_id: ULID
     menu_item_id: ULID
     quantity: int
 
