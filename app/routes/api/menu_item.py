@@ -68,7 +68,7 @@ def patch_menu_item(
     menu: str,
     menu_item_id: str,
     request: PatchMenuItemRequest,
-    user: User = Depends(get_current_user),
+    user: Annotated[User, Depends(get_current_user)],
 ) -> MenuItem:
     """Update an existing menu ID.
 
@@ -98,7 +98,7 @@ def post_menu_item(
     menu: str,
     request: PostMenuItemRequest,
     response: Response,
-    user: User = Depends(get_current_user),
+    user: Annotated[User, Depends(get_current_user)],
 ) -> MenuItem:
     """Create a new menu item.
 
