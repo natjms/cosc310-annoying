@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .exceptions import MissingValueException
 from .routes import router
-
 
 """
 A basic Pydantic model corresponding to an error response with a message

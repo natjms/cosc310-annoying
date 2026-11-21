@@ -1,10 +1,10 @@
 from fastapi import HTTPException, Request
 from ulid import ULID
 
-from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
 from app.models import Role, RoleName
 from app.repositories import roles
+from app.repositories.repo import UniqueError
 from app.services import user as user_service
 
 

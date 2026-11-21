@@ -1,9 +1,11 @@
 from typing import Annotated
-from fastapi import HTTPException, Header
-from app.exceptions import MissingValueException
-import app.services.session as session_service
+
+from fastapi import Header, HTTPException
+
 import app.services.role as role_service
+import app.services.session as session_service
 import app.services.user as user_service
+from app.exceptions import MissingValueException
 from app.models.role import RoleName
 
 

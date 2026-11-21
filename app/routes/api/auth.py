@@ -1,14 +1,15 @@
-from fastapi import APIRouter, HTTPException, Request, Response, Header, status
 from typing import Annotated
+
+from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from ulid import ULID
 
-from app.exceptions import MissingValueException, AuthenticationException
-from app.models.session import SessionResponse, PostSessionRequest
-from app.models.user import UserResponse
-from app.services.user import find_user_by_id
-from app.services.session import log_in, log_out
-from app.services.role import find_user_roles
 from app.auth import guard_authentication
+from app.exceptions import AuthenticationException, MissingValueException
+from app.models.session import PostSessionRequest, SessionResponse
+from app.models.user import UserResponse
+from app.services.role import find_user_roles
+from app.services.session import log_in, log_out
+from app.services.user import find_user_by_id
 
 router = APIRouter(prefix="/auth")
 

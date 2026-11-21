@@ -1,17 +1,17 @@
-from fastapi import APIRouter, HTTPException, Request, Response, Header, status
 from typing import Annotated
+
+from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from ulid import ULID
 
+from app.auth import guard_authentication, guard_authorization
 from app.exceptions import MissingValueException, ResourceConflictException
-from app.models.user import User, UserResponse, PostUserRequest, PatchUserRequest
+from app.models.user import PatchUserRequest, PostUserRequest, User, UserResponse
 from app.services.user import (
+    deactivate_user,
     find_user_by_id,
     register_user,
     update_user,
-    deactivate_user,
 )
-from app.auth import guard_authorization, guard_authentication
-
 
 router = APIRouter(prefix="/users")
 

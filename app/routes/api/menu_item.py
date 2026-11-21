@@ -1,13 +1,13 @@
-from fastapi import APIRouter, HTTPException, Response, status
-from pydantic import BaseModel, AfterValidator
 from typing import Annotated
 
+from fastapi import APIRouter, HTTPException, Response, status
+from pydantic import AfterValidator, BaseModel
+
+import app.validators as v
 from app.exceptions import MissingValueException
 from app.models import MenuItem
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
-import app.validators as v
-
 
 NOT_FOUND_STATUS = 404
 

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import BaseModel, AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel
 from ulid import ULID
 
 import app.validators as v

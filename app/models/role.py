@@ -1,6 +1,7 @@
+from enum import StrEnum
+
 from pydantic import BaseModel
 from ulid import ULID
-from enum import StrEnum
 
 
 class RoleName(StrEnum):

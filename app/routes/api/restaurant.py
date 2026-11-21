@@ -1,25 +1,24 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
 
-from app.repositories.repo import UniqueError
 from app.exceptions import MissingValueException
-from app.models.user import User
-from app.services.user import find_user_by_id
+from app.models.menu import Menu, PostMenuRequest
 from app.models.restaurant import (
     PatchRestaurantRequest,
     PostRestaurantRequest,
     Restaurant,
 )
+from app.models.user import User
+from app.repositories.repo import UniqueError
+from app.services.menu import create_menu, list_restaurant_menus
 from app.services.restaurant import (
-    list_all_restaurants,
-    find_restaurant_by_id,
     create_restaurant,
+    find_restaurant_by_id,
+    list_all_restaurants,
     search_restaurants,
     update_restaurant,
 )
-from app.models.menu import Menu, PostMenuRequest
-from app.services.menu import list_restaurant_menus, create_menu
-
+from app.services.user import find_user_by_id
 
 router = APIRouter(prefix="/restaurants")
 

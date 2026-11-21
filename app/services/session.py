@@ -1,13 +1,14 @@
-from ulid import ULID
+import contextlib
 import datetime
 import secrets
 
+from ulid import ULID
+
+from app.exceptions import AuthenticationException, MissingValueException
 from app.models import Session
 from app.repositories import sessions
 from app.repositories.repo import UniqueError
 from app.services import user as user_service
-from app.exceptions import AuthenticationException, MissingValueException
-import contextlib
 
 SESSION_DURATION = datetime.timedelta(hours=1)
 SESSION_TOKEN_BYTES = 128

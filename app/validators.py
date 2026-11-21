@@ -1,5 +1,5 @@
-import re
 import math
+import re
 
 email_regex = re.compile(r"^\S+@\S+\.\S+$")
 username_regex = re.compile(r"^\w*$")

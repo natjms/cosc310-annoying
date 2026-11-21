@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from ulid import ULID
 
-from app.models.user import UserResponse
 from app.models.role import RoleName
+from app.models.user import UserResponse
 
 
 class Session(BaseModel):

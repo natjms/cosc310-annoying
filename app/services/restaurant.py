@@ -2,11 +2,11 @@ from abc import update_abstractmethods
 
 from ulid import ULID
 
+from app.exceptions import MissingValueException
 from app.models.restaurant import Restaurant
+from app.repositories.repo import UniqueError
 from app.repositories.restaurant import restaurants
 from app.repositories.user import users
-from app.repositories.repo import UniqueError
-from app.exceptions import MissingValueException
 
 
 def list_all_restaurants() -> list[Restaurant]:

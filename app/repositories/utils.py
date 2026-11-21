@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 DATA_DIRECTORY_ENVIRONMENT_VARIABLE = "DATA_DIR"
 
 
