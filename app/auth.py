@@ -1,12 +1,14 @@
 from typing import Annotated
 
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 
 import app.services.role as role_service
 import app.services.session as session_service
 import app.services.user as user_service
 from app.exceptions import MissingValueError
 from app.models.role import RoleName
+from app.models.session import Session
+from app.models.user import User
 
 
 def guard_authentication(x_token: str):
@@ -48,3 +50,9 @@ def guard_authorization(x_token: str, required_roles: set[RoleName]) -> list[Rol
         )
 
     return (user, role_service.find_user_roles(user.id), session)
+
+
+def get_current_user(
+    auth: tuple[User, Session] = Depends(guard_authorization),
+) -> User:
+    return auth[0]
