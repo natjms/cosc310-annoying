@@ -18,3 +18,12 @@ type CreateUserRequest = {
 export function create_user({ username, email, password_plaintext }: CreateUserRequest) : Promise<Response> {
     return requests.post('/users/', { body: { username, email, password_plaintext } });
 }
+
+type UpdateUserRequest = {
+    username: string,
+    email: string,
+    password_plaintext: string,
+};
+export function update_user(user_id, { username, email, password_plaintext }: UpdateUserRequest) : Promise<Response> {
+    return requests.patch(`/users/${user_id}`, { body: { username, email, password_plaintext } });
+}
