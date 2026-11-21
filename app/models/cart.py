@@ -8,6 +8,6 @@ class Cart(BaseModel):
     updated_at: datetime
     user_id: ULID
     id: ULID
-    restaurant_id: ULID | None
+    restaurant_id: ULID
     is_active: bool = True
     items: dict[ULID, CartItem] = {}
