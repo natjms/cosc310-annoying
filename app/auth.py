@@ -13,7 +13,7 @@ def guard_authentication(x_token: str):
         raise HTTPException(status_code=401, detail="Session not found. Please try logging in again")
 
     if not session_service.session_is_valid(session.token):
-        session.log_out(session.token)
+        session_service.log_out(session.token)
         raise HTTPException(status_code=401, detail="Your session has expired. Please try logging in again")
 
     user = user_service.find_user_by_id(session.user_id)

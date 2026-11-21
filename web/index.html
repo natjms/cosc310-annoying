@@ -1,27 +1,13 @@
-<!DOCTYPE html>
-<html lang='en'>
-	<head>
-		<title>Annoying Food Delivery - Home</title>
-	</head>
-	<body>
-		<h1> Annoying Food Delivery </h1>
-		<ul>
-			<li><a href='/web/restaurants.html'>Show all restaurants</a></li>
-			<li><a href='/web/create-restaurant.html'>Create a new restaurant</a></li>
-		</ul>
-		<p>
-			User ID: <span id='user-id'>&nbsp;</span>
-		</p>
-
-		<script>
-document.addEventListener('DOMContentLoaded', () => {
-	fetch('/api/user', {method: 'POST'})
-		.then(body => body.json())
-		.then(({id}) => {
-			console.log('hi');
-			document.getElementById('user-id').textContent = id;
-		});
-});
-		</script>
-	</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>web</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

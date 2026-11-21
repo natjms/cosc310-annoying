@@ -42,9 +42,34 @@ doesn't mess with the test suite, you should copy this directory to e.g.
 `data/` and set that as your `DATA_DIR` in the env file.
 
 ## How to start the application
-run: `python -m fastapi dev`  
 
-Visit http://localhost:8000/web/
+Backend: from the root, run `python -m fastapi dev`
+
+Visit http://localhost:8000/docs
+
+The front end is provided as a Vite application
+
+```
+cd web
+npm install
+npm run dev
+```
+
+This starts the server. Make sure you have a web/.env file with the following contents:
+```
+VITE_API_BASE_URL='http://localhost:8000/api/'
+```
+
+Also, ensure you have the representative data in `data/`
+
+You can make use of the representative data in the backend by setting the following in
+the root .env file:
+
+```
+# cosc310-annoying/.env
+
+DATA_DIR=./data/
+```
 
 ## API endpoint paths
 /docs
