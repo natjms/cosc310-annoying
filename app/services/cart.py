@@ -67,7 +67,7 @@ def update_cart_item(
     if menu_item_id not in cart.items:
         raise MissingValueException(
             "item not in cart"
-        )  # nts: make this missing record later
+        )
     if quantity <= 0:
         if menu_item_id in cart.items:
             del cart.items[menu_item_id]

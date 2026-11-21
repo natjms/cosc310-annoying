@@ -7,7 +7,6 @@ from .menu import router as menu_router
 from .menu_item import router as menu_item_router
 from .cart import router as cart_router
 from .menu import router as menu_router
-# why was the menu router not here before?
 
 
 PREFIX = "/api"
