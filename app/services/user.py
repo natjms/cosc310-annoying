@@ -69,7 +69,12 @@ def register_user(
 def update_user(user_id: ULID, change_set: dict) -> User:
     user = find_user_by_id(user_id)
     change_set = {k: v for k, v in change_set.items() if v is not None}
-    _check_for_conflicts(username=change_set.get('username'), email=change_set.get('email'))
+
+    if 'username' in change_set and user.username == change_set['username']:
+        del change_set['username']
+
+    if 'email' in change_set and user.email == change_set['email']:
+        del change_set['email']
 
     if 'password_plaintext' in change_set:
         password_hash = bcrypt.hashpw(change_set['password_plaintext'].encode("utf-8"), bcrypt.gensalt())
