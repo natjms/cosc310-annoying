@@ -1,16 +1,26 @@
 import { useState } from 'react'
 import { route } from 'preact-router'
+import { log_in } from '@/client/auth'
+import * as security from '@/utils/security'
 import Form from '@/components/form'
 
 type LogInPageProps = {
     created: boolean;
 };
 export default function LogInPage({ created }: LogInPageProps) {
-    const [error, setError]: [object, (o: object) => void] = useState(null);
+    const handleLogin = async (form_data) => {
+        const response = await log_in(form_data);
 
-    const handleLogin = (form_data) => {
-        // TODO: call the log in endpoint, set the session values
-        route('/');
+        if (response.status === 401) throw 'Your credentials are incorrect. Please try again';
+        if (response.status === 422) throw response;
+
+        const { user, roles, token } = await response.json();
+
+        localStorage.setItem(security.LOCALSTORAGE_USER_KEY, JSON.stringify(user));
+        localStorage.setItem(security.LOCALSTORAGE_TOKEN_KEY, token);
+        localStorage.setItem(security.LOCALSTORAGE_ROLE_KEY, JSON.stringify(roles));
+
+        window.location.href = '/';
     }
 
     return <>
@@ -19,7 +29,6 @@ export default function LogInPage({ created }: LogInPageProps) {
         }
         <Form
             name='Log in'
-            error={error}
             callback={handleLogin}
             fields={[
                 {

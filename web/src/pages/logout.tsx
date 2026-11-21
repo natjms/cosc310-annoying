@@ -1,11 +1,17 @@
 import { route } from 'preact-router'
+import { log_out } from '@/client/auth'
 import * as security from '@/utils/security'
 
 export default function LogOutPage() {
 
-    const handleLogout = () => {
-        localStorage.setItem(security.LOCALSTORAGE_LOGOUT_FLAG, 'true');
-        route('/');
+    const handleLogout = async () => {
+        const _ = await log_out();
+
+        localStorage.removeItem(security.LOCALSTORAGE_USER_KEY);
+        localStorage.removeItem(security.LOCALSTORAGE_ROLE_KEY);
+        localStorage.removeItem(security.LOCALSTORAGE_TOKEN_KEY);
+
+        window.location.href = '/';
     };
 
     return <>

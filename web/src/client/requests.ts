@@ -42,7 +42,7 @@ function base_request(method: HTTPMethod, path: string, body: object, query: obj
     }
 
     if (localStorage.getItem(LOCALSTORAGE_TOKEN_KEY) !== null) {
-        options.headers['Authorization'] = `Bearer ${localStorage.getItem(LOCALSTORAGE_TOKEN_KEY)}`;
+        options.headers['X-Token'] = localStorage.getItem(LOCALSTORAGE_TOKEN_KEY);
     }
 
     return fetch(api_path(full_path), options)
