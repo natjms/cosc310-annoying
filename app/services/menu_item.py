@@ -1,6 +1,6 @@
 from ulid import ULID
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models.menu import Menu
 from app.models.menu_item import MenuItem
 from app.repositories.menu import menus
@@ -14,7 +14,7 @@ def get_all_menu_items(menu_id: str) -> list[MenuItem]:
         menu = menus.unique(id=menu_id)
         return [item for item in menu.items.values()]
     except UniqueError:
-        raise MissingValueException(f"The requested menu does not exist")
+        raise MissingValueError(f"The requested menu does not exist")
 
 
 def get_menu_item_by_id(menu_id: str, menu_item_id: str | ULID) -> MenuItem:
@@ -23,9 +23,9 @@ def get_menu_item_by_id(menu_id: str, menu_item_id: str | ULID) -> MenuItem:
         menu_item = menu.items[maybe_ulid(menu_item_id)]
         return menu_item
     except UniqueError:
-        raise MissingValueException("The requested menu does not exist")
+        raise MissingValueError("The requested menu does not exist")
     except KeyError:
-        raise MissingValueException("Menu item cannot be found")
+        raise MissingValueError("Menu item cannot be found")
 
 
 def update_menu_item_by_id(
@@ -47,9 +47,9 @@ def update_menu_item_by_id(
         menus.update(id=menu_id, items=updated_menu_items)
         return menus.unique(id=menu_id).items[maybe_ulid(menu_item_id)]
     except KeyError:
-        raise MissingValueException("Menu item cannot be found")
+        raise MissingValueError("Menu item cannot be found")
     except UniqueError:
-        raise MissingValueException("The requested menu does not exist")
+        raise MissingValueError("The requested menu does not exist")
 
 
 def create_menu_item(menu_id: str, name: str, price: float) -> MenuItem:
@@ -64,4 +64,4 @@ def create_menu_item(menu_id: str, name: str, price: float) -> MenuItem:
         menus.update(id=menu_id, items=updated_menu_items)
         return menus.unique(id=menu_id).items[new_id]
     except UniqueError:
-        raise MissingValueException(f"The requested menu does not exist")
+        raise MissingValueError(f"The requested menu does not exist")

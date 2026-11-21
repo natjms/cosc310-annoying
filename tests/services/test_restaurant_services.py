@@ -1,7 +1,7 @@
 import pytest
 from ulid import ULID
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.repositories.restaurant import restaurants as restaurant_repo
 from app.repositories.user import users as user_repo
 from app.services import restaurant as restaurant_service
@@ -31,7 +31,7 @@ def test_create_and_get_single_restaurant(test_data):
 
 
 def test_create_restaurant_with_invalid_owner_fails():
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         restaurant_service.create_restaurant(ULID(), "New Restaurant")
 
 
@@ -42,7 +42,7 @@ def test_retrieve_single_restaurant(test_data):
 
 def test_retrieve_nonexistent_restaurant_raises(test_data):
     (_, restaurant) = test_data
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         restaurant_service.find_restaurant_by_id(ULID())
 
 
@@ -99,7 +99,7 @@ def test_update_restaurant_owner(test_data):
 
 def test_update_restaurant_owner_to_nonexistent_owner(test_data):
     (_, restaurant) = test_data
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         updated_restaurant = restaurant_service.update_restaurant(
             restaurant.id, {"owner_id": ULID()}
         )

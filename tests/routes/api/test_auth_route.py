@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from ulid import ULID
 
 from app import app
-from app.exceptions import AuthenticationException
+from app.exceptions import AuthenticationError
 from app.repositories import sessions as session_repo
 from app.repositories import users as user_repo
 from app.services import session as session_service

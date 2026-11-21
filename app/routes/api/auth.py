@@ -4,7 +4,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from ulid import ULID
 
 from app.auth import guard_authentication
-from app.exceptions import AuthenticationException, MissingValueException
+from app.exceptions import AuthenticationError, MissingValueError
 from app.models.session import PostSessionRequest, SessionResponse
 from app.models.user import UserResponse
 from app.services.role import find_user_roles
@@ -24,7 +24,7 @@ def post_login(payload: PostSessionRequest, response: Response) -> SessionRespon
             user=UserResponse(**find_user_by_id(session.user_id).model_dump()),
             roles=find_user_roles(session.user_id),
         )
-    except AuthenticationException as e:
+    except AuthenticationError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)
 
 
@@ -33,5 +33,5 @@ def post_logout(response: Response, x_token: Annotated[str, Header()]) -> None:
     (_, session) = guard_authentication(x_token)
     try:
         log_out(session.token)
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.message)

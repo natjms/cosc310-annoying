@@ -4,7 +4,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from ulid import ULID
 
 from app.auth import guard_authentication, guard_authorization
-from app.exceptions import MissingValueException, ResourceConflictException
+from app.exceptions import MissingValueError, ResourceConflictError
 from app.models.user import PatchUserRequest, PostUserRequest, User, UserResponse
 from app.services.user import (
     deactivate_user,
@@ -36,7 +36,7 @@ def get_user_by_id(user_id: ULID, x_token: Annotated[str, Header()]) -> UserResp
 
     try:
         return UserResponse(**find_user_by_id(user_id).model_dump())
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 
@@ -46,7 +46,7 @@ def create_user(payload: PostUserRequest, response: Response) -> UserResponse:
         new_user = register_user(**payload.model_dump())
         response.status_code = status.HTTP_201_CREATED
         return UserResponse(**new_user.model_dump())
-    except ResourceConflictException as e:
+    except ResourceConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 
 
@@ -65,9 +65,9 @@ def patch_user(
         updated_user = update_user(user_id, change_set=payload.model_dump())
         response.status_code = status.HTTP_200_OK
         return UserResponse(**updated_user.model_dump())
-    except ResourceConflictException as e:
+    except ResourceConflictError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 
@@ -85,5 +85,5 @@ def deactivate_user_request(
     try:
         deactivate_user(user_id)
         response.status_code = status.HTTP_204_NO_CONTENT
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)

@@ -1,7 +1,7 @@
 import bcrypt
 from ulid import ULID
 
-from app.exceptions import MissingValueException, ResourceConflictException
+from app.exceptions import MissingValueError, ResourceConflictError
 from app.models.user import User
 from app.repositories.repo import UniqueError
 from app.repositories.user import users
@@ -11,33 +11,31 @@ def find_user_by_id(user_id: ULID | str) -> User:
     try:
         return users.unique(id=user_id)
     except UniqueError:
-        raise MissingValueException("Given user does not exist")
+        raise MissingValueError("Given user does not exist")
 
 
 def find_user_by_username(username: str) -> User:
     try:
         return users.unique(username=username)
     except UniqueError:
-        raise MissingValueException("Given username does not match any user")
+        raise MissingValueError("Given username does not match any user")
 
 
 def find_user_by_email(email: str) -> User:
     try:
         return users.unique(email=email)
     except UniqueError:
-        raise MissingValueException("Given email does not match any user")
+        raise MissingValueError("Given email does not match any user")
 
 
 def find_user_by_credential(username_or_email: str) -> User:
     try:
         return find_user_by_username(username_or_email)
-    except MissingValueException:
+    except MissingValueError:
         try:
             return find_user_by_email(username_or_email)
-        except MissingValueException:
-            raise MissingValueException(
-                "Given username or email does not match any user"
-            )
+        except MissingValueError:
+            raise MissingValueError("Given username or email does not match any user")
 
 
 def _check_for_conflicts(username: str | None = None, email: str | None = None) -> None:
@@ -45,17 +43,17 @@ def _check_for_conflicts(username: str | None = None, email: str | None = None) 
     try:
         if username is not None:
             user = find_user_by_username(username)
-    except MissingValueException:
+    except MissingValueError:
         pass
 
     try:
         if email is not None:
             user = find_user_by_email(email)
-    except MissingValueException:
+    except MissingValueError:
         pass
 
     if user is not None:
-        raise ResourceConflictException("The given username or email is already in use")
+        raise ResourceConflictError("The given username or email is already in use")
 
 
 def register_user(

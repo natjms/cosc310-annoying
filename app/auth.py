@@ -5,14 +5,14 @@ from fastapi import Header, HTTPException
 import app.services.role as role_service
 import app.services.session as session_service
 import app.services.user as user_service
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models.role import RoleName
 
 
 def guard_authentication(x_token: str):
     try:
         session = session_service.find_session(x_token)
-    except MissingValueException:
+    except MissingValueError:
         raise HTTPException(
             status_code=401, detail="Session not found. Please try logging in again"
         )
@@ -43,7 +43,8 @@ def guard_authorization(x_token: str, required_roles: set[RoleName]) -> list[Rol
     if not role_service.user_has_any_roles_of(user.id, required_roles):
         raise HTTPException(
             status_code=403,
-            detail=f"Only the following kinds of users can do this: {', '.join(required_roles)}",
+            detail="Only the following kinds of users can do this:"
+            f"{', '.join(required_roles)}",
         )
 
     return (user, role_service.find_user_roles(user.id), session)

@@ -2,7 +2,7 @@ from abc import update_abstractmethods
 
 from ulid import ULID
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models.restaurant import Restaurant
 from app.repositories.repo import UniqueError
 from app.repositories.restaurant import restaurants
@@ -17,14 +17,14 @@ def find_restaurant_by_id(restaurant_id: ULID | str) -> Restaurant:
     try:
         return restaurants.unique(id=restaurant_id)
     except UniqueError:
-        raise MissingValueException("The given restaurant does not exist")
+        raise MissingValueError("The given restaurant does not exist")
 
 
 def create_restaurant(owner_id: ULID | str, name: str) -> Restaurant:
     try:
         user = users.unique(id=owner_id)
     except UniqueError:
-        raise MissingValueException("No user with the given ID exists")
+        raise MissingValueError("No user with the given ID exists")
 
     return restaurants.create(owner_id=owner_id, name=name)
 
@@ -38,7 +38,7 @@ def update_restaurant(restaurant_id: str, data: dict) -> Restaurant:
         try:
             user = users.unique(id=data["owner_id"])
         except UniqueError:
-            raise MissingValueException("No user with the given ID exists")
+            raise MissingValueError("No user with the given ID exists")
 
     data = {k: v for k, v in data.items() if v is not None}
     return restaurants.update(id=restaurant_id, **data)

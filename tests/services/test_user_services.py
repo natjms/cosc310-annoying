@@ -1,6 +1,6 @@
 import pytest
 
-from app.exceptions import MissingValueException, ResourceConflictException
+from app.exceptions import MissingValueError, ResourceConflictError
 from app.repositories.user import users as user_repository
 from app.services import user as user_service
 
@@ -24,14 +24,14 @@ def test_register_and_retrieve_user(test_data):
 
 
 def test_attempt_to_register_duplicate_username_raises(test_data):
-    with pytest.raises(ResourceConflictException):
+    with pytest.raises(ResourceConflictError):
         user = user_service.register_user(
             username="test", email="test2@example.com", password_plaintext="password"
         )
 
 
 def test_validate_credentials_with_invalid_account_raises():
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         user_service.validate_credentials("non_existant_account", "password")
 
 

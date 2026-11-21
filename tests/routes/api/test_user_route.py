@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from ulid import ULID
 
 from app import app
-from app.exceptions import AuthenticationException
+from app.exceptions import AuthenticationError
 from app.repositories import sessions as session_repo
 from app.repositories import users as user_repo
 from app.services import role as role_service
@@ -201,7 +201,7 @@ def test_update_password_successfully(test_data):
 
     assert response.status_code == status.HTTP_200_OK
 
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         session_service.log_in(user.username, "AVeryStr0ngPassw0rd!")
 
     session_service.log_in(user.username, "AVeryStr0ngPassw0rd!Updated")
@@ -213,7 +213,7 @@ def test_deactivate_account(test_data):
         f"/api/users/{user.id}", headers={"X-Token": session.token}
     )
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         session_service.log_in(user.username, "AVeryStr0ngPassw0rd!")
 
 
@@ -239,7 +239,7 @@ def test_deactivate_someones_account_as_admin(test_data):
         f"/api/users/{user.id}", headers={"X-Token": admin_session.token}
     )
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         session_service.log_in(user.username, "AVeryStr0ngPassw0rd!")
 
 

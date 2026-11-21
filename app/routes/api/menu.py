@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models.menu import Menu, PostMenuRequest
 from app.models.restaurant import (
     PatchRestaurantRequest,

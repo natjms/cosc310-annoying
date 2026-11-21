@@ -1,6 +1,6 @@
 import pytest
 
-from app.exceptions import AuthenticationException, MissingValueException
+from app.exceptions import AuthenticationError, MissingValueError
 from app.repositories import sessions as session_repository
 from app.repositories import users as user_repository
 from app.services import session as session_service
@@ -30,13 +30,13 @@ def test_log_in_succeeds_with_email(test_data):
 
 
 def test_log_in_with_invalid_account_raises():
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         session_service.log_in("fake_user", "password")
 
 
 def test_log_in_with_invalid_password_raises(test_data):
     (user,) = test_data
-    with pytest.raises(AuthenticationException):
+    with pytest.raises(AuthenticationError):
         session_service.log_in(user.email, "invalid_password")
 
 
@@ -45,10 +45,10 @@ def test_log_out_succeeds(test_data):
     session = session_service.log_in(user.username, "password")
     session_service.log_out(session.token)
 
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         session_service.find_session(session.token)
 
 
 def test_log_out_fails_for_fake_session():
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         session_service.log_out("fakesessiontoken")

@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import AfterValidator, BaseModel
 
 import app.validators as v
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models import MenuItem
 from app.models.menu_item import PatchMenuItemRequest, PostMenuItemRequest
 from app.services import menu_item as service
@@ -31,7 +31,7 @@ def get_all_menu_items(menu: str) -> list[MenuItem]:
     """
     try:
         return service.get_all_menu_items(menu)
-    except MissingValueException:
+    except MissingValueError:
         raise HTTPException(status_code=NOT_FOUND_STATUS)
 
 
@@ -58,7 +58,7 @@ def get_menu_item_by_id(
             menu,
             menu_item_id,
         )
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
 
@@ -85,7 +85,7 @@ def patch_menu_item(
     """
     try:
         return service.update_menu_item_by_id(menu, menu_item_id, request.model_dump())
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=NOT_FOUND_STATUS, detail=e.message)
 
 
@@ -113,5 +113,5 @@ def post_menu_item(
         new_menu_item = service.create_menu_item(menu, request.name, request.price)
         response.status_code = status.HTTP_201_CREATED
         return new_menu_item
-    except MissingValueException:
+    except MissingValueError:
         raise HTTPException(status_code=NOT_FOUND_STATUS)

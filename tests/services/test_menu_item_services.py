@@ -3,7 +3,7 @@ import math
 import pytest
 from ulid import ULID
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.repositories import menu
 from app.services import menu as menu_service
 from app.services import menu_item as menu_item_service
@@ -27,7 +27,7 @@ def test_data():
 def test_get_menu_item_raises_for_nonexistant_menu_fails(test_data):
     (_, _, menu) = test_data
     created_menu_item = menu_item_service.create_menu_item(menu.id, "Test Item", 5.00)
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         menu_item_service.get_menu_item_by_id(ULID(), created_menu_item.id)
 
 
@@ -46,7 +46,7 @@ def test_create_menu_item_and_get_by_id(test_data):
 
 def test_cannot_get_menu_item_that_doesnt_exist(test_data):
     (_, _, menu) = test_data
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         menu_item_service.get_menu_item_by_id(menu.id, ULID())
 
 
@@ -66,14 +66,14 @@ def test_get_all_menu_items_actually_adds_items(test_data):
 
 def test_cannot_update_nonexistant_menu_item(test_data):
     (_, _, menu) = test_data
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         menu_item_service.update_menu_item_by_id(menu.id, ULID(), {})
 
 
 def test_cannot_update_menu_item_if_menu_doesnt_exist(test_data):
     (_, _, menu) = test_data
     created_menu_item = menu_item_service.create_menu_item(menu.id, "Test Item", 5.00)
-    with pytest.raises(MissingValueException):
+    with pytest.raises(MissingValueError):
         menu_item_service.update_menu_item_by_id(ULID(), created_menu_item.id, {})
 
 
@@ -150,4 +150,4 @@ def test_add_fake_attribute_to_menu_item_does_nothing(test_data):
     )
 
     with pytest.raises(AttributeError):
-        retrieved_menu_item.fake
+        _ = retrieved_menu_item.fake

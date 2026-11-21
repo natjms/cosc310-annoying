@@ -1,4 +1,4 @@
-class AppBaseException(Exception):
+class AppBaseError(Exception):
     def __init__(self, message):
         super().__init__(self, message)
 
@@ -15,7 +15,7 @@ the ID is valid, but no such restaurant exists.
 """
 
 
-class MissingValueException(AppBaseException):
+class MissingValueError(AppBaseError):
     pass
 
 
@@ -26,7 +26,7 @@ with the same username, that may be well described by this exception
 """
 
 
-class ResourceConflictException(AppBaseException):
+class ResourceConflictError(AppBaseError):
     pass
 
 
@@ -36,5 +36,5 @@ requires authentication
 """
 
 
-class AuthenticationException(AppBaseException):
+class AuthenticationError(AppBaseError):
     pass

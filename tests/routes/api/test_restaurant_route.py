@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from ulid import ULID
 
 from app import app
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.repositories.restaurant import restaurants as restaurant_repo
 from app.repositories.user import users as user_repo
 from app.services import restaurant as restaurant_service

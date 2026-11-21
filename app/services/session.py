@@ -4,7 +4,7 @@ import secrets
 
 from ulid import ULID
 
-from app.exceptions import AuthenticationException, MissingValueException
+from app.exceptions import AuthenticationError, MissingValueError
 from app.models import Session
 from app.repositories import sessions
 from app.repositories.repo import UniqueError
@@ -23,7 +23,7 @@ def find_session(session_token: str) -> Session:
     try:
         return sessions.unique(token=session_token)
     except UniqueError:
-        raise MissingValueException(
+        raise MissingValueError(
             "The given session does not exist. Please try logging in again"
         )
 
@@ -31,11 +31,11 @@ def find_session(session_token: str) -> Session:
 def log_in(credential: str, password_plaintext: str) -> Session:
     try:
         user = user_service.find_user_by_credential(credential)
-    except MissingValueException:
-        raise AuthenticationException("Unknown user")
+    except MissingValueError:
+        raise AuthenticationError("Unknown user")
 
     if not user.is_active:
-        raise AuthenticationException("Cannot log into a deactivated account")
+        raise AuthenticationError("Cannot log into a deactivated account")
 
     if user_service.validate_credentials(credential, password_plaintext):
         session_token = secrets.token_hex(SESSION_TOKEN_BYTES)
@@ -49,7 +49,7 @@ def log_in(credential: str, password_plaintext: str) -> Session:
 
         return sessions.unique(token=session_token)
     else:
-        raise AuthenticationException("Please verify your credentials and try again")
+        raise AuthenticationError("Please verify your credentials and try again")
 
 
 def log_out(session_token: str) -> None:
@@ -64,7 +64,7 @@ def session_is_valid(session_token: str) -> bool:
     - It is owned by a user who isn't deactivated.
     """
     session = None
-    with contextlib.suppress(MissingValueException):
+    with contextlib.suppress(MissingValueError):
         session = find_session(session_token)
 
     if session is None:

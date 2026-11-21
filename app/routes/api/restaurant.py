@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from pydantic import BaseModel
 
-from app.exceptions import MissingValueException
+from app.exceptions import MissingValueError
 from app.models.menu import Menu, PostMenuRequest
 from app.models.restaurant import (
     PatchRestaurantRequest,
@@ -70,7 +70,7 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     """
     try:
         return find_restaurant_by_id(restaurant_id)
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=404, detail=e.message)
 
 
@@ -83,7 +83,7 @@ def patch_restaurant(restaurant_id: str, request: PatchRestaurantRequest) -> Res
         return update_restaurant(restaurant_id, request.model_dump())
     except UniqueError:
         raise HTTPException(status_code=404, detail="Restaurant does not exist")
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=404, detail=e.message)
 
 
@@ -105,5 +105,5 @@ def post_restaurant(request: PostRestaurantRequest, response: Response) -> Resta
         new_restaurant = create_restaurant(request.owner_id, request.name)
         response.status_code = status.HTTP_201_CREATED
         return new_restaurant
-    except MissingValueException as e:
+    except MissingValueError as e:
         raise HTTPException(status_code=404, detail=e.message)
