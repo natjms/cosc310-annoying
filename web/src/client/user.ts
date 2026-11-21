@@ -15,8 +15,8 @@ type CreateUserRequest = {
     email: string,
     password_plaintext: string,
 };
-export function create_user({ username, email, password_plaintext }: CreateUserRequest) : Promise<Response> {
-    return requests.post('/users/', { body: { username, email, password_plaintext } });
+export function create_user(role: string, { username, email, password_plaintext }: CreateUserRequest) : Promise<Response> {
+    return requests.post(`/users/?role=${role}`, { body: { username, email, password_plaintext } });
 }
 
 type UpdateUserRequest = {

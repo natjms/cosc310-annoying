@@ -26,3 +26,9 @@ export function get_all_restaurants() : Promise<Response> {
 export function get_restaurant(id: string) : Promise<Response> {
     return requests.get(`/restaurants/${id}`);
 }
+
+export function create_restaurant(owner_id, name) {
+    return requests.post('/restaurants/', {body: {
+        owner_id, name
+    }});
+}

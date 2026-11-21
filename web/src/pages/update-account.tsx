@@ -18,7 +18,7 @@ export default function CreateAccountPage() {
         if (response.status === 409) throw 'Username or email already in use';
         if (response.status === 422) throw response;
 
-        route('/account?updated=true');
+        route('/restaurants/?updated=true');
     }
 
     return (

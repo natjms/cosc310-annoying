@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import { route } from 'preact-router'
 import { get_all_restaurants } from '@/client/restaurant'
 import type { Restaurant } from '@/client/restaurant'
+import { useSecurity } from '@/utils/security'
 
 type RestaurantListPageProps = {
     query: string
 };
 export default function RestaurantListPage({ query }: RestaurantListPageProps) {
+    const security = useSecurity();
     const [restaurants, setRestaurants]: [Restaurant[], (a: Restaurant[]) => void] = useState(null);
     const [search_query, setSearchQuery]: [string, (s: string) => void] = useState(query);
     const [should_search, setShouldSearch]: [boolean, (b: boolean) => void] = useState(false);
@@ -45,6 +47,12 @@ export default function RestaurantListPage({ query }: RestaurantListPageProps) {
         <button onClick={search_handler}>
             Search
         </button>
+
+        { security && security.role.includes('restaurateur') &&
+            <p>
+                <a href='/restaurants/create'>Create a new restaurant</a>
+            </p>
+        }
 
         { restaurants.length === 0 ?
             <p>No restaurants found!</p>

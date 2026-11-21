@@ -8,7 +8,7 @@ export default function CreateAccountPage() {
     const [form_state, setFormState]: [object, (o: object) => void] = useState({});
 
     const handleSubmit = async (form_data) => {
-        const response = await create_user(form_data);
+        const response = await create_user(form_data.role, form_data);
 
         if (response.status === 409) {
             throw 'A user with this username or email already exists. Please try another';
@@ -44,6 +44,12 @@ export default function CreateAccountPage() {
                     label: 'Password',
                     type: 'password',
                     key: 'password_plaintext',
+                    required: true,
+                },
+                {
+                    label: 'Restaurateur or customer?',
+                    type: 'text',
+                    key: 'role',
                     required: true,
                 },
 

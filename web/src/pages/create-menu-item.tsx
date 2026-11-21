@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { route } from 'preact-router'
+import { create_menu_item } from '@/client/menu'
 import Form from '@/components/form'
 
 type CreateMenuPageProps = {
@@ -10,9 +11,11 @@ export default function CreateMenuItemPage({ restaurant_id, menu_id }) {
     const [form_state, setFormState]: [object, (o: object) => void] = useState({});
     const [error, setError]: [string, (e: string) => void] = useState(null);
 
-    const handleSubmit = (form_data) => {
+    const handleSubmit = async (form_data) => {
         // TODO: call the create endpoint
-        route(`/_/${restaurant_id}/${menu_id}`);
+        const response = await create_menu_item(form_data, menu_id);
+        if (!response.ok) throw response;
+        //route(`/_/${restaurant_id}/`);
     };
 
     return (

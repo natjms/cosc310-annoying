@@ -1,0 +1,25 @@
+{
+  "hash": "7a7b3cd5",
+  "configHash": "72779415",
+  "lockfileHash": "c43a4ad2",
+  "browserHash": "4d474a74",
+  "optimized": {
+    "preact/jsx-dev-runtime": {
+      "src": "../../node_modules/preact/jsx-runtime/dist/jsxRuntime.mjs",
+      "file": "preact_jsx-dev-runtime.js",
+      "fileHash": "985125da",
+      "needsInterop": false
+    },
+    "preact": {
+      "src": "../../node_modules/preact/dist/preact.mjs",
+      "file": "preact.js",
+      "fileHash": "7714e65a",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-RZBBS6KD": {
+      "file": "chunk-RZBBS6KD.js"
+    }
+  }
+}
