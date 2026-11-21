@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from ulid import ULID
 
-from . import MenuItem
+from app.models import MenuItem
 
 
 class Menu(BaseModel):
@@ -15,3 +15,8 @@ class Menu(BaseModel):
 class PostMenuRequest(BaseModel):
     restaurant_id: ULID
     name: str
+
+
+class PatchMenuRequest(BaseModel):
+    name: str | None = None
+    is_active: bool | None = None
