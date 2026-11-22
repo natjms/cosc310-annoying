@@ -5,7 +5,7 @@ from pydantic import AfterValidator, BaseModel
 from ulid import ULID
 
 import app.validators as v
-from app.auth import guard_authorization
+from app.auth import guard_authentication, guard_authorization
 from app.exceptions import MissingValueException
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
@@ -13,7 +13,6 @@ from app.models.session import Session
 from app.models.user import User
 from app.repositories import utils
 from app.services import cart as service
-from app.services.session import guard_authentication
 from app.services.utils import maybe_ulid
 
 router = APIRouter(prefix="/carts")
