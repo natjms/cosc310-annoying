@@ -67,4 +67,3 @@ def session_is_valid(session_token: str) -> bool:
     current_timestamp_utc = int(datetime.datetime.now(datetime.UTC).timestamp())
 
     return session.expiry_timestamp_utc > current_timestamp_utc
-
