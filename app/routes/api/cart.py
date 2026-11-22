@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Response, status, Header
+from fastapi import APIRouter, Header, HTTPException, Response, status
 from pydantic import AfterValidator, BaseModel
 from ulid import ULID
 
 import app.validators as v
+from app.auth import guard_authorization
 from app.exceptions import MissingValueException
 from app.models.cart import Cart
 from app.models.cart_item import CartItem
@@ -14,18 +15,16 @@ from app.repositories import utils
 from app.services import cart as service
 from app.services.session import guard_authentication
 from app.services.utils import maybe_ulid
-from app.auth import guard_authorization
 
-router = APIRouter(prefix='/carts')
+router = APIRouter(prefix="/carts")
+
 
 @router.get(
     "/",
     summary="Returns the current active cart for the curent user",
     response_model=Cart,
 )
-def get_active_cart(
-    x_token: Annotated[str, Header()]
-) -> Cart:
+def get_active_cart(x_token: Annotated[str, Header()]) -> Cart:
     """
     Retrieve what from who.
 
@@ -35,7 +34,7 @@ def get_active_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
 
     try:
         return service.get_active_cart(user.id)
@@ -51,7 +50,7 @@ def get_active_cart(
 def update_current_cart(
     menu_item_id: str,
     quantity: Annotated[int, AfterValidator(v.positive_int)],
-    x_token: Annotated[str, Header()]
+    x_token: Annotated[str, Header()],
 ) -> Cart:
     """
     Retrieve what from who.
@@ -62,7 +61,7 @@ def update_current_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
     try:
         active_cart = service.get_active_cart(user.id)
         return service.update_cart_item(
@@ -77,9 +76,7 @@ def update_current_cart(
     summary="Clears the current active cart for the current restaurant",
     response_model=Cart,
 )
-def clear_active_cart(
-    x_token: Annotated[str, Header()]
-) -> Cart:
+def clear_active_cart(x_token: Annotated[str, Header()]) -> Cart:
     """
     Retrieve what from who.
 
@@ -89,7 +86,7 @@ def clear_active_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
     try:
         active_cart = service.get_active_cart(user.id)
         return service.clear_cart(user.id, active_cart.restaurant_id)
@@ -102,10 +99,7 @@ def clear_active_cart(
     summary="Returns the cart items for the given restaurant",
     response_model=Cart,
 )
-def get_cart(
-    restaurant_id: ULID,
-    x_token: Annotated[str, Header()]
-) -> Cart:
+def get_cart(restaurant_id: ULID, x_token: Annotated[str, Header()]) -> Cart:
     """
     Retrieve what from who.
 
@@ -115,7 +109,7 @@ def get_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
     return service.get_or_create_cart(user.id, maybe_ulid(restaurant_id))
 
 
@@ -126,10 +120,7 @@ def get_cart(
     summary="Activates a cart for the given restaurant",
     response_model=Cart,
 )
-def activate_cart(
-    restaurant_id: str,
-    x_token: Annotated[str, Header()]
-) -> Cart:
+def activate_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart:
     """
     Activate a cart while deactivating all other ones.
 
@@ -138,7 +129,7 @@ def activate_cart(
     Returns:
         TBD.
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
     return service.activate_cart(
         user.id, maybe_ulid(restaurant_id)
     )  # nts: this is not in the service layer yet
@@ -153,7 +144,7 @@ def update_cart(
     restaurant_id: str,
     menu_item_id: str,
     quantity: int,
-    x_token: Annotated[str, Header()]
+    x_token: Annotated[str, Header()],
 ) -> Cart:
     """
     Retrieve what from who.
@@ -164,10 +155,10 @@ def update_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
 
     try:
-        return service.update_cart_item(
+        return service.add_item_to_cart(
             user.id, maybe_ulid(restaurant_id), maybe_ulid(menu_item_id), quantity
         )
     except MissingValueException as e:
@@ -179,10 +170,7 @@ def update_cart(
     summary="Deletes the cart for the given restaurant",
     response_model=Cart,
 )
-def clear_cart(
-    restaurant_id: str,
-    x_token: Annotated[str, Header()]
-) -> Cart:
+def clear_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart:
     """
     Retrieve what from who.
 
@@ -192,5 +180,19 @@ def clear_cart(
     Returns:
         what?
     """
-    (user, *_) = guard_authorization(x_token, {'customer'})
+    (user, *_) = guard_authorization(x_token, {"customer"})
     return service.clear_cart(user.id, maybe_ulid(restaurant_id))
+
+
+@router.delete(
+    "/{restaurant_id}/items/{menu_item_id}",
+    summary="Removes a specific item from the cart",
+    response_model=Cart,
+)
+def remove_cart_item(
+    restaurant_id: str, menu_item_id: str, x_token: Annotated[str, Header()]
+) -> Cart:
+    (user, *_) = guard_authorization(x_token, {"customer"})
+    return service.remove_item_from_cart(
+        user.id, maybe_ulid(restaurant_id), maybe_ulid(menu_item_id)
+    )

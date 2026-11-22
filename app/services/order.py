@@ -29,6 +29,7 @@ def create_order_from_cart(user_id: ULID, restaurant_id: ULID) -> Order:
         menu_item = get_menu_item_by_id(str(cart_item.menu_id), cart_item.menu_item_id)
         order_item = OrderItem(
             id=ULID(),
+            menu_id=cart_item.menu_id,
             menu_item_id=cart_item.menu_item_id,
             quantity=cart_item.quantity,
             price_at_order_time=menu_item.price,
@@ -42,7 +43,7 @@ def create_order_from_cart(user_id: ULID, restaurant_id: ULID) -> Order:
         restaurant_id=restaurant_id,
         updated_at=datetime.now(),
         items=order_items,
-        price=total,
+        total_price=total,
         status="pending",
     )
     # clearing cart because epic says so

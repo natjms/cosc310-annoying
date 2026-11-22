@@ -14,7 +14,7 @@ def get_all_menu_items(menu_id: str) -> list[MenuItem]:
         menu = menus.unique(id=menu_id)
         return [item for item in menu.items.values()]
     except UniqueError:
-        raise MissingValueException(f"The requested menu does not exist")
+        raise MissingValueException("The requested menu does not exist")
 
 
 def get_menu_item_by_id(menu_id: str, menu_item_id: str | ULID) -> MenuItem:
@@ -67,13 +67,20 @@ def create_menu_item(menu_id: str, name: str, price: float) -> MenuItem:
         raise MissingValueException("The requested menu does not exist")
 
 
-def delete_menu_item():
+def delete_menu_item(menu_id: str, menu_item_id: str) -> None:
     try:
         menu = menus.unique(id=menu_id)
         updated_menu_items = menu.items
-        del updated_menu_items[maybe_ulid(menu_items_id)]
-        menus.update(id=menu_id, items=updated_menu_items)
+
+        item_ulid = maybe_ulid(menu_item_id)
+
+        if item_ulid in updated_menu_items:
+            del updated_menu_items[item_ulid]
+            menus.update(id=menu_id, items=updated_menu_items)
+        else:
+            raise MissingValueException("Menu item not found in this menu")
+
     except UniqueError:
-        raise MissingValueException("menu doesn't exist")
+        raise MissingValueException("Menu doesn't exist")
     except KeyError:
-        raise MissingValueException("menu can't be found")
+        raise MissingValueException("Menu item can't be found")
