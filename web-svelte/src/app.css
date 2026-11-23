@@ -1,0 +1,138 @@
+/* universals */
+:root {
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --surface-hover: #2c2c2c;
+    --text: #ffffff;
+    --text-muted: #888888;
+    --border: #333333;
+    --primary: #4ade80;
+    --font-main: Inter, sans-serif;
+    --font-mono: Iosevka, JetBrainsMono, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* general structure */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nav-bar {
+    width: 100%;
+    padding: 1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* text elements */
+h1,
+h2,
+h3 {
+    margin-top: 0;
+    color: #fff;
+}
+
+.top-banner {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+/* interactive ui */
+input,
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    color: var(--bg);
+    border: var(--border);
+    border-radius: 4px;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: var(--border);
+}
+button.primary {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    font-weight: bold;
+}
+button.primary:hover {
+    opacity: 0.8;
+}
+
+/* front page */
+.restaurant-list {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 2rem;
+}
+.restaurant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+.restaurant-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: var(--surface);
+    transition: background 0.2s;
+}
+.restaurant-header:hover {
+    background: var(--surface-hover);
+}
+.restaurant-header h3 {
+    margin: 0;
+}
+.restaurant-body {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+.menu-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+.menu-item-row:nth-last-child {
+    border-bottom: none;
+}
+.btn-add {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+}
