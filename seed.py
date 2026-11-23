@@ -1,20 +1,33 @@
-from app.services import user as user_service
-from app.services import role as role_service
-from app.services import restaurant as restaurant_service
+from app.exceptions import ResourceConflictException
+from app.models.role import RoleName
 from app.services import menu as menu_service
 from app.services import menu_item as menu_item_service
-from app.models.role import RoleName
-from app.exceptions import ResourceConflictException
+from app.services import restaurant as restaurant_service
+from app.services import role as role_service
+from app.services import user as user_service
+
 
 def run_seed():
-    print("🌱 Starting database seed...")
+    print("Starting database seed...")
 
     # --- 1. CREATE USERS & ROLES ---
     print("Creating users...")
     users_data = [
-        {"username": "admin", "email": "admin@test.com", "roles": [RoleName.admin, RoleName.customer]},
-        {"username": "customer", "email": "customer@test.com", "roles": [RoleName.customer]},
-        {"username": "owner", "email": "owner@test.com", "roles": [RoleName.restaurateur, RoleName.customer]},
+        {
+            "username": "admin",
+            "email": "admin@test.com",
+            "roles": [RoleName.admin, RoleName.customer],
+        },
+        {
+            "username": "customer",
+            "email": "customer@test.com",
+            "roles": [RoleName.customer],
+        },
+        {
+            "username": "owner",
+            "email": "owner@test.com",
+            "roles": [RoleName.restaurateur, RoleName.customer],
+        },
     ]
 
     owners = []
@@ -27,11 +40,11 @@ def run_seed():
             # If they already exist, fetch them
             user = user_service.find_user_by_username(u["username"])
             print(f"  [-] User already exists: {u['username']}")
-        
+
         # Assign roles
         for role in u["roles"]:
             role_service.assign_role(user.id, role)
-        
+
         if u["username"] == "owner":
             owners.append(user)
 
@@ -79,7 +92,10 @@ def run_seed():
                 menu_item_service.create_menu_item(str(menu.id), item_name, price)
                 print(f"      [+] Created Item: {item_name} (${price})")
 
-    print("✅ Seeding complete! You can now log in as 'customer' or 'owner' with password 'password'.")
+    print(
+        "Seeding complete! You can now log in as 'customer' or 'owner' with password 'password'."
+    )
+
 
 if __name__ == "__main__":
     run_seed()
