@@ -20,6 +20,7 @@ members absent: lua
 - AI use
 	- Explicitly allow discussing problems with AI and identifying issues, suggestions, etc.
 	- Escape hatch if things get really bad to generate AI code
+- Sarthak plans to lint the whole codebase in one shot in order to clean up many problems
 
 ## 2026-11-20
 
