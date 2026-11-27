@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-# Milestone 1 Submission
-=======
 # Milestone 2+ Submission
 Food Delivery application with a FastAPI based frontend and a frontends in Preact/Svelte.
 A .json file is used for data storage.
 
->>>>>>> 433c28e (doc: document the data regeneration script)
 ## Team Name
 Our team name is simply 'Annoying Team'.
 
@@ -42,13 +38,6 @@ at `example.env`. Before running the application you must copy this file to
 cp example.env .env
 ```
 
-<<<<<<< HEAD
-Note: eventually the application will provide ways to create data. For early
-stages of development, you may use the existing `test/data/` folder which should
-include enough example data to support basic usages. To use this in a way that
-doesn't mess with the test suite, you should copy this directory to e.g.
-`data/` and set that as your `DATA_DIR` in the env file.
-=======
 To make development easier, the backend prints what data directory was passed (through the env) to it on startup,
 and `.env.dev` can be created to set the location of an alternative data directory, similar to `example.env` above.
 
@@ -57,7 +46,6 @@ This file generates initial representative data.
 Any contributors are expected to keep track of their changes,
 if any, to the repsentative data.
 
->>>>>>> 433c28e (doc: document the data regeneration script)
 
 ## How to start the application
 
@@ -97,8 +85,11 @@ DATA_DIR=./data/
 ## /docs path
 It is exposed by default. The path is `127.0.0.1:8000/docs`
 
-## Location of representative data
-Assuming '/' is the project root diretory: `/data/`
+## Location of bundled data
+Assuming '/' is the project root diretory: `/data/`. `regen-data.py` can be used to restore this if necessary, 
+however the folder and a .env file pointing to it must exist beforehand, 
+and everything except the users will be appended so it is possible to
+end up with duplicate copies.
 
 ## How to run tests
 run: `python -m pytest --doctest-modules` from the project root

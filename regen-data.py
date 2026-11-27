@@ -1,14 +1,16 @@
 from dotenv import load_dotenv
+
 load_dotenv(".env")
 
 
-from app.exceptions import ResourceConflictException
-from app.models.role import RoleName
-from app.services import menu as menu_service
-from app.services import menu_item as menu_item_service
-from app.services import restaurant as restaurant_service
-from app.services import role as role_service
-from app.services import user as user_service
+from app.exceptions import ResourceConflictException  # noqa:E402
+from app.models.role import RoleName  # noqa:E402
+from app.services import menu as menu_service  # noqa:E402
+from app.services import menu_item as menu_item_service  # noqa:E402
+from app.services import restaurant as restaurant_service  # noqa:E402
+from app.services import role as role_service  # noqa:E402
+from app.services import user as user_service  # noqa:E402
+
 
 def run_regen():
     print("starting database (re)generation...")
@@ -92,11 +94,11 @@ def run_regen():
 
             for item_name, price in items:
                 # create menu items (Note: service expects a string for menu_id)
-                # this is the case because of ULID                
+                # this is the case because of ULID
                 menu_item_service.create_menu_item(str(menu.id), item_name, price)
                 print(f"[+] created item: {item_name} (${price})")
 
-    print("\n\n" +"seeding complete!")
+    print("\n\n" + "seeding complete!")
     print("login as 'customer' or 'owner' with password.")
 
 
