@@ -4,8 +4,10 @@ __pycache__/
 *pyc
 .pytest_cache/
 
-# Local configuration
+# Local configuration (environment)
 .env*
+*.dev
+data-dev/
 !tests/.env.test
 
 # Editor directories and files
@@ -19,8 +21,6 @@ __pycache__/
 *.sln
 *.sw?
 
-
-
 # Logs
 logs
 *.log
@@ -30,18 +30,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Frontend
 node_modules
 dist
 dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
