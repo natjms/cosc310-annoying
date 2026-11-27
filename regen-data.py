@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv(".env")
+
+
 from app.exceptions import ResourceConflictException
 from app.models.role import RoleName
 from app.services import menu as menu_service
@@ -6,12 +10,11 @@ from app.services import restaurant as restaurant_service
 from app.services import role as role_service
 from app.services import user as user_service
 
-
-def run_seed():
-    print("ctarting database (re)generation...")
+def run_regen():
+    print("starting database (re)generation...")
 
     # users/roles
-    print("creating users...")
+    print("\n" + "creating users...")
     users_data = [
         {
             "username": "admin",
@@ -51,7 +54,7 @@ def run_seed():
     owner_user = owners[0]
 
     # restaurants/menus
-    print("creating restaurants, menus, and items...")
+    print("\n" + "creating restaurants, menus, and items...\n")
 
     # array structure: Restaurant -> Menus -> Items (Name, Price)
     mock_data = {
@@ -93,9 +96,9 @@ def run_seed():
                 menu_item_service.create_menu_item(str(menu.id), item_name, price)
                 print(f"[+] created item: {item_name} (${price})")
 
-    print("seeding complete!")
+    print("\n\n" +"seeding complete!")
     print("login as 'customer' or 'owner' with password.")
 
 
 if __name__ == "__main__":
-    run_seed()
+    run_regen()
