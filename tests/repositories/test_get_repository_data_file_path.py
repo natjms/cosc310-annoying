@@ -1,13 +1,18 @@
 import pytest
 
-from app.repositories.utils import get_repository_data_file_path, DATA_DIRECTORY_ENVIRONMENT_VARIABLE
+from app.repositories.utils import (
+    DATA_DIRECTORY_ENVIRONMENT_VARIABLE,
+    get_repository_data_file_path,
+)
+
 FILENAME = "restaurants.json"
 
 
 # Typical
 
+
 def test_from_env(monkeypatch, tmp_path):
-    temporary_path_string  = str(tmp_path)
+    temporary_path_string = str(tmp_path)
     monkeypatch.setenv(DATA_DIRECTORY_ENVIRONMENT_VARIABLE, temporary_path_string)
 
     path = get_repository_data_file_path(FILENAME)
@@ -18,6 +23,7 @@ def test_from_env(monkeypatch, tmp_path):
 
 
 # Extreme
+
 
 def test_explicit_directory(tmp_path):
     explicit_directory_path = tmp_path
@@ -30,6 +36,7 @@ def test_explicit_directory(tmp_path):
 
 
 # Erroneous
+
 
 def test_missing_env_variable(monkeypatch):
     monkeypatch.delenv(DATA_DIRECTORY_ENVIRONMENT_VARIABLE, raising=False)

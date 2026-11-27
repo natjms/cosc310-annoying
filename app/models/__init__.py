@@ -1,6 +1,6 @@
-from .menu_item import MenuItem
 from .menu import Menu, PostMenuRequest
-from .restaurant import Restaurant, PostRestaurantRequest, PatchRestaurantRequest
-from .user import User
-from .session import Session
+from .menu_item import MenuItem
+from .restaurant import PatchRestaurantRequest, PostRestaurantRequest, Restaurant
 from .role import Role, RoleName
+from .session import Session
+from .user import User

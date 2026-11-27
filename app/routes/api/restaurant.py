@@ -34,7 +34,6 @@ router = APIRouter(prefix="/restaurants")
 @router.get(
     "/",
     summary="Returns a list of all restaurants",
-    response_model=list[Restaurant],
 )
 def get_all_restaurants() -> list[Restaurant]:
     """
@@ -49,7 +48,6 @@ def get_all_restaurants() -> list[Restaurant]:
 @router.get(
     "/search",
     summary="Search restaurants by name",
-    response_model=list[Restaurant],
 )
 def search_restaurants(query: str) -> list[Restaurant]:
     """
@@ -67,7 +65,6 @@ def search_restaurants(query: str) -> list[Restaurant]:
 @router.get(
     "/{restaurant_id}",
     summary="Returns the restaurant with the given ID",
-    response_model=Restaurant,
 )
 def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
     """
@@ -88,7 +85,6 @@ def get_restaurant_by_id(restaurant_id: str) -> Restaurant:
 @router.patch(
     "/{restaurant_id}",
     summary="Updates a restaurant",
-    response_model=Restaurant,
 )
 def patch_restaurant(
     restaurant_id: str,
@@ -107,7 +103,6 @@ def patch_restaurant(
 @router.post(
     "/",
     summary="Creates a new restaurant",
-    response_model=Restaurant,
 )
 def post_restaurant(
     request: PostRestaurantRequest,

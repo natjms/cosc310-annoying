@@ -24,9 +24,8 @@ def get_current_user(x_token: Annotated[str, Header()]) -> User:
 @router.get(
     "/orders/",
     summary="Returns the current active orders for the current user",
-    response_model=list[Order],
 )
-def get_all_orders(user: User = Depends(get_current_user)) -> list[Order]:
+def get_all_orders(user: Annotated[User, Depends(get_current_user)]) -> list[Order]:
     """
     Retrieve what from who.
 
@@ -47,7 +46,7 @@ def get_all_orders(user: User = Depends(get_current_user)) -> list[Order]:
     summary="Creates order for the current user",
     response_model=Order,
 )
-def create_order(restaurant_id: str, user: User = Depends(get_current_user)):
+def create_order(restaurant_id: str, user: Annotated[User, Depends(get_current_user)]):
     try:
         return service.create_order_from_cart(user.id, maybe_ulid(restaurant_id))
     except MissingValueException:
@@ -59,7 +58,7 @@ def create_order(restaurant_id: str, user: User = Depends(get_current_user)):
     summary="Returns a single order by id for the current user",
     response_model=Order,
 )
-def get_order_by_id(order_id: str, user: User = Depends(get_current_user)):
+def get_order_by_id(order_id: str, user: Annotated[User, Depends(get_current_user)]):
     try:
         return service.get_order_by_id(user.id, maybe_ulid(order_id))
     except MissingValueException:
@@ -72,7 +71,7 @@ def get_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     summary="Updates a single order by id for the current user",
     response_model=Order,
 )
-def update_order_by_id(order_id: str, user: User = Depends(get_current_user)):
+def update_order_by_id(order_id: str, user: Annotated[User, Depends(get_current_user)]):
     try:
         return service.update_order(user.id, maybe_ulid(order_id), status="preparing")
     except MissingValueException:
@@ -84,7 +83,7 @@ def update_order_by_id(order_id: str, user: User = Depends(get_current_user)):
     summary="Cancels a single order by id for the current user",
     response_model=Order,
 )
-def cancel_order_by_id(order_id: str, user: User = Depends(get_current_user)):
+def cancel_order_by_id(order_id: str, user: Annotated[User, Depends(get_current_user)]):
     try:
         return service.cancel_order(user.id, maybe_ulid(order_id))
     except MissingValueException:

@@ -21,7 +21,6 @@ router = APIRouter(prefix="/carts")
 @router.get(
     "/",
     summary="Returns the current active cart for the curent user",
-    response_model=Cart,
 )
 def get_active_cart(x_token: Annotated[str, Header()]) -> Cart:
     """
@@ -44,7 +43,6 @@ def get_active_cart(x_token: Annotated[str, Header()]) -> Cart:
 @router.patch(
     "/",
     summary="Updates current active cart for the current user",
-    response_model=Cart,
 )
 def update_current_cart(
     menu_item_id: str,
@@ -73,7 +71,6 @@ def update_current_cart(
 @router.delete(
     "/",
     summary="Clears the current active cart for the current restaurant",
-    response_model=Cart,
 )
 def clear_active_cart(x_token: Annotated[str, Header()]) -> Cart:
     """
@@ -96,7 +93,6 @@ def clear_active_cart(x_token: Annotated[str, Header()]) -> Cart:
 @router.get(
     "/{restaurant_id}",
     summary="Returns the cart items for the given restaurant",
-    response_model=Cart,
 )
 def get_cart(restaurant_id: ULID, x_token: Annotated[str, Header()]) -> Cart:
     """
@@ -113,11 +109,11 @@ def get_cart(restaurant_id: ULID, x_token: Annotated[str, Header()]) -> Cart:
 
 
 # nts: how many carts can be *active* at a time?
-# current assumption -> nuke all other is_active for the carts to false to activate just one
+# current assumption -> nuke all other is_active for the carts
+# to false to activate just one
 @router.post(
     "/{restaurant_id}/activate",
     summary="Activates a cart for the given restaurant",
-    response_model=Cart,
 )
 def activate_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart:
     """
@@ -137,7 +133,6 @@ def activate_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart
 @router.patch(
     "/{restaurant_id}",
     summary="Updates the cart items for the given restaurant",
-    response_model=Cart,
 )
 def update_cart(
     restaurant_id: str,
@@ -167,7 +162,6 @@ def update_cart(
 @router.delete(
     "/{restaurant_id}",
     summary="Deletes the cart for the given restaurant",
-    response_model=Cart,
 )
 def clear_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart:
     """
@@ -186,7 +180,6 @@ def clear_cart(restaurant_id: str, x_token: Annotated[str, Header()]) -> Cart:
 @router.delete(
     "/{restaurant_id}/items/{menu_item_id}",
     summary="Removes a specific item from the cart",
-    response_model=Cart,
 )
 def remove_cart_item(
     restaurant_id: str, menu_item_id: str, x_token: Annotated[str, Header()]

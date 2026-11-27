@@ -1,4 +1,4 @@
-""" import pytest
+"""import pytest
 from fastapi.testclient import TestClient
 from ulid import ULID
 
@@ -19,7 +19,8 @@ password_hash = b"$2b$12$fuwt7LndvSSufxkgphaaEeLMD4/idE1ULAP2hqoOTWB9L2clq0DHO"
 
 @pytest.fixture
 def test_data():
-    user = user_service.register_user('test', 'test@example.com', 'password', dangerously_set_password_hash=password_hash, role='customer')
+    user = user_service.register_user('test', 'test@example.com', 'password',
+    dangerously_set_password_hash=password_hash, role='customer')
     session = session_service.log_in('test', 'AVeryStr0ngPassw0rd!')
     restaurant = restaurant_service.create_restaurant(user.id, "Test Restaurant")
     menu = menu_service.create_menu(str(restaurant.id), "Test Menu")
@@ -89,4 +90,4 @@ def test_clear_cart(test_data):
     )
     if get_response.status_code == 200:
         assert get_response.json()["items"] == {}
- """
+"""
