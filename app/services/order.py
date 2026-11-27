@@ -25,7 +25,7 @@ def create_order_from_cart(user_id: ULID, restaurant_id: ULID) -> Order:
     order_items = {}
     total = 0.0
 
-    for menu_item_id, cart_item in cart.items.items():
+    for _menu_item_id, cart_item in cart.items.items():
         menu_item = get_menu_item_by_id(str(cart_item.menu_id), cart_item.menu_item_id)
         order_item = OrderItem(
             id=ULID(),

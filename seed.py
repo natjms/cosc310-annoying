@@ -92,9 +92,8 @@ def run_seed():
                 menu_item_service.create_menu_item(str(menu.id), item_name, price)
                 print(f"      [+] Created Item: {item_name} (${price})")
 
-    print(
-        "Seeding complete! You can now log in as 'customer' or 'owner' with password 'password'."
-    )
+    print("seeding complete!")
+    print("login as 'customer' or 'owner' with password.")
 
 
 if __name__ == "__main__":

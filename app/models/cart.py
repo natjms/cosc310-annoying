@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from ulid import ULID
-from datetime import datetime
+
 from .cart_item import CartItem
 
 

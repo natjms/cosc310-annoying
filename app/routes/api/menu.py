@@ -31,7 +31,6 @@ router = APIRouter(prefix="/menus")
 @router.get(
     "/",
     summary="Returns the menus for the given restaurant",
-    response_model=list[Menu],
 )
 def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
     """
@@ -54,7 +53,6 @@ def get_all_menus_by_restaurant_id(restaurant: str) -> list[Menu]:
 @router.post(
     "/",
     summary="Creates a new menu for the given restaurant",
-    response_model=Menu,
 )
 def post_menu(
     request: PostMenuRequest, response: Response, x_token: Annotated[str, Header()]
