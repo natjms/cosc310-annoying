@@ -1,9 +1,11 @@
-# Milestone 1 Submission
+# Milestone 2+ Submission
+Food Delivery application with a Svelte/Preact frontend and a FastAPI-based backend that uses .json for data persistence.
+
 ## Team Name
 Our team name is simply 'Annoying Team'.
 
 ## Required Python version
-The Python version is >= 3.13.5
+The Python version needs to be >= 3.13.5
 
 ## Setup instructions
 Make sure you have the Python Headers installed (package name is `python-dev` on debian, ubuntu and so on) 
@@ -19,74 +21,71 @@ python -m venv .venv
 For \*Nix/Mac:
 
 ```
-python -m venv .venv && .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 ```
 
 ### Dependency installation
 With the venv activated: `pip install -r requirements.txt`
 
 ### Configuration
-
-This project uses dotenv for configuration. An example `.env` file is provided
+This project uses a .env (dotenv) file for configuration. An example `.env` file is provided
 at `example.env`. Before running the application you must copy this file to
 `.env` at the repo root and edit it accordingly. On \*Nix:
 
-```
+```bash
 cp example.env .env
 ```
 
-Note: eventually the application will provide ways to create data. For early
-stages of development, you may use the existing `test/data/` folder which should
-include enough example data to support basic usages. To use this in a way that
-doesn't mess with the test suite, you should copy this directory to e.g.
-`data/` and set that as your `DATA_DIR` in the env file.
+To make development easier, the backend prints what data directory was passed to it on startup,
+and `.env.dev` can be created to set the location of an alternative data directory, similar to `example.env` above.
+
+Note: eventually the application will provide a way to generate initial representative data.
+In the meantime, you will have to manually keep track of your changes, if any, to the repsentative data.
+
 
 ## How to start the application
 
-Backend: from the root, run `python -m fastapi dev`
+###Backend:
+-From the project root, run `python -m fastapi dev`
+-Visit http://localhost:8000/docs
 
-Visit http://localhost:8000/docs
-
-The front end is provided as a Vite application
+###Frontend: 
+This is provided as a Vite application. There are 2 front-ends, one that uses 
+Preact and one that uses Svelte. The instructions are similar between both, and currently
+the Svelte frontend is the one that is served by default.
 
 ```
 cd web
 npm install
 npm run dev
 ```
+This starts the frontend. 
 
-This starts the server. Make sure you have a web/.env file with the following contents:
+A .env file must be located at `web/.env` with the following contents for the frontend to work properly:
 ```
 VITE_API_BASE_URL='http://localhost:8000/api/'
 ```
+Change the above URL as necessary, and ensure data is present in `data/`. Refer to the backend env instructions above.
 
-Also, ensure you have the representative data in `data/`
 
-You can make use of the representative data in the backend by setting the following in
-the root .env file:
-
-```
-# cosc310-annoying/.env
-
-DATA_DIR=./data/
-```
-
-## API endpoint paths
+## API endpoint paths (top-level; see design/ for further details)
+```bash
 /docs
-/api/restaurants
+/api/
 /api/health
+```
 
 ## /docs path
 It is exposed by default. The path is `127.0.0.1:8000/docs`
 
-## Location of representative data
+## Location of bundled data
 Assuming '/' is the project root diretory: `/data/`
 
 ## How to run tests
 run: `python -m pytest --doctest-modules` from the project root
 
 ## Brief repository structure
-We decided to not deviate much from the example root structure. I have attached a top level overview from the project root below:
+We decided to not deviate much from the conventional root structure for layered FastAPI projects. A top level overview of the project root is present below:
 
 ```bash
 root/app <- contains the backend (api, repositories, schemas/models, services) 
@@ -94,7 +93,7 @@ root/tests <- houses the tests along with their data
 root/scrum <- has team agreement, scrum and other project planning related data
 ```
 
-I have also attached the output of the `ls -R` command on Linux which is similar to the `tree` command on Windows, and recursively lists the directories descending from the current directory below:
+The output of the `ls -R` command on Linux (see: `tree` command on Windows) is attached below. This recursively lists the directories that descend from the current directory below:
 
 ```bash
 . (aka Project Root)
