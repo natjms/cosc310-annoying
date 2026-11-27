@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 # Milestone 1 Submission
+=======
+# Milestone 2+ Submission
+Food Delivery application with a FastAPI based frontend and a frontends in Preact/Svelte.
+A .json file is used for data storage.
+
+>>>>>>> 433c28e (doc: document the data regeneration script)
 ## Team Name
 Our team name is simply 'Annoying Team'.
 
@@ -35,11 +42,22 @@ at `example.env`. Before running the application you must copy this file to
 cp example.env .env
 ```
 
+<<<<<<< HEAD
 Note: eventually the application will provide ways to create data. For early
 stages of development, you may use the existing `test/data/` folder which should
 include enough example data to support basic usages. To use this in a way that
 doesn't mess with the test suite, you should copy this directory to e.g.
 `data/` and set that as your `DATA_DIR` in the env file.
+=======
+To make development easier, the backend prints what data directory was passed (through the env) to it on startup,
+and `.env.dev` can be created to set the location of an alternative data directory, similar to `example.env` above.
+
+Note: The application provides a way in the form of a file called `regen-data.py`.
+This file generates initial representative data.
+Any contributors are expected to keep track of their changes,
+if any, to the repsentative data.
+
+>>>>>>> 433c28e (doc: document the data regeneration script)
 
 ## How to start the application
 
