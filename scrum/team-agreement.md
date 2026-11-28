@@ -1,4 +1,4 @@
-# Team Agreement, V1
+# Team Agreement
 
 ## Team Information
 
@@ -56,16 +56,3 @@ If we are at an impasse or other disagreement on the direction of our team or pr
 - Sarthak: "It's the same commitment to other members. Acknowledge that".
 - Lua: "I wrote this! I agree! I will do all of these things!".
 - Christopher: "Signed by Christopher".
-
-## Amendments
-
-### 2026-11-25
-
-Nat, Sarthak and Christopher decided to ammend the prohibition of AI use in the project:
-- We are explicitly allowed to discuss the project with AI to solicit ideas
-  provided the incorporated work is our own
-- We may choose to allow entirely AI generated contributions in the final
-  stretch of the project under two conditions:
-    - We agree it's necessary (e.g. due to the impending deadline; certain tasks
-      are if not intellectually demanding, time consuming to do)
-    - The contribution is clearly documented in the providence.md file
