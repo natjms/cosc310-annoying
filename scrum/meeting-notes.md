@@ -1,6 +1,9 @@
 ## 2026-11-25
+
+location: commons 2.5th floor
 members present: nat christopher sarthak
 members absent: lua
+time: after lecture (12:30pm onwards) - 1pm
 
 - Christopher wants to do reports
 - Docker
@@ -24,8 +27,7 @@ members absent: lua
 
 ## 2026-11-20
 
-date: 20 nov
-location: art xxx
+location: art214
 members present: nat christopher sarthak
 members absent: lua
 agenda
@@ -53,12 +55,11 @@ discussion about the frontend and what library to use (preact)
 check-in: what's the state of the auth and user backend
 
 ## 2026-11-19
-session date: nov19
-primary agenda: milestone2 sprint
 
+location: eme 3rd floor
 members present: nat and sarthak and christopher (later)
 members absent: lua
-location: around eme 2257
+primary agenda: milestone2 sprint
 
 today order of operations:
 both -> {
@@ -125,11 +126,10 @@ verify if the person making that request is a restauranter + they own the restar
 carts for the design.md
 
 #181 make an issue for this pr
-Now
-
-
 
 ## 2026-10-30
+
+location: art214
 members present: sarthak, christopher, nat
 members absent: lua
 
@@ -138,6 +138,7 @@ members absent: lua
 
 ## 2026-10-23
 
+location: art214
 members present: sarthak, christopher
 members absent: nat, lua
 
@@ -145,6 +146,7 @@ members absent: nat, lua
 
 ## 2026-10-16
 
+location: art214
 members present: sarthak, christopher
 members absent: nat, lua
 
