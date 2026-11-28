@@ -1,5 +1,33 @@
-date: 20 nov
-location: art xxx
+## 2026-11-25
+
+location: commons 2.5th floor
+members present: nat christopher sarthak
+members absent: lua
+time: after lecture (12:30pm onwards) - 1pm
+
+- Christopher wants to do reports
+- Docker
+	- Ideally use alpine
+- Christopher & Nat work together on campus this Sunday
+	- Design interactions
+	- Complete system design
+	- Discuss the project to ensure we have the same domain knowledge
+	- Identify concrete improvements
+	- Key focus: low coupling in services
+	- Create a dependency graph to reference to better understand how things currently work
+- orders
+	- We are going to build a simulated delivery system
+	- Do things like vary the time
+	- Real world interactions (payments, deliver times, etc.) there's an element of randomness
+- We should aim to not "own" features lest we only know what we've done
+- AI use
+	- Explicitly allow discussing problems with AI and identifying issues, suggestions, etc.
+	- Escape hatch if things get really bad to generate AI code
+- Sarthak plans to lint the whole codebase in one shot in order to clean up many problems
+
+## 2026-11-20
+
+location: art214
 members present: nat christopher sarthak
 members absent: lua
 agenda
@@ -21,19 +49,19 @@ refer to last notes for ttd (things to do)
 sarthak's working on the routers for orders
 
 discussion about the get_active_cart function: does it rely upon
-# tentative: we're going to rely upon the session variable
+tentative: we're going to rely upon the session variable
 
 discussion about the frontend and what library to use (preact)
 check-in: what's the state of the auth and user backend
 
-session date: nov19
-primary agenda: milestone2 sprint
+## 2026-11-19
 
+location: eme 3rd floor
 members present: nat and sarthak and christopher (later)
 members absent: lua
-location: around eme 2257
+primary agenda: milestone2 sprint
 
-## today order of operations:
+today order of operations:
 both -> {
     review prs (below)
 }
@@ -53,7 +81,7 @@ christopher = {
     style guide
 }
 
-# tomorrow:
+tomorrow:
 document types of roles
 document what the error types even are
 document why ulid
@@ -98,4 +126,29 @@ verify if the person making that request is a restauranter + they own the restar
 carts for the design.md
 
 #181 make an issue for this pr
-Now
+
+## 2026-10-30
+
+location: art214
+members present: sarthak, christopher, nat
+members absent: lua
+
+- Most of the meeting was spent doing the M1 demo
+- No additional decisions made
+
+## 2026-10-23
+
+location: art214
+members present: sarthak, christopher
+members absent: nat, lua
+
+- Down two members; no meeting
+
+## 2026-10-16
+
+location: art214
+members present: sarthak, christopher
+members absent: nat, lua
+
+- Down two members; no meeting
+
